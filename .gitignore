@@ -1,7 +1,7 @@
 # ======================
 # Dependencies
 # ======================
-**/node_modules/  # Ignores 'node_modules' in ANY directory (backend/frontend/etc.)
+**/node_modules  # Ignores 'node_modules' in ANY directory (backend/frontend/etc.)
 **/package-lock.json  # Optional: Ignore lock files (some teams commit them)
 
 # ======================
