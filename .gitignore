@@ -1,20 +1,38 @@
-# Ignore node_modules (never commit dependencies)
-node_modules/
+# ======================
+# Dependencies
+# ======================
+**/node_modules/  # Ignores 'node_modules' in ANY directory (backend/frontend/etc.)
+**/package-lock.json  # Optional: Ignore lock files (some teams commit them)
 
-# Ignore environment variables
-backend/.env
+# ======================
+# Environment
+# ======================
+**/.env
+**/.env.local
+**/.env*.local  # Ignores all variants like .env.development.local
 
-# Ignore log files
+# ======================
+# Logs
+# ======================
 *.log
+logs/
 
-# Ignore IDE/editor folders
+# ======================
+# Build/Output
+# ======================
+**/dist/
+**/build/
+**/.cache/
+
+# ======================
+# IDE/Editor
+# ======================
 .vscode/
 .idea/
+*.swp  # Vim swap files
 
-# Ignore build/output directories
-dist/
-build/
-
-# Ignore OS-specific files
+# ======================
+# OS-Specific
+# ======================
 .DS_Store
 Thumbs.db
