@@ -2,6 +2,7 @@
 # Dependencies
 # ======================
 backend/node_modules
+frontend/node_modules
 **/package-lock.json  # Optional: Ignore lock files (some teams commit them)
 
 # ======================
