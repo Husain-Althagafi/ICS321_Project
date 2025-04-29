@@ -17,7 +17,7 @@ const verifyToken = asyncHandler( async (req, res, next) => {
         }
     
         req.user = decoded
-        return res.status(200).json({message: 'worked'})
+        next()
     })
 })
 
