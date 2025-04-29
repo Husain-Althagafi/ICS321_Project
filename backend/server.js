@@ -1,8 +1,3 @@
-//Environment variables
-require('dotenv').config()
-dotenv.config();
-
-
 //Imports
 const express = require('express')
 const cors = require('cors')
@@ -10,7 +5,8 @@ const cors = require('cors')
 
 //App
 const app = express()
-const PORT = process.env.PORT
+const PORT = 5000
+const DB_PORT = 5432
 
 
 //Middleware
@@ -19,7 +15,9 @@ app.use(cors)
 
 
 //Routes
-
+app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
+app.use('/guest', guestRoutes);
 
 
 //Server
