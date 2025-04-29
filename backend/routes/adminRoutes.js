@@ -1,5 +1,15 @@
-const express = require('express');
-const adminController = require('../controllers/adminController');
-const router = express.Router();
+// const express = require('express');
+// const adminController = require('../controllers/adminController');
+// const router = express.Router();
 
-module.exports = router;
+// router.post('/tournament', adminController.addTournament)
+
+// router.post('/team', adminController.addTeam)
+
+// router.post('/team/captain', adminController.selectCaptain)
+
+// router.post('/team/player', adminController.approvePlayerToTeam)
+
+// router.delete('/tournament', adminController.deleteTournament)
+
+// module.exports = router;
