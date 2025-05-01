@@ -66,3 +66,10 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: #f4f4f9; /* Or a neutral background that matches your design */
+}
