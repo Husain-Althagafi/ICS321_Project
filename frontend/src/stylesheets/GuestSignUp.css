@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-.guest-background {
+.admin-background {
   font-family: 'Poppins', sans-serif;
   background-color: #f4f4f9;
   position: relative;
@@ -9,20 +9,21 @@
   z-index: 0;
   width: 100vw;
   height: 100vh;
-  overflow: hidden; /* Prevents scrollbars from appearing */
+  overflow: hidden;
 }
 
-.guest-background::before {
+.admin-background::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url("../assets/images/Zoom_BG_5.jpg");
+  background-image: url("../assets/images/Illustration 1@4x.png");
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center bottom;
+  filter: blur(0.15rem);
   z-index: 0;
 }
 
@@ -41,7 +42,10 @@
 .form-background {
     background: linear-gradient(135deg, #00713d, #00934f);
     border-radius: 1.5625rem;  /* Curved corners */
-    padding: 2.5rem;
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+    padding-top: 1.5rem;
+    padding-bottom: 1rem;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
     width: 21.25rem;
     margin-bottom: 1.25rem;
@@ -55,11 +59,12 @@
   margin-top: 0;
 }
 
-h2 {
+header {
   color: #ffffff;
   margin-bottom: 1.25rem;
   text-align: center;
-  font-size: 2rem;
+  font-size: 1.85rem;
+  font-weight: bold;
   text-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.3);
 }
 
@@ -84,7 +89,7 @@ input {
     font-size: 1rem;
     font-family: 'Poppins', sans-serif;
     background-color: #ffffff;
-    color: black;  /* Make the text color black */
+    color: black; 
     box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
     width: 100%;
     box-sizing: border-box;
@@ -167,19 +172,18 @@ button:hover {
   margin-bottom: 1rem;
 }
 
-.guest-signup-link {
+.guest-login-link {
   text-align: center;
-  margin-bottom: 0rem;
 }
 
-.guest-signup-link a {
+.guest-login-link a {
   color: white;
   font-size: 0.75rem;
   text-decoration: underline;
   margin: auto;
 }
 
-.admin-link {
+/* .admin-link {
   text-align: center;
   margin-top: 0rem;
 }
@@ -189,4 +193,4 @@ button:hover {
   font-size: 0.75rem;
   text-decoration: underline;
   margin: auto;
-}
+} */

@@ -4,20 +4,35 @@ import "../../stylesheets/AdminLogin.css";
 import showPasswordIcon from '../../assets/icons/find_15067049.png';
 import hidePasswordIcon from '../../assets/icons/see_4230235.png';
 import sealImage from '../../assets/icons/KFUPM Seal White.png';
+import securityQuestionImage from '../../assets/images/security-question.png';
 
 function AdminLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);  // State to toggle password visibility
   const [error, setError] = useState('');
+  const [showSecurityModal, setShowSecurityModal] = useState(false);
+  const [securityAnswer, setSecurityAnswer] = useState('');
+  const [securityError, setSecurityError] = useState('');
   const navigate = useNavigate();
 
   // Predefined Admin credentials for demo purposes
   const adminUsername = 'admin';
   const adminPassword = 'password123';
+  const expectedSecurityAnswer = '0';
 
   const handleLogin = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    const normalizedAnswer = securityAnswer.replace(/\s+/g, '').toLowerCase();
+    if (normalizedAnswer !== expectedSecurityAnswer) {
+      const errorMsg = 'Incorrect answer to the security question!';
+      setError(errorMsg);
+      setTimeout(() => {
+        alert(errorMsg);
+        navigate('/admin/login');
+      }, 0);
+      return;
+    }
     if (username === adminUsername && password === adminPassword) {
       // On successful login, redirect to Admin page
       navigate('/admin/home');
@@ -32,43 +47,81 @@ function AdminLogin() {
     setPasswordVisible(!passwordVisible);  // Toggle the visibility of the password
   };
 
+  const handleSecuritySubmit = () => {
+    const normalized = securityAnswer.replace(/\s+/g, '').toLowerCase();
+    if (normalized === expectedSecurityAnswer) {
+      setShowSecurityModal(false);
+      setSecurityError('');
+      navigate('/admin/signup');
+    } else {
+      const errorMsg = 'Incorrect answer to the security question!';
+      alert(errorMsg);
+      setShowSecurityModal(false);
+      setSecurityAnswer('');
+      setSecurityError('');
+    }
+  };
+
   return (
     <div className="admin-background login-container">
-      <div className="form-background">
-        <img src={sealImage} alt="KFUPM Seal" className="seal-logo" />
-        <h2>KFUPM Admin Login</h2>
-        <form onSubmit={handleLogin}>
-          <div className="form-group">
-            <label>Username</label>
-            <input 
-              type="text" 
-              value={username} 
-              onChange={(e) => setUsername(e.target.value)} 
-            />
-          </div>
-          <div className="password-container form-group">
-            <label>Password</label>
-            <div className="password-input-row">
+      <div className={showSecurityModal ? 'blurred' : ''}>
+        <div className="form-background">
+          <img src={sealImage} alt="KFUPM Seal" className="seal-logo" />
+          <h2>KFUPM Admin Login</h2>
+          <form onSubmit={handleLogin}>
+            <div className="form-group">
+              <label>Username</label>
               <input 
-                type={passwordVisible ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)} 
-              />
-              <img 
-                src={passwordVisible ? hidePasswordIcon : showPasswordIcon} 
-                alt={passwordVisible ? "Hide password" : "Show password"} 
-                className="eye-icon"
-                onClick={togglePasswordVisibility}
+                type="text" 
+                value={username} 
+                onChange={(e) => setUsername(e.target.value)} 
               />
             </div>
-          </div>
-          {error && <p className="error">{error}</p>}
-          <button type="submit">Login</button>
-          <p className="guest-link">
-            <Link to="/guest/login">Login as Guest</Link>
-          </p>
-        </form>
+            <div className="password-container form-group">
+              <label>Password</label>
+              <div className="password-input-row">
+                <input 
+                  type={passwordVisible ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)} 
+                />
+                <img 
+                  src={passwordVisible ? hidePasswordIcon : showPasswordIcon} 
+                  alt={passwordVisible ? "Hide password" : "Show password"} 
+                  className="eye-icon"
+                  onClick={togglePasswordVisibility}
+                />
+              </div>
+            </div>
+            {error && <p className="error">{error}</p>}
+            <button type="submit">Login</button>
+            <p className="admin-signup-link">
+              <span onClick={() => setShowSecurityModal(true)} style={{ cursor: 'pointer', textDecoration: 'underline', color: 'white' }}>
+                Don't have an account? Sign up for an Admin account
+              </span>
+            </p>
+            <p className="guest-link">
+              <Link to="/guest/login">Login as a Guest</Link>
+            </p>
+          </form>
+        </div>
       </div>
+      {showSecurityModal && (
+        <div className="security-modal">
+          <div className="security-modal-content">
+            <h2>Security Question</h2>
+            <question>What is the derivative?</question>
+            <img src={securityQuestionImage} alt="Security Question" style={{ maxWidth: '100%', borderRadius: '0.5rem', marginTop: '1rem' }} />
+            <input 
+              type="text"
+              value={securityAnswer}
+              onChange={(e) => setSecurityAnswer(e.target.value)}
+            />
+            <button type="button" onClick={handleSecuritySubmit}>Submit</button>
+            {securityError && <p className="error">{securityError}</p>}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

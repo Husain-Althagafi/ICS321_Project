@@ -95,6 +95,19 @@ input {
     
 }
 
+.form-group input {
+  padding: 0.625rem;
+  border: 2px solid #ccc;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+  background-color: #ffffff;
+  color: black;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+  width: 100%;
+  box-sizing: border-box;
+}
+
 button {
   width: 50%;
   margin-left: auto;
@@ -170,8 +183,10 @@ button:hover {
 .form-group {
   margin-bottom: 1rem;
 }
+
 .guest-link {
   text-align: center;
+  margin-top: 0rem;
 }
 
 .guest-link a {
@@ -179,4 +194,85 @@ button:hover {
   font-size: 0.75rem;
   text-decoration: underline;
   margin: auto;
+}
+
+.admin-signup-link {
+  text-align: center;
+  margin-bottom: 0rem;
+  font-size: 0.75rem;
+  color: white;
+}
+
+.admin-signup-link a {
+  text-decoration: underline;
+  margin: auto;
+}
+
+.blurred {
+  filter: blur(8px);
+  pointer-events: none;
+  user-select: none;
+}
+
+.security-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.security-modal-content {
+  background: linear-gradient(135deg, #00713d, #00934f);
+  border-radius: 1.5625rem;
+  padding: 2rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+  text-align: center;
+  width: 22rem;
+  color: white;
+}
+
+.security-modal-content input {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.625rem;
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 2px solid #ccc;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box;
+}
+
+.security-modal-content button {
+  width: 50%;
+  margin: auto;
+  padding: 0.625rem;
+  background-color: #ffffff;
+  color: rgb(0, 0, 0);
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 1.5625rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+}
+
+.security-modal-content button:hover {
+  background-color: #414141;
+  color: rgb(255, 255, 255);
+}
+
+question{
+  color: white;
+  font-size: 1.5rem;
+  text-align: center;
+  font-weight: bold;
+  text-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
 }

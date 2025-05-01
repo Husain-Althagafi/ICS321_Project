@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import "../../stylesheets/GuestLogin.css";
+import "../../stylesheets/GuestSignUp.css";
 import showPasswordIcon from '../../assets/icons/find_15067049.png';
 import hidePasswordIcon from '../../assets/icons/see_4230235.png';
 import sealImage from '../../assets/icons/KFUPM Seal White.png';
 
-function GuestLogin() {
+function GuestSignUp() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);  // State to toggle password visibility
@@ -16,7 +16,7 @@ function GuestLogin() {
   const adminUsername = 'admin';
   const adminPassword = 'password123';
 
-  const handleLogin = (e) => {
+  const handleSignUp = (e) => {
     e.preventDefault();
     if (username === adminUsername && password === adminPassword) {
       // On successful login, redirect to Admin page
@@ -36,8 +36,8 @@ function GuestLogin() {
     <div className="guest-background login-container">
       <div className="form-background">
         <img src={sealImage} alt="KFUPM Seal" className="seal-logo" />
-        <h2>KFUPM Guest Login</h2>
-        <form onSubmit={handleLogin}>
+        <header>KFUPM Guest Sign Up</header>
+        <form onSubmit={handleSignUp}>
           <div className="form-group">
             <label>Username</label>
             <input 
@@ -63,13 +63,13 @@ function GuestLogin() {
             </div>
           </div>
           {error && <p className="error">{error}</p>}
-          <button type="submit">Login</button>
-          <p className="guest-signup-link">
-            <Link to="/guest/signup">Don't have an account? Sign up</Link>
+          <button type="submit">Sign Up</button>
+          <p className="guest-login-link">
+            <Link to="/guest/login">Already have an account? Login as a Guest</Link>
           </p>
-          <p className="admin-link">
+          {/* <p className="admin-link">
             <Link to="/admin/login">Login as Admin</Link>
-          </p>
+          </p> */}
         </form>
       </div>
     </div>
@@ -77,4 +77,4 @@ function GuestLogin() {
 }
 
 
-export default GuestLogin;
+export default GuestSignUp;
