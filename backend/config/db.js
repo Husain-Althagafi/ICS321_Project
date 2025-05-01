@@ -15,3 +15,6 @@ pool.connect()
 .catch(err => {
     console.log("Error connecting to postgres database:", err)
 })
+
+
+module.exports = pool

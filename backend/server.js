@@ -2,7 +2,7 @@
 const express = require('express')
 const cors = require('cors')
 const authRoutes = require('./routes/authRoutes')
-// const adminRoutes = require('./routes/adminRoutes')
+const adminRoutes = require('./routes/adminRoutes')
 // const guestRoutes = require('./routes/guestRoutes')
 
 
@@ -19,7 +19,7 @@ app.use(cors())
 
 //Routes
 app.use('/auth', authRoutes);
-// app.use('/admin', adminRoutes);
+app.use('/admin', adminRoutes);
 // app.use('/guest', guestRoutes);
 
 
