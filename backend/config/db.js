@@ -1,4 +1,20 @@
-require('dotenv').config()
+const {Pool} = require('pg');
 
-console.log(process.env.PORT)
-const mysql = require('mysql2')
+const pool = new Pool({
+  user: 'postgres',
+  host: 'localhost',
+  database: 'tournament_db',
+  password: 'qvcfG13@@@',
+  port: 5432,
+});
+
+pool.connect()
+.then(() => {
+    console.log('Connected to postgres database')
+})
+.catch(err => {
+    console.log("Error connecting to postgres database:", err)
+})
+
+
+module.exports = pool
