@@ -5,6 +5,7 @@ import AdminHome from './pages/Admin/AdminHome';
 import GuestLogin from './pages/Guest/GuestLogin';
 import AdminSignUp from './pages/Admin/AdminSignUp';
 import GuestSignUp from './pages/Guest/GuestSignUp';
+import AddTournament from './pages/Admin/AddTournament';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/guest/login" element={<GuestLogin />} />
         <Route path="/admin/signup" element={<AdminSignUp />} />
         <Route path="/guest/signup" element={<GuestSignUp />} />
+        <Route path="/admin/add-tournament" element={<AddTournament />} />
       </Routes>
     </Router>
   );
