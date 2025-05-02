@@ -195,3 +195,9 @@ button:hover {
   text-decoration: underline;
   margin: auto;
 }
+
+
+input::placeholder {
+  font-size: 0.75rem;
+  color: #666;
+}

@@ -14,6 +14,7 @@ function AdminLogin() {
   const [showSecurityModal, setShowSecurityModal] = useState(false);
   const [securityAnswer, setSecurityAnswer] = useState('');
   const [securityError, setSecurityError] = useState('');
+  const [securityAction, setSecurityAction] = useState('');
   const navigate = useNavigate();
 
   // Predefined Admin credentials for demo purposes
@@ -23,19 +24,10 @@ function AdminLogin() {
 
   const handleLogin = (e) => {
     if (e) e.preventDefault();
-    const normalizedAnswer = securityAnswer.replace(/\s+/g, '').toLowerCase();
-    if (normalizedAnswer !== expectedSecurityAnswer) {
-      const errorMsg = 'Incorrect answer to the security question!';
-      setError(errorMsg);
-      setTimeout(() => {
-        alert(errorMsg);
-        navigate('/admin/login');
-      }, 0);
-      return;
-    }
     if (username === adminUsername && password === adminPassword) {
-      // On successful login, redirect to Admin page
-      navigate('/admin/home');
+      setSecurityAction('login');
+      setShowSecurityModal(true);
+      setError('');
     } else {
       const errorMsg = 'Invalid username or password!';
       setError(errorMsg);
@@ -52,7 +44,11 @@ function AdminLogin() {
     if (normalized === expectedSecurityAnswer) {
       setShowSecurityModal(false);
       setSecurityError('');
-      navigate('/admin/signup');
+      if (securityAction === 'signup') {
+        navigate('/admin/signup');
+      } else if (securityAction === 'login') {
+        navigate('/admin/home');
+      }
     } else {
       const errorMsg = 'Incorrect answer to the security question!';
       alert(errorMsg);
@@ -96,7 +92,10 @@ function AdminLogin() {
             {error && <p className="error">{error}</p>}
             <button type="submit">Login</button>
             <p className="admin-signup-link">
-              <span onClick={() => setShowSecurityModal(true)} style={{ cursor: 'pointer', textDecoration: 'underline', color: 'white' }}>
+              <span onClick={() => {
+                setSecurityAction('signup');
+                setShowSecurityModal(true);
+              }} style={{ cursor: 'pointer', textDecoration: 'underline', color: 'white' }}>
                 Don't have an account? Sign up for an Admin account
               </span>
             </p>
