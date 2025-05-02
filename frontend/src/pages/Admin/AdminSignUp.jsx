@@ -8,7 +8,11 @@ import sealImage from '../../assets/icons/KFUPM Seal White.png';
 function AdminSignUp() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [passwordVisible, setPasswordVisible] = useState(false);  // State to toggle password visibility
+
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -25,14 +29,33 @@ function AdminSignUp() {
       setTimeout(() => alert(errorMsg), 0);
       return;
     }
+
+    // Username validation for firstname.lastname format (all lowercase or all uppercase)
+    const usernamePattern = /^([a-z]+\.[a-z]+|[A-Z]+\.[A-Z]+)$/;
+    if (!usernamePattern.test(username.trim())) {
+      const errorMsg = 'Username must be in the format firstname.lastname (all lowercase or all uppercase)';
+      setError(errorMsg);
+      setTimeout(() => alert(errorMsg), 0);
+      return;
+    }
+    if (password !== confirmPassword) {
+      const errorMsg = 'Passwords do not match!';
+      setError(errorMsg);
+      setTimeout(() => alert(errorMsg), 0);
+      return;
+    }
     // Simulate a sign-up process (for demo, just log and redirect)
-    console.log('New admin signed up:', username);
+    alert("Sign-up successful! Redirecting to Admin login page...");
     setError('');
-    navigate('/admin/home');
+    navigate('/admin/login');
   };
 
   const togglePasswordVisibility = () => {
-    setPasswordVisible(!passwordVisible);  // Toggle the visibility of the password
+    setPasswordVisible(!passwordVisible);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setConfirmPasswordVisible(!confirmPasswordVisible);
   };
 
   return (
@@ -47,6 +70,8 @@ function AdminSignUp() {
               type="text" 
               value={username} 
               onChange={(e) => setUsername(e.target.value)} 
+
+              placeholder="Username format: firstname.lastname"
             />
           </div>
           <div className="password-container form-group">
@@ -56,12 +81,32 @@ function AdminSignUp() {
                 type={passwordVisible ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)} 
+
+                placeholder="Enter your new account's password"
               />
               <img 
                 src={passwordVisible ? hidePasswordIcon : showPasswordIcon} 
                 alt={passwordVisible ? "Hide password" : "Show password"} 
                 className="eye-icon"
                 onClick={togglePasswordVisibility}
+              />
+            </div>
+          </div>
+
+          <div className="password-container form-group">
+            <label>Confirm Password</label>
+            <div className="password-input-row">
+              <input 
+                type={confirmPasswordVisible ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)} 
+                placeholder="Confirm your password"
+              />
+              <img 
+                src={confirmPasswordVisible ? hidePasswordIcon : showPasswordIcon} 
+                alt={confirmPasswordVisible ? "Hide password" : "Show password"} 
+                className="eye-icon"
+                onClick={toggleConfirmPasswordVisibility}
               />
             </div>
           </div>

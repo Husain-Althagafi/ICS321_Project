@@ -8,28 +8,43 @@ import sealImage from '../../assets/icons/KFUPM Seal White.png';
 function GuestSignUp() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);  // State to toggle password visibility
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // Predefined Admin credentials for demo purposes
-  const adminUsername = 'admin';
-  const adminPassword = 'password123';
+  // const adminUsername = 'admin';
+  // const adminPassword = 'password123';
 
   const handleSignUp = (e) => {
     e.preventDefault();
-    if (username === adminUsername && password === adminPassword) {
-      // On successful login, redirect to Admin page
-      navigate('/guest/home');
-    } else {
-      const errorMsg = 'Invalid username or password!';
+    const usernamePattern = /^s20\d{7}$/i;
+    if (!usernamePattern.test(username.trim())) {
+      const errorMsg = 'Username must be in the format s20XXXXXXX';
       setError(errorMsg);
       setTimeout(() => alert(errorMsg), 0);
+      return;
     }
+    if (password.trim() !== confirmPassword.trim()) {
+      const errorMsg = 'Passwords do not match!';
+      setError(errorMsg);
+      setTimeout(() => alert(errorMsg), 0);
+      return;
+    }
+    // Simulate successful sign-up
+    alert("Sign-up successful! Redirecting to Guest login page...");
+    navigate('/guest/login');
   };
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);  // Toggle the visibility of the password
+  };
+
+
+  const toggleConfirmPasswordVisibility = () => {
+    setConfirmPasswordVisible(!confirmPasswordVisible);
   };
 
   return (
@@ -44,6 +59,8 @@ function GuestSignUp() {
               type="text" 
               value={username} 
               onChange={(e) => setUsername(e.target.value)} 
+
+              placeholder="For e.g. s20XXXXXXX"
             />
           </div>
           <div className="password-container form-group">
@@ -53,12 +70,32 @@ function GuestSignUp() {
                 type={passwordVisible ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)} 
+
+                placeholder="Enter your new account's password"
               />
               <img 
                 src={passwordVisible ? hidePasswordIcon : showPasswordIcon} 
                 alt={passwordVisible ? "Hide password" : "Show password"} 
                 className="eye-icon"
                 onClick={togglePasswordVisibility}
+              />
+            </div>
+          </div>
+
+          <div className="password-container form-group">
+            <label>Confirm Password</label>
+            <div className="password-input-row">
+              <input 
+                type={confirmPasswordVisible ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)} 
+                placeholder="Confirm your password"
+              />
+              <img 
+                src={confirmPasswordVisible ? hidePasswordIcon : showPasswordIcon} 
+                alt={confirmPasswordVisible ? "Hide password" : "Show password"} 
+                className="eye-icon"
+                onClick={toggleConfirmPasswordVisibility}
               />
             </div>
           </div>
