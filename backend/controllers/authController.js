@@ -45,6 +45,7 @@ exports.registerGuest = asyncHandler (async (req, res) => {
     query = `
         select * from guests where username = $1
     `
+
     const result = await db.query(query, [username])
     const guestExists = result.rows[0]
 
@@ -108,4 +109,48 @@ exports.loginGuest = asyncHandler (async (req, res) => {
         message: 'Guest logged in successfully',
         token: token
     })
+})
+
+
+exports.registerAdmin = asyncHandler (async (req, res) => {
+    const {username, password} = req.body
+
+    if (!username || !password) {
+        return res.status(400).json({error: 'Username and/or password are missing'})
+    }
+
+    query = `
+        select * from admins where username = $1
+    `
+
+    const result = await db.query(query, [username])
+    const adminExists = result.rows[0]
+
+    if (adminExists) {
+        return res.status(400).json({error: 'Username already exists'})
+    }
+
+    query = `
+        INSERT INTO admins (username, password) VALUES ($1, $2) RETURNING *
+    `
+
+    const resultAdmin = await db.query(query, [username, password])
+    const admin = resultAdmin.rows[0]
+
+    if (!admin) {
+        return res.status(400).json({error: 'Admin wasnt added correctly'})
+    }
+
+    const token = jwt.sign(
+        {id: admin.username},
+        'SuperSecretKeyLiterallyImpossibleToGuess',
+        {expiresIn:'1h'}
+    )
+
+    return res.status(200).json({
+        token: token,
+        message: 'Guest registered successfully'
+    })
+
+
 })
