@@ -20,6 +20,7 @@ const AdminHome = () => {
         </div>
         <nav>
           <ul>
+            <li onClick={() => navigate('/admin/home')}>Home</li>
             <li onClick={() => navigate('/admin/tournaments')}>Tournaments</li>
             <li onClick={() => navigate('/admin/teams')}>Teams</li>
             <li onClick={() => navigate('/admin/settings')}>Settings</li>

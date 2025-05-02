@@ -59,7 +59,7 @@
   margin-top: 0;
 }
 
-h2 {
+.form-background h2 {
   color: #ffffff;
   margin-bottom: 1.25rem;
   text-align: center;
@@ -71,7 +71,7 @@ form {
   width: 100%;
 }
 
-label {
+.form-background label {
     font-size: 0.75rem;
     margin-bottom: 0.3125rem;
     color: #ffffff;

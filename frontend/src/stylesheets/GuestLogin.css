@@ -38,7 +38,7 @@
     z-index: 1;  /* Ensure the form is above the background */
 }
 
-.form-background {
+.guest-form-background {
     background: linear-gradient(135deg, #00713d, #00934f);
     border-radius: 1.5625rem;  /* Curved corners */
     padding: 2.5rem;
@@ -51,7 +51,7 @@
     z-index: 1;  /* Ensure the form is above the background */
 }
 
-.form-background h2 {
+.guest-form-background h2 {
   margin-top: 0;
 }
 
@@ -67,7 +67,7 @@ form {
   width: 100%;
 }
 
-label {
+.guest-form-background label {
     font-size: 0.75rem;
     margin-bottom: 0.3125rem;
     color: #ffffff;

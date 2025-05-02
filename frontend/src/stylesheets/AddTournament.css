@@ -106,7 +106,7 @@
   margin-bottom: 1rem;
 }
 
-h2 {
+.tournament-form h2 {
   font-size: 2rem;
   color: black;
   text-shadow: none;
@@ -205,12 +205,12 @@ h2 {
   pointer-events: none;
 }
 .AddTournament.css
-form,
-form label,
-form input,
-form select,
-form textarea,
-form button {
+.form-container form,
+.form-container form label,
+.form-container form input,
+.form-container form select,
+.form-container form textarea,
+.form-container form button {
   color: black;
 }
 

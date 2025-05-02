@@ -34,7 +34,7 @@ function GuestLogin() {
 
   return (
     <div className="guest-background login-container">
-      <div className="form-background">
+      <div className="guest-form-background">
         <img src={sealImage} alt="KFUPM Seal" className="seal-logo" />
         <h2>KFUPM Guest Login</h2>
         <form onSubmit={handleLogin}>
