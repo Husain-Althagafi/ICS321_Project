@@ -230,3 +230,10 @@ form button {
   grid-template-columns: 1fr;
   gap: 1.5rem;
 }
+.form-error {
+    color: red;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 0rem;
+    margin-bottom: 0rem;
+}

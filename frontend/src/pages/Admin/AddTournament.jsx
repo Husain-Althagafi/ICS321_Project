@@ -18,16 +18,41 @@ const AddTournament = () => {
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+
+  // Calculate nextId dynamically based on tournaments state
+  const nextId = Math.max(0, ...tournaments.map(t => t.id || 0)) + 1;
 
   const handleAddTournament = (e) => {
     e.preventDefault();
-    const newTournament = { name, startDate, endDate };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // normalize to midnight
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (start < today || end < today) {
+      const msg = 'Start and End dates must be today or in the future!';
+      setErrorMsg(msg);
+      setTimeout(() => alert(msg), 0);
+      return;
+    }
+
+    if (end <= start) {
+      const msg = 'End date must be after Start date!';
+      setErrorMsg(msg);
+      setTimeout(() => alert(msg), 0);
+      return;
+    }
+
+    const newTournament = { id: nextId, name, startDate, endDate };
     const updated = [...tournaments, newTournament];
     setTournaments(updated);
     localStorage.setItem('tournaments', JSON.stringify(updated));
     setName('');
     setStartDate('');
     setEndDate('');
+    setErrorMsg('');
     alert('Tournament added!');
   };
 
@@ -64,7 +89,7 @@ const AddTournament = () => {
                 Tournament ID:
                 <input
                   type="text"
-                  value={Math.max(0, ...tournaments.map(t => t.id || 0)) + 1}
+                  value={nextId}
                   disabled
                   style={{ backgroundColor: '#f0f0f0', cursor: 'not-allowed' }}
                 />
@@ -81,6 +106,7 @@ const AddTournament = () => {
                 End Date:
                 <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
               </label>
+              {errorMsg && <p className="form-error">{errorMsg}</p>}
               <button type="submit">Add Tournament</button>
             </form>
           </div>
