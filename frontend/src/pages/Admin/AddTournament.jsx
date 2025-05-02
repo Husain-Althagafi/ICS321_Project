@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from '../../assets/images/Illustration 1@4x.png';
 import '../../stylesheets/AddTournament.css';
+import AdminSidebar from '../../components/AdminSidebar';
 
 const AddTournament = () => {
   const navigate = useNavigate();
@@ -58,21 +59,7 @@ const AddTournament = () => {
 
   return (
     <div className="admin-home">
-      <aside className="sidebar">
-        <div className="profile-wrapper">
-          <div className="profile">{initials}</div>
-          <div className="admin-name">{formattedName}</div>
-        </div>
-        <nav>
-          <ul>
-            <li onClick={() => navigate('/admin/home')}>Home</li>
-            <li onClick={() => navigate('/admin/tournaments')}>Tournaments</li>
-            <li onClick={() => navigate('/admin/teams')}>Teams</li>
-            <li onClick={() => navigate('/admin/settings')}>Settings</li>
-            <li onClick={() => navigate('/admin/login')}>Logout</li>
-          </ul>
-        </nav>
-      </aside>
+      <AdminSidebar initials={initials} formattedName={formattedName} />
 
       <main className="main-content">
         <div className="bg-overlay"></div>

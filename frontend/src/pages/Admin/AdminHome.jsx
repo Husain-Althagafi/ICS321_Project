@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import AdminSidebar from '../../components/AdminSidebar.jsx';
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from '../../assets/images/Illustration 1@4x.png';
 import '../../stylesheets/AdminHome.css';
@@ -13,21 +14,7 @@ const AdminHome = () => {
 
   return (
     <div className="admin-home">
-      <aside className="sidebar">
-        <div className="profile-wrapper">
-          <div className="profile">{initials}</div>
-          <div className="admin-name">{formattedName}</div>
-        </div>
-        <nav>
-          <ul>
-            <li onClick={() => navigate('/admin/home')}>Home</li>
-            <li onClick={() => navigate('/admin/tournaments')}>Tournaments</li>
-            <li onClick={() => navigate('/admin/teams')}>Teams</li>
-            <li onClick={() => navigate('/admin/settings')}>Settings</li>
-            <li onClick={() => navigate('/admin/login')}>Logout</li>
-          </ul>
-        </nav>
-      </aside>
+      <AdminSidebar initials={initials} formattedName={formattedName} />
 
       <main className="main-content">
         <div className="bg-overlay"></div>
@@ -42,8 +29,8 @@ const AdminHome = () => {
           <div className="app-grid">
             <div className="app-item" onClick={() => navigate('/admin/add-tournament')}>Add new tournament</div>
             <div className="app-item" onClick={() => navigate('/admin/add-team')}>Add new team</div>
-            <div className="app-item" onClick={() => navigate('/admin/update-score')}>Update match score</div>
             <div className="app-item" onClick={() => navigate('/admin/delete-tournament')}>Delete tournament</div>
+            <div className="app-item" onClick={() => navigate('/admin/update-score')}>Update match score</div>
           </div>
         </section>
         {/* <img 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AdminSidebar from '../../components/AdminSidebar';
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from '../../assets/images/Illustration 1@4x.png';
 import '../../stylesheets/AddTournament.css';
@@ -15,100 +16,74 @@ const AddTeam = () => {
     const stored = localStorage.getItem('tournaments');
     return stored ? JSON.parse(stored) : [];
   });
-  const [name, setName] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [teams, setTeams] = useState(() => {
+    const stored = localStorage.getItem('teams');
+    return stored ? JSON.parse(stored) : [];
+  });
+  const [teamName, setTeamName] = useState('');
+  const [coachName, setCoachName] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Calculate nextId dynamically based on tournaments state
-  const nextId = Math.max(0, ...tournaments.map(t => t.id || 0)) + 1;
+  const nextTeamId = Math.max(0, ...teams.map(t => t.team_id || 0)) + 1;
 
-  const handleAddTournament = (e) => {
+  const handleAddTeam = (e) => {
     e.preventDefault();
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // normalize to midnight
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (start < today || end < today) {
-      const msg = 'Start and End dates must be today or in the future!';
+    if (!teamName || !coachName) {
+      const msg = 'All fields are required.';
       setErrorMsg(msg);
       setTimeout(() => alert(msg), 0);
       return;
     }
 
-    if (end <= start) {
-      const msg = 'End date must be after Start date!';
-      setErrorMsg(msg);
-      setTimeout(() => alert(msg), 0);
-      return;
-    }
-
-    const newTournament = { id: nextId, name, startDate, endDate };
-    const updated = [...tournaments, newTournament];
-    setTournaments(updated);
-    localStorage.setItem('tournaments', JSON.stringify(updated));
-    setName('');
-    setStartDate('');
-    setEndDate('');
+    const newTeam = {
+      team_id: nextTeamId,
+      team_name: teamName,
+      coach_name: coachName
+    };
+    const updated = [...teams, newTeam];
+    setTeams(updated);
+    localStorage.setItem('teams', JSON.stringify(updated));
+    setTeamName('');
+    setCoachName('');
     setErrorMsg('');
-    alert('Tournament added!');
+    alert('Team added!');
   };
 
   return (
     <div className="admin-home">
-      <aside className="sidebar">
-        <div className="profile-wrapper">
-          <div className="profile">{initials}</div>
-          <div className="admin-name">{formattedName}</div>
-        </div>
-        <nav>
-          <ul>
-            <li onClick={() => navigate('/admin/home')}>Home</li>
-            <li onClick={() => navigate('/admin/tournaments')}>Tournaments</li>
-            <li onClick={() => navigate('/admin/teams')}>Teams</li>
-            <li onClick={() => navigate('/admin/settings')}>Settings</li>
-            <li onClick={() => navigate('/admin/login')}>Logout</li>
-          </ul>
-        </nav>
-      </aside>
+      <AdminSidebar initials={initials} formattedName={formattedName} />
 
       <main className="main-content">
         <div className="bg-overlay"></div>
         <header className="topbar">
           <h1>
-            Add a new tournament
+            Add a new team
           </h1>
         </header>
 
         <section className="tournament-form">
-            <h2>Tournament Details</h2>
           <div className="form-container">
-            <form onSubmit={handleAddTournament} className="form-grid">
+            <h2>Team Details</h2>
+            <form onSubmit={handleAddTeam} className="form-grid">
               <label>
-                Tournament ID:
+                Team ID:
                 <input
                   type="text"
-                  value={nextId}
+                  value={nextTeamId}
                   disabled
                   style={{ backgroundColor: '#f0f0f0', cursor: 'not-allowed' }}
                 />
               </label>
               <label>
-                Tournament Name:
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+                Team Name:
+                <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} required />
               </label>
               <label>
-                Start Date:
-                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
-              </label>
-              <label>
-                End Date:
-                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
+                Coach Name:
+                <input type="text" value={coachName} onChange={(e) => setCoachName(e.target.value)} required />
               </label>
               {errorMsg && <p className="form-error">{errorMsg}</p>}
-              <button type="submit">Add Tournament</button>
+              <button type="submit">Add Team</button>
             </form>
           </div>
         </section>

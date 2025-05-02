@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+/* Sidebar styling */
+.sidebar {
+    width: 11rem;
+    background-color: #3B774D;
+    color: white;
+    padding: 2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(135deg, #00713d, #00934f);
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  .sidebar .profile {
+    background-color: white;
+    color: black;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 4rem;
+    height: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* margin-bottom: 2rem; */
+    font-size: 1.25rem;
+    object-fit: cover;
+    overflow: hidden;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.3);
+  }
+  
+  .sidebar .profile img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    text-shadow: 0 0.15rem 0.25rem rgba(0, 0, 0, 0.3);
+  }
+  
+  .admin-name {
+    color: white;
+    font-weight: bold;
+    font-size: 1.35rem;
+    margin-top: 0.5rem;
+    text-align: center;
+    text-shadow: 0 0.15rem 0.25rem rgba(0, 0, 0, 0.3);
+  }
+  
+  .sidebar nav ul {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+  }
+  
+  .sidebar nav ul li {
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    color: white;
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.25);
+  }
+  
+  .sidebar nav ul li:hover {
+    background-color: #1b4332;
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
+  }
