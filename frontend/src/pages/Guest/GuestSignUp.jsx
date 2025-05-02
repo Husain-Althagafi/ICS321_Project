@@ -8,6 +8,7 @@ import sealImage from '../../assets/icons/KFUPM Seal White.png';
 function GuestSignUp() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);  // State to toggle password visibility
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
@@ -41,6 +42,7 @@ function GuestSignUp() {
     setPasswordVisible(!passwordVisible);  // Toggle the visibility of the password
   };
 
+
   const toggleConfirmPasswordVisibility = () => {
     setConfirmPasswordVisible(!confirmPasswordVisible);
   };
@@ -57,6 +59,7 @@ function GuestSignUp() {
               type="text" 
               value={username} 
               onChange={(e) => setUsername(e.target.value)} 
+
               placeholder="For e.g. s20XXXXXXX"
             />
           </div>
@@ -67,6 +70,7 @@ function GuestSignUp() {
                 type={passwordVisible ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)} 
+
                 placeholder="Enter your new account's password"
               />
               <img 
@@ -77,6 +81,7 @@ function GuestSignUp() {
               />
             </div>
           </div>
+
           <div className="password-container form-group">
             <label>Confirm Password</label>
             <div className="password-input-row">

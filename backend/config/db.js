@@ -1,6 +1,6 @@
 const {Pool} = require('pg');
 
-const pool = new Pool({
+const db = new Pool({
   user: 'postgres',
   host: 'localhost',
   database: 'tournament_db',
@@ -8,7 +8,7 @@ const pool = new Pool({
   port: 5432,
 });
 
-pool.connect()
+db.connect()
 .then(() => {
     console.log('Connected to postgres database')
 })
@@ -17,4 +17,4 @@ pool.connect()
 })
 
 
-module.exports = pool
+module.exports = db

@@ -4,6 +4,7 @@ import "../../stylesheets/AdminLogin.css";
 import showPasswordIcon from '../../assets/icons/find_15067049.png';
 import hidePasswordIcon from '../../assets/icons/see_4230235.png';
 import sealImage from '../../assets/icons/KFUPM Seal White.png';
+
 import securityQuestionImage from '../../assets/images/security-question.png';
 
 function AdminLogin() {
@@ -11,6 +12,7 @@ function AdminLogin() {
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);  // State to toggle password visibility
   const [error, setError] = useState('');
+
   const [showSecurityModal, setShowSecurityModal] = useState(false);
   const [securityAnswer, setSecurityAnswer] = useState('');
   const [securityError, setSecurityError] = useState('');
@@ -20,6 +22,7 @@ function AdminLogin() {
   // Predefined Admin credentials for demo purposes
   const adminUsername = 'admin';
   const adminPassword = 'password123';
+
   const expectedSecurityAnswer = '0';
 
   const handleLogin = (e) => {
@@ -38,6 +41,7 @@ function AdminLogin() {
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);  // Toggle the visibility of the password
   };
+
 
   const handleSecuritySubmit = () => {
     const normalized = securityAnswer.replace(/\s+/g, '').toLowerCase();
