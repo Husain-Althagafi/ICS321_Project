@@ -8,9 +8,11 @@ import sealImage from '../../assets/icons/KFUPM Seal White.png';
 function AdminSignUp() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -27,6 +29,7 @@ function AdminSignUp() {
       setTimeout(() => alert(errorMsg), 0);
       return;
     }
+
     // Username validation for firstname.lastname format (all lowercase or all uppercase)
     const usernamePattern = /^([a-z]+\.[a-z]+|[A-Z]+\.[A-Z]+)$/;
     if (!usernamePattern.test(username.trim())) {
@@ -67,6 +70,7 @@ function AdminSignUp() {
               type="text" 
               value={username} 
               onChange={(e) => setUsername(e.target.value)} 
+
               placeholder="Username format: firstname.lastname"
             />
           </div>
@@ -77,6 +81,7 @@ function AdminSignUp() {
                 type={passwordVisible ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)} 
+
                 placeholder="Enter your new account's password"
               />
               <img 
@@ -87,6 +92,7 @@ function AdminSignUp() {
               />
             </div>
           </div>
+
           <div className="password-container form-group">
             <label>Confirm Password</label>
             <div className="password-input-row">

@@ -64,6 +64,7 @@ function GuestLogin() {
           </div>
           {error && <p className="error">{error}</p>}
           <button type="submit">Login</button>
+
           <p className="guest-signup-link">
             <Link to="/guest/signup">Don't have an account? Sign up</Link>
           </p>

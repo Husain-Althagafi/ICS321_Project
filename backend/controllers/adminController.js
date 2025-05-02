@@ -1,5 +1,5 @@
 const asyncHandler = require('../middleware/asyncHandler')
-const pool = require('../config/db')
+const db = require('../config/db')
 
 exports.addTournament = asyncHandler( async (req, res) => {
     const {tr_id, tr_name, start_date, end_date} = req.body
@@ -14,7 +14,7 @@ exports.addTournament = asyncHandler( async (req, res) => {
     RETURNING *;
     `
     try {
-        const result = await pool.query(query, [tr_id, tr_name, start_date, end_date])
+        const result = await db.query(query, [tr_id, tr_name, start_date, end_date])
         return res.status(200).json({data: result.rows[0]})
     }
     
@@ -38,7 +38,7 @@ exports.addTeamToTournament = asyncHandler( async (req, res) => {
     `
 
     try {
-        const result = await pool.query(query, [team_id, tr_id, team_group])
+        const result = await db.query(query, [team_id, tr_id, team_group])
         return res.status(200).json({data: result.rows[0]})
     }
 
@@ -59,7 +59,7 @@ exports.selectCaptain = asyncHandler ( async (req, res) => {
         return res.status(400).json({error: 'Required values missing'})
     }
 
-    const captain = await pool.query(
+    const captain = await db.query(
         `select * from team_players where player_id = $1 and team_id = $2 and tr_id = $3`,
         [player_id, team_id, tr_id]
     )
@@ -68,7 +68,7 @@ exports.selectCaptain = asyncHandler ( async (req, res) => {
         return res.status(404).json({error: 'Player not part of the team for the specified tournament'})
     }
 
-    await pool.query(
+    await db.query(
         `update match_captain set player_captain = $1 where team_id = $2 and match_no = $3`,
         [player_id, team_id, match_id]
     )
@@ -87,7 +87,7 @@ exports.approvePlayerToTeam = asyncHandler (async (req, res) => {
         return res.status(400).json({error: 'Required values missing'})
     }
 
-    const player = await pool.query(
+    const player = await db.query(
         `select * from player where player_id = $1`,
         [player_id]
     )
@@ -96,7 +96,7 @@ exports.approvePlayerToTeam = asyncHandler (async (req, res) => {
         return res.status(400).json({error: 'Player doesnt exist'})
     }
 
-    const team = await pool.query(
+    const team = await db.query(
         `select * from team where team_id = $1`,
         [team_id]
     )
@@ -105,7 +105,7 @@ exports.approvePlayerToTeam = asyncHandler (async (req, res) => {
         return res.status(400).json({error: 'Team doesnt exist'})
     }
 
-    const tournament = await pool.query(
+    const tournament = await db.query(
         `select * from tournament where tr_id = $1`,
         [tr_id]
     )

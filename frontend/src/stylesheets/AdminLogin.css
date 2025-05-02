@@ -95,6 +95,7 @@ input {
     
 }
 
+
 .form-group input {
   padding: 0.625rem;
   border: 2px solid #ccc;
@@ -184,6 +185,7 @@ button:hover {
   margin-bottom: 1rem;
 }
 
+
 .guest-link {
   text-align: center;
   margin-top: 0rem;
@@ -194,6 +196,7 @@ button:hover {
   font-size: 0.75rem;
   text-decoration: underline;
   margin: auto;
+
 }
 
 .admin-signup-link {
