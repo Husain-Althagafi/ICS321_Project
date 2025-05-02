@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from '../../assets/images/Illustration 1@4x.png';
-import '../../stylesheets/AdminHome.css';
+import '../../stylesheets/AddTournament.css';
 
 const AddTournament = () => {
   const navigate = useNavigate();
@@ -10,6 +10,26 @@ const AddTournament = () => {
   const [first, last] = username.split('.');
   const initials = `${first[0]}${last[0]}`.toUpperCase();
   const formattedName = `${first.charAt(0).toUpperCase() + first.slice(1)} ${last.charAt(0).toUpperCase() + last.slice(1)}`;
+
+  const [tournaments, setTournaments] = useState(() => {
+    const stored = localStorage.getItem('tournaments');
+    return stored ? JSON.parse(stored) : [];
+  });
+  const [name, setName] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
+  const handleAddTournament = (e) => {
+    e.preventDefault();
+    const newTournament = { name, startDate, endDate };
+    const updated = [...tournaments, newTournament];
+    setTournaments(updated);
+    localStorage.setItem('tournaments', JSON.stringify(updated));
+    setName('');
+    setStartDate('');
+    setEndDate('');
+    alert('Tournament added!');
+  };
 
   return (
     <div className="admin-home">
@@ -36,13 +56,33 @@ const AddTournament = () => {
           </h1>
         </header>
 
-        <section className="applications">
-          <h2>Quick Tools</h2>
-          <div className="app-grid">
-            <div className="app-item" onClick={() => navigate('/admin/add-tournament')}>Add new tournament</div>
-            <div className="app-item" onClick={() => navigate('/admin/add-team')}>Add new team</div>
-            <div className="app-item" onClick={() => navigate('/admin/update-score')}>Update match score</div>
-            <div className="app-item" onClick={() => navigate('/admin/delete-tournament')}>Delete tournament</div>
+        <section className="tournament-form">
+            <h2>Tournament Details</h2>
+          <div className="form-container">
+            <form onSubmit={handleAddTournament} className="form-grid">
+              <label>
+                Tournament ID:
+                <input
+                  type="text"
+                  value={Math.max(0, ...tournaments.map(t => t.id || 0)) + 1}
+                  disabled
+                  style={{ backgroundColor: '#f0f0f0', cursor: 'not-allowed' }}
+                />
+              </label>
+              <label>
+                Tournament Name:
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+              </label>
+              <label>
+                Start Date:
+                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
+              </label>
+              <label>
+                End Date:
+                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
+              </label>
+              <button type="submit">Add Tournament</button>
+            </form>
           </div>
         </section>
         {/* <img 

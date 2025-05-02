@@ -20,10 +20,10 @@ const AdminHome = () => {
         </div>
         <nav>
           <ul>
-            <li>Tournaments</li>
-            <li>Teams</li>
-            <li>Settings</li>
-            <li>Logout</li>
+            <li onClick={() => navigate('/admin/tournaments')}>Tournaments</li>
+            <li onClick={() => navigate('/admin/teams')}>Teams</li>
+            <li onClick={() => navigate('/admin/settings')}>Settings</li>
+            <li onClick={() => navigate('/admin/login')}>Logout</li>
           </ul>
         </nav>
       </aside>
