@@ -50,7 +50,7 @@ useEffect(() => {
                   <button
                     type="button"
                     className="edit-button"
-                    onClick={() => navigate(`/teams/${team.team_id}/edit`)}
+                    onClick={() => navigate(`/admin/teams/${team.team_id}/edit`)}
                   >
                     Edit
                   </button>
