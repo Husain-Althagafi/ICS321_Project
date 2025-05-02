@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import bgImage from '../../assets/images/Illustration 1@4x.png';
 import '../../stylesheets/AddTournament.css';
 
-const AddTournament = () => {
+const AddTeam = () => {
   const navigate = useNavigate();
   const username = 'john.doe'; // Replace with actual dynamic source later
   const [first, last] = username.split('.');
@@ -122,4 +122,4 @@ const AddTournament = () => {
   );
 };
 
-export default AddTournament;
+export default AddTeam;

@@ -5,6 +5,7 @@ import GuestLogin from './pages/Guest/GuestLogin';
 import AdminSignUp from './pages/Admin/AdminSignUp';
 import GuestSignUp from './pages/Guest/GuestSignUp';
 import AddTournament from './pages/Admin/AddTournament';
+import AddTeam from './pages/Admin/AddTeam';
 
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <Route path="/admin/signup" element={<AdminSignUp />} />
         <Route path="/guest/signup" element={<GuestSignUp />} />
         <Route path="/admin/add-tournament" element={<AddTournament />} />
+        <Route path="/admin/add-team" element={<AddTeam />} />
       </Routes>
     </Router>
   );
