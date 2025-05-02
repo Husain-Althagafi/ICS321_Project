@@ -37,7 +37,7 @@ const AdminHome = () => {
         </header>
 
         <section className="applications">
-          <h2>Admin Tools</h2>
+          <h2>Quick Tools</h2>
           <div className="app-grid">
             <div className="app-item" onClick={() => navigate('/admin/add-tournament')}>Add new tournament</div>
             <div className="app-item" onClick={() => navigate('/admin/add-team')}>Add new team</div>
