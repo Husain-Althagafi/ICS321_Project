@@ -8,6 +8,9 @@ import AddTournament from './pages/Admin/AddTournament';
 import AddTeam from './pages/Admin/AddTeam';
 import Teams from './pages/Admin/Teams';
 import EditTeam from './pages/Admin/EditTeam';
+import Tournaments from './pages/Admin/Tournaments';
+import EditTournament from './pages/Admin/EditTournament';
+import DeleteTournaments from './pages/Admin/DeleteTournaments';
 
 
 function App() {
@@ -24,6 +27,9 @@ function App() {
         <Route path="/admin/add-team" element={<AddTeam />} />
         <Route path="/admin/teams" element={<Teams />} />
         <Route path="/admin/teams/:teamId/edit" element={<EditTeam />} />
+        <Route path="/admin/tournaments" element={<Tournaments />} />
+        <Route path="/admin/tournaments/:tournamentId/edit" element={<EditTournament />} />
+        <Route path="/admin/delete-tournament" element={<DeleteTournaments />} />
       </Routes>
     </Router>
   );

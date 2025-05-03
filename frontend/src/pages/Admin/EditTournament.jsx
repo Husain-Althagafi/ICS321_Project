@@ -1,25 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AdminSidebar from '../../components/AdminSidebar';
-import DeleteTeamButton from '../../components/DeleteTeamButton';
+import DeleteTournamentButton from '../../components/DeleteTournamentButton';
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from '../../assets/images/Illustration 1@4x.png';
-import '../../stylesheets/EditTeam.css';
+import '../../stylesheets/EditTournament.css';
 
-const EditTeam = () => {
+const EditTournament = () => {
   const navigate = useNavigate();
-  const { teamId } = useParams();
+  const { tournamentId } = useParams();
   const username = 'john.doe'; // Replace with actual dynamic source later
   const [first, last] = username.split('.');
   const initials = `${first[0]}${last[0]}`.toUpperCase();
   const formattedName = `${first.charAt(0).toUpperCase() + first.slice(1)} ${last.charAt(0).toUpperCase() + last.slice(1)}`;
 
-  const [teams, setTeams] = useState(() => {
-    const stored = localStorage.getItem('teams');
+  const [tournaments, setTournaments] = useState(() => {
+    const stored = localStorage.getItem('tournaments');
     return stored ? JSON.parse(stored) : [];
   });
-  const [teamName, setTeamName] = useState('');
-  const [coachName, setCoachName] = useState('');
+  const [tournamentName, setTournamentName] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [players, setPlayers] = useState([]);
   const [newPlayer, setNewPlayer] = useState('');
@@ -28,33 +29,34 @@ const EditTeam = () => {
   const [playerError, setPlayerError] = useState('');
 
   useEffect(() => {
-    const storedTeams = JSON.parse(localStorage.getItem('teams')) || [];
-    const team = storedTeams.find(t => String(t.team_id) === teamId);
-    if (team) {
-      setTeamName(team.team_name);
-      setCoachName(team.coach_name);
-      setTeams(storedTeams);
-      setPlayers(team.players || []);
+    const storedTournaments = JSON.parse(localStorage.getItem('tournaments')) || [];
+    const tournament = storedTournaments.find(t => String(t.id) === tournamentId);
+    if (tournament) {
+      setTournamentName(tournament.name);
+      setStartDate(tournament.startDate);
+      setEndDate(tournament.endDate);
+      setTournaments(storedTournaments);
+      setPlayers(tournament.players || []);
     } else {
-      navigate('/admin/teams');
+      navigate('/admin/tournaments');
     }
-  }, [teamId, navigate]);
+  }, [tournamentId, navigate]);
 
   const handleUpdateTeam = (e) => {
     e.preventDefault();
-    if (!teamName || !coachName) {
+    if (!tournamentName || !startDate || !endDate) {
       const msg = 'All fields are required.';
       setErrorMsg(msg);
       setTimeout(() => alert(msg), 0);
       return;
     }
-    const updatedTeams = teams.map(t =>
-      String(t.team_id) === teamId
-        ? { ...t, team_name: teamName, coach_name: coachName, players }
+    const updatedTournaments = tournaments.map(t =>
+      String(t.id) === tournamentId
+        ? { ...t, name: tournamentName, startDate, endDate, players }
         : t
     );
-    localStorage.setItem('teams', JSON.stringify(updatedTeams));
-    navigate('/admin/teams');
+    localStorage.setItem('tournaments', JSON.stringify(updatedTournaments));
+    navigate('/admin/tournaments');
   };
 
   const handleAddPlayer = () => {
@@ -63,13 +65,13 @@ const EditTeam = () => {
     setNewPlayer('');
   };
 
-  const handleDeleteTeam = () => {
-    const confirmDelete = window.confirm('Are you sure you want to delete this team?');
+  const handleDeleteTournament = () => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this tournament?');
     if (!confirmDelete) return;
 
-    const updatedTeams = teams.filter(t => String(t.team_id) !== teamId);
-    localStorage.setItem('teams', JSON.stringify(updatedTeams));
-    navigate('/admin/teams');
+    const updatedTournaments = tournaments.filter(t => String(t.id) !== tournamentId);
+    localStorage.setItem('tournaments', JSON.stringify(updatedTournaments));
+    navigate('/admin/tournaments');
   };
 
   return (
@@ -80,37 +82,41 @@ const EditTeam = () => {
         <div className="bg-overlay"></div>
         <header className="topbar">
           <h1>
-            Edit Team
+            Edit Tournament
           </h1>
         </header>
 
         <section className="tournament-form">
           <div className="form-container">
-            <h2>Team Details</h2>
+            <h2>Tournament Details</h2>
             <div className="edit-team-content">
             <form onSubmit={handleUpdateTeam} className="form-grid">
               <label>
-                Team ID:
+                Tournament ID:
                 <input
                   type="text"
-                  value={teamId}
+                  value={tournamentId}
                   disabled
                   style={{ backgroundColor: '#f0f0f0', cursor: 'not-allowed' }}
                 />
               </label>
               <label>
-                Team Name:
-                <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} required />
+                Tournament Name:
+                <input type="text" value={tournamentName} onChange={(e) => setTournamentName(e.target.value)} required />
               </label>
               <label>
-                Coach Name:
-                <input type="text" value={coachName} onChange={(e) => setCoachName(e.target.value)} required />
+                Start Date:
+                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
+              </label>
+              <label>
+                End Date:
+                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
               </label>
               {errorMsg && <p className="form-error">{errorMsg}</p>}
               <button type="submit">Save Changes</button>
             </form>
             <div className="players-list" style={{ display: 'flex', flexDirection: 'column', height: '40vh' }}>
-              <label>Players</label>
+              <label>Matches</label>
               <ul style={{ flexGrow: 1, overflowY: 'auto' }}>
                 {players.map((p, idx) => (
                   <li key={idx}>
@@ -121,12 +127,12 @@ const EditTeam = () => {
               </ul>
               <div className="add-player" style={{ flexShrink: 0 }}>
                 <button type="button" onClick={() => setShowPlayerModal(true)}>
-                  Add Player
+                  Add Match
                 </button>
               </div>
             </div>
             </div>
-            <DeleteTeamButton onClick={handleDeleteTeam} />
+            <DeleteTournamentButton onClick={handleDeleteTournament} />
           </div>
         </section>
         {/* <img 
@@ -157,11 +163,11 @@ const EditTeam = () => {
               &times;
             </button>
             <h2>Add New Player</h2>
-            <label>Team ID
+            <label>Tournament ID
             <input
               type="text"
-              placeholder="Team ID"
-              value={teamId}
+              placeholder="Tournament ID"
+              value={tournamentId}
               disabled
             />
             </label>
@@ -263,4 +269,4 @@ const EditTeam = () => {
   );
 };
 
-export default EditTeam;
+export default EditTournament;

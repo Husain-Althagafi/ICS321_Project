@@ -14,19 +14,27 @@ const Teams = () => {
 
   const [teams, setTeams] = useState([]);
 
-useEffect(() => {
-  const loadTeams = () => {
-    const stored = localStorage.getItem('teams');
-    if (stored) {
-      setTeams(JSON.parse(stored));
-    }
+  useEffect(() => {
+    const loadTeams = () => {
+      const stored = localStorage.getItem('teams');
+      if (stored) {
+        setTeams(JSON.parse(stored));
+      }
+    };
+
+    loadTeams(); // Load initially
+
+    window.addEventListener('focus', loadTeams);
+    return () => window.removeEventListener('focus', loadTeams);
+  }, []);
+
+  const handleDeleteTeam = (teamId) => {
+    const confirmed = window.confirm('Are you sure you want to delete this team?');
+    if (!confirmed) return;
+    const updated = teams.filter(t => String(t.team_id) !== String(teamId));
+    localStorage.setItem('teams', JSON.stringify(updated));
+    setTeams(updated);
   };
-
-  loadTeams(); // Load initially
-
-  window.addEventListener('focus', loadTeams);
-  return () => window.removeEventListener('focus', loadTeams);
-}, []);
 
   return (
     <div className="admin-home">
@@ -45,8 +53,12 @@ useEffect(() => {
             {teams.length > 0 ? (
               teams.map(team => (
                 <div key={team.team_id} className="team-card">
-                  <h3>Team Name: {team.team_name}</h3>
-                  <p><strong>Coach:</strong> {team.coach_name}</p>
+                  <div className= "team-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h3 style={{ margin: 0 }}>
+                      Team Name: <span className="team-name-gradient">{team.team_name}</span>
+                    </h3>
+                  </div>
+                  <p><strong>Team ID:</strong> {team.team_id}</p>
                   <button
                     type="button"
                     className="edit-button"
@@ -57,7 +69,7 @@ useEffect(() => {
                 </div>
               ))
             ) : (
-              <p>No teams have been registered yet.</p>
+              <p style={{color:'black'}}>No teams have been registered yet.</p>
             )}
           </div>
         </section>
