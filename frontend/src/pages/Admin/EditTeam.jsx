@@ -20,6 +20,7 @@ const EditTeam = () => {
   });
   const [teamName, setTeamName] = useState('');
   const [coachName, setCoachName] = useState('');
+  const [managerName, setManagerName] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [players, setPlayers] = useState([]);
   const [newPlayer, setNewPlayer] = useState('');
@@ -36,6 +37,7 @@ const EditTeam = () => {
     if (team) {
       setTeamName(team.team_name);
       setCoachName(team.coach_name);
+      setManagerName(team.manager_name || '');
       setTeams(storedTeams);
       setPlayers(team.players || []);
     } else {
@@ -45,7 +47,7 @@ const EditTeam = () => {
 
   const handleUpdateTeam = (e) => {
     e.preventDefault();
-    if (!teamName || !coachName) {
+    if (!teamName || !coachName || !managerName) {
       const msg = 'All fields are required.';
       setErrorMsg(msg);
       setTimeout(() => alert(msg), 0);
@@ -53,7 +55,7 @@ const EditTeam = () => {
     }
     const updatedTeams = teams.map(t =>
       String(t.team_id) === teamId
-        ? { ...t, team_name: teamName, coach_name: coachName, players }
+        ? { ...t, team_name: teamName, coach_name: coachName, manager_name: managerName, players }
         : t
     );
     localStorage.setItem('teams', JSON.stringify(updatedTeams));
@@ -108,6 +110,10 @@ const EditTeam = () => {
               <label>
                 Coach Name:
                 <input type="text" value={coachName} onChange={(e) => setCoachName(e.target.value)} required />
+              </label>
+              <label>
+                Manager Name:
+                <input type="text" value={managerName} onChange={e => setManagerName(e.target.value)} required />
               </label>
               {errorMsg && <p className="form-error">{errorMsg}</p>}
               <button type="submit">Save Changes</button>

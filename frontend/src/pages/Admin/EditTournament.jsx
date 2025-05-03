@@ -37,9 +37,23 @@ const EditTournament = () => {
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [viewMatchModal, setViewMatchModal] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(null);
-  const [matchDetails, setMatchDetails] = useState({ id: '', teamA: '', teamB: '', date: '', time: '' });
+  const [matchDetails, setMatchDetails] = useState({
+    id: '',
+    teamA: '',
+    teamB: '',
+    date: '',
+    startTime: '',
+    endTime: '',
+    captainA: '',
+    captainB: ''
+  });
   const isEditing = Boolean(matchDetails.id);
   const [availableTeams, setAvailableTeams] = useState([]);
+  // Helper to retrieve a team's player roster
+  const getTeamPlayers = (teamId) => {
+    const team = availableTeams.find(t => String(t.team_id) === String(teamId));
+    return team?.players || [];
+  };
 
   useEffect(() => {
     const storedTournaments = JSON.parse(localStorage.getItem('tournaments')) || [];
@@ -54,6 +68,22 @@ const EditTournament = () => {
       setTournaments(storedTournaments);
       setPlayers(tournament.players || []);
       setMatches(tournament.matches || []);
+      // Initialize persistent match counter if missing
+      if (tournament.lastMatchNumber == null) {
+        const existing = tournament.matches || [];
+        const maxSuffix = existing.reduce((max, m) => {
+          const parts = m.id.split('_');
+          const num = parseInt(parts[1], 10);
+          return Math.max(max, isNaN(num) ? 0 : num);
+        }, 0);
+        tournament.lastMatchNumber = maxSuffix;
+        // Update tournaments array and persist
+        const updatedAll = storedTournaments.map(t =>
+          String(t.id) === tournamentId ? { ...t, lastMatchNumber: maxSuffix } : t
+        );
+        localStorage.setItem('tournaments', JSON.stringify(updatedAll));
+        setTournaments(updatedAll);
+      }
     } else {
       navigate('/admin/tournaments');
     }
@@ -199,6 +229,8 @@ const EditTournament = () => {
                             setMatchDetails({
                               ...m,
                               date: formatDate(m.date),
+                              captainA: m.captainA || '',
+                              captainB: m.captainB || ''
                             });
                             setShowMatchModal(true);
                           }}
@@ -229,7 +261,23 @@ const EditTournament = () => {
                 })}
               </ul>
               <div className="add-player" style={{ flexShrink: 0 }}>
-                <button type="button" onClick={() => setShowMatchModal(true)}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Reset match details for a fresh "Add" modal
+                    setMatchDetails({
+                      id: '',
+                      teamA: '',
+                      teamB: '',
+                      date: '',
+                      startTime: '',
+                      endTime: '',
+                      captainA: '',
+                      captainB: ''
+                    });
+                    setShowMatchModal(true);
+                  }}
+                >
                   Add Match
                 </button>
               </div>
@@ -260,7 +308,15 @@ const EditTournament = () => {
               <label>Match No:</label>
               <input
                 type="text"
-                value={`${tournamentId}_${(tournaments.find(t => String(t.id) === tournamentId)?.matches?.length || 0) + 1}`}
+                value={
+                  isEditing
+                    ? matchDetails.id
+                    : (() => {
+                        const current = tournaments.find(t => String(t.id) === tournamentId);
+                        const nextNum = (current?.lastMatchNumber || 0) + 1;
+                        return `${tournamentId}_${nextNum}`;
+                      })()
+                }
                 disabled
                 style={{ backgroundColor: '#e0e0e0', color: '#666', cursor: 'not-allowed' }}
               />
@@ -297,6 +353,32 @@ const EditTournament = () => {
                       {team.team_name}
                     </option>
                   ))}
+              </select>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+              Captain A:
+              <select
+                style={{ flex: 1 }}
+                value={matchDetails.captainA}
+                onChange={e => setMatchDetails({ ...matchDetails, captainA: e.target.value })}
+              >
+                <option value="">Select Captain</option>
+                {getTeamPlayers(matchDetails.teamA).map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+              Captain B:
+              <select
+                style={{ flex: 1 }}
+                value={matchDetails.captainB}
+                onChange={e => setMatchDetails({ ...matchDetails, captainB: e.target.value })}
+              >
+                <option value="">Select Captain</option>
+                {getTeamPlayers(matchDetails.teamB).map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
               </select>
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
@@ -361,11 +443,23 @@ const EditTournament = () => {
                       return;
                     }
                   }
+                  // --- Captain validations ---
+                  if (!matchDetails.captainA) {
+                    alert('Please select a captain for Team A');
+                    return;
+                  }
+                  if (!matchDetails.captainB) {
+                    alert('Please select a captain for Team B');
+                    return;
+                  }
+                  // --- End captain validations ---
+                  const isNew = !isEditing;
                   const currentTournament = tournaments.find(t => String(t.id) === tournamentId);
-                  const existingMatches = currentTournament?.matches || [];
-                  const matchId = isEditing
-                    ? matchDetails.id
-                    : `${tournamentId}_${existingMatches.length + 1}`;
+                  let newNum = matchDetails.id;
+                  if (isNew) {
+                    newNum = ((currentTournament?.lastMatchNumber || 0) + 1);
+                  }
+                  const matchId = isEditing ? matchDetails.id : `${tournamentId}_${newNum}`;
                   // Convert dd-mm-yyyy back to yyyy-mm-dd
                   const [d, m, y] = matchDetails.date.split('-');
                   const formattedDate = `${y}-${m}-${d}`;
@@ -379,13 +473,17 @@ const EditTournament = () => {
                     const updatedMatches = isEditing
                       ? t.matches.map(m => m.id === matchId ? newMatch : m)
                       : [...(t.matches || []), newMatch];
-                    return { ...t, matches: updatedMatches };
+                    return {
+                      ...t,
+                      matches: updatedMatches,
+                      lastMatchNumber: isNew ? newNum : t.lastMatchNumber
+                    };
                   });
                   localStorage.setItem('tournaments', JSON.stringify(updatedTournaments));
                   setTournaments(updatedTournaments);
                   setMatches(updatedTournaments.find(t => String(t.id) === tournamentId).matches);
                   setShowMatchModal(false);
-                  setMatchDetails({ id: '', teamA: '', teamB: '', date: '', startTime: '', endTime: '' });
+                  setMatchDetails({ id: '', teamA: '', teamB: '', date: '', startTime: '', endTime: '', captainA: '', captainB: '' });
                 }}
               >
                 {isEditing ? 'Save Changes' : 'Add Match'}
@@ -419,6 +517,20 @@ const EditTournament = () => {
             </p>
             <p><strong>Date:</strong> {formatDate(selectedMatch.date)}</p>
             <p><strong>Time:</strong> {selectedMatch.startTime} - {selectedMatch.endTime}</p>
+            <p>
+              <strong>Captain A:</strong>{' '}
+              {availableTeams
+                .find(t => String(t.team_id) === String(selectedMatch.teamA))
+                ?.players.find(p => String(p.id) === String(selectedMatch.captainA))
+                ?.name || '—'}
+            </p>
+            <p>
+              <strong>Captain B:</strong>{' '}
+              {availableTeams
+                .find(t => String(t.team_id) === String(selectedMatch.teamB))
+                ?.players.find(p => String(p.id) === String(selectedMatch.captainB))
+                ?.name || '—'}
+            </p>
           </div>
         </div>
       )}

@@ -16,13 +16,21 @@ const AddTournament = () => {
     const stored = localStorage.getItem('tournaments');
     return stored ? JSON.parse(stored) : [];
   });
+  // Persistent tournament counter
+  const [lastTournamentNumber, setLastTournamentNumber] = useState(() => {
+    const storedNum = parseInt(localStorage.getItem('lastTournamentNumber'), 10);
+    if (!isNaN(storedNum)) return storedNum;
+    const maxId = tournaments.length ? Math.max(...tournaments.map(t => t.id || 0)) : 0;
+    localStorage.setItem('lastTournamentNumber', maxId);
+    return maxId;
+  });
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Calculate nextId dynamically based on tournaments state
-  const nextId = Math.max(0, ...tournaments.map(t => t.id || 0)) + 1;
+  // Persistent nextId using lastTournamentNumber
+  const nextId = lastTournamentNumber + 1;
 
   const handleAddTournament = (e) => {
     e.preventDefault();
@@ -47,6 +55,9 @@ const AddTournament = () => {
     }
 
     const newTournament = { id: nextId, name, startDate, endDate };
+    // Update persistent counter
+    localStorage.setItem('lastTournamentNumber', nextId);
+    setLastTournamentNumber(nextId);
     const updated = [...tournaments, newTournament];
     setTournaments(updated);
     localStorage.setItem('tournaments', JSON.stringify(updated));

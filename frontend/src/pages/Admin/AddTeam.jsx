@@ -20,31 +20,45 @@ const AddTeam = () => {
     const stored = localStorage.getItem('teams');
     return stored ? JSON.parse(stored) : [];
   });
+  // Persistent team counter
+  const [lastTeamNumber, setLastTeamNumber] = useState(() => {
+    const storedNum = parseInt(localStorage.getItem('lastTeamNumber'), 10);
+    if (!isNaN(storedNum)) return storedNum;
+    const maxId = teams.length ? Math.max(...teams.map(t => t.team_id || 0)) : 0;
+    localStorage.setItem('lastTeamNumber', maxId);
+    return maxId;
+  });
   const [teamName, setTeamName] = useState('');
   const [coachName, setCoachName] = useState('');
+  const [managerName, setManagerName] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  const nextTeamId = Math.max(0, ...teams.map(t => t.team_id || 0)) + 1;
+  const nextTeamId = lastTeamNumber + 1;
 
   const handleAddTeam = (e) => {
     e.preventDefault();
-    if (!teamName || !coachName) {
+    if (!teamName || !coachName || !managerName) {
       const msg = 'All fields are required.';
       setErrorMsg(msg);
       setTimeout(() => alert(msg), 0);
       return;
     }
+    // Update persistent team counter
+    localStorage.setItem('lastTeamNumber', nextTeamId);
+    setLastTeamNumber(nextTeamId);
 
     const newTeam = {
       team_id: nextTeamId,
       team_name: teamName,
-      coach_name: coachName
+      coach_name: coachName,
+      manager_name: managerName
     };
     const updated = [...teams, newTeam];
     setTeams(updated);
     localStorage.setItem('teams', JSON.stringify(updated));
     setTeamName('');
     setCoachName('');
+    setManagerName('');
     setErrorMsg('');
     alert('Team added!');
   };
@@ -81,6 +95,10 @@ const AddTeam = () => {
               <label>
                 Coach Name:
                 <input type="text" value={coachName} onChange={(e) => setCoachName(e.target.value)} required />
+              </label>
+              <label>
+                Manager Name:
+                <input type="text" value={managerName} onChange={(e) => setManagerName(e.target.value)} required />
               </label>
               {errorMsg && <p className="form-error">{errorMsg}</p>}
               <button type="submit">Add Team</button>
