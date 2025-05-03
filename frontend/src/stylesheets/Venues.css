@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+
+.admin-home {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Main content area */
+.main-content {
+  flex: 1;
+  background-color: #f4f4f9;
+  padding: 2rem;
+  position: relative;
+  z-index: 1;
+  max-width: 100vw;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0rem;
+}
+
+.topbar h1 {
+  font-size: 3rem;
+  font-weight: bold;
+  color: black;
+  text-shadow: none;
+  margin-top: 0rem;
+  margin-bottom: 1rem;
+}
+
+.tournament-list h2 {
+  font-size: 2rem;
+  color: black;
+  text-shadow: none;
+  text-align: left;
+}
+
+/* Widget boxes
+.widgets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.widget-box {
+  flex: 1;
+  min-width: 18rem;
+  background-color: white;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+} */
+
+.profile-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* KFUPM vertical seal styling
+.vertical-seal {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  opacity: 1;
+  height: 80vh;
+  pointer-events: none;
+  filter: invert(1);
+} */
+.highlighted-name {
+  background: linear-gradient(135deg, #017941, #02cb6d);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+}
+
+/* Semi-transparent background overlay image */
+.bg-overlay {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-image: url('../assets/images/Illustration 1@4x.png');
+  background-size: contain;
+  background-position: bottom right;
+  background-repeat: no-repeat;
+  opacity: 0.2;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.tournament-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.tournament-card {
+  background-color: white;
+  border-radius: 0.75rem;
+  padding: 1em;
+  color: black;
+  box-shadow: 0 0.25em 0.5em rgba(0, 0, 0, 0.1);
+  margin: 0 0;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.tournament-card .edit-button {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  font-size: 0.875rem;
+  padding: 0.2em 0.4em;
+  border-radius: 0.75rem;
+  width: 4rem;
+}
+
+.tournament-card h3{
+    margin-top: 0.25rem;
+}
+
+.tournament-card:hover {
+  transform: translateY(-0.25rem);
+  box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+.tournament-grid.scrollable {
+    max-height: 70vh;       /* or whatever max height you like */
+    overflow-y: auto;
+    padding-right: 8px;     /* so the scroll bar doesn’t overlap content */
+}
+.tournament-name-gradient {
+  background: linear-gradient(135deg, #00713d, #00934f);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.tournament-card p {
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
+}
+
+.tournament-card-header{
+  margin-bottom: 1rem
+}
+
+.delete-button-wrapper {
+  margin: 0;
+  align-self: flex-end;
+  width: 25%;
+}
+
+.delete-button-wrapper button {
+  width: 100%;
+}

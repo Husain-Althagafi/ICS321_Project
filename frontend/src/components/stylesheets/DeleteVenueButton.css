@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+.delete-team-button {
+    background: linear-gradient(135deg, #cc0000, #f63f3f);
+    color: white;
+    align-items: center;
+    display: flex;
+    justify-content: center; 
+    margin: 1rem auto;
+    cursor: pointer;
+    width: 25%;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Delete Team button hover state */
+.delete-team-button:hover {
+  background: linear-gradient(135deg, #a00000, #c42c2c);
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  font-size: 1.1rem;
+  font-family: 'Poppins', sans-serif;
+}
