@@ -7,6 +7,12 @@ import bgImage from '../../assets/images/Illustration 1@4x.png';
 import '../../stylesheets/EditTournament.css';
 
 const EditTournament = () => {
+  // Helper to format yyyy-mm-dd to dd-mm-yyyy
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const [y, m, d] = dateString.split('-');
+    return `${d}-${m}-${y}`;
+  };
   const navigate = useNavigate();
   const { tournamentId } = useParams();
   const username = 'john.doe'; // Replace with actual dynamic source later
@@ -23,13 +29,23 @@ const EditTournament = () => {
   const [endDate, setEndDate] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [players, setPlayers] = useState([]);
+  const [matches, setMatches] = useState([]);
   const [newPlayer, setNewPlayer] = useState('');
   const [showPlayerModal, setShowPlayerModal] = useState(false);
   const [playerDetails, setPlayerDetails] = useState({ id: '', name: '', jerseyNumber: '', position: '', isSubstitute: false });
   const [playerError, setPlayerError] = useState('');
+  const [showMatchModal, setShowMatchModal] = useState(false);
+  const [viewMatchModal, setViewMatchModal] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [matchDetails, setMatchDetails] = useState({ id: '', teamA: '', teamB: '', date: '', time: '' });
+  const isEditing = Boolean(matchDetails.id);
+  const [availableTeams, setAvailableTeams] = useState([]);
 
   useEffect(() => {
     const storedTournaments = JSON.parse(localStorage.getItem('tournaments')) || [];
+    const allTeams = JSON.parse(localStorage.getItem('teams')) || [];
+    setAvailableTeams(allTeams);
+
     const tournament = storedTournaments.find(t => String(t.id) === tournamentId);
     if (tournament) {
       setTournamentName(tournament.name);
@@ -37,6 +53,7 @@ const EditTournament = () => {
       setEndDate(tournament.endDate);
       setTournaments(storedTournaments);
       setPlayers(tournament.players || []);
+      setMatches(tournament.matches || []);
     } else {
       navigate('/admin/tournaments');
     }
@@ -46,6 +63,22 @@ const EditTournament = () => {
     e.preventDefault();
     if (!tournamentName || !startDate || !endDate) {
       const msg = 'All fields are required.';
+      setErrorMsg(msg);
+      setTimeout(() => alert(msg), 0);
+      return;
+    }
+    const today = new Date().setHours(0, 0, 0, 0);
+    const start = new Date(startDate).setHours(0, 0, 0, 0);
+    const end = new Date(endDate).setHours(0, 0, 0, 0);
+
+    if (start > end) {
+      const msg = 'Start date cannot be after end date.';
+      setErrorMsg(msg);
+      setTimeout(() => alert(msg), 0);
+      return;
+    }
+    if (start < today || end < today) {
+      const msg = 'Start and end dates cannot be in the past.';
       setErrorMsg(msg);
       setTimeout(() => alert(msg), 0);
       return;
@@ -74,6 +107,22 @@ const EditTournament = () => {
     navigate('/admin/tournaments');
   };
 
+  // Utility function to get date options between start and end
+  const getDateOptions = (start, end) => {
+    const dates = [];
+    if (!start || !end) return dates;
+    let current = new Date(start);
+    const endDate = new Date(end);
+    while (current <= endDate) {
+      const day = String(current.getDate()).padStart(2, '0');
+      const month = String(current.getMonth() + 1).padStart(2, '0');
+      const year = current.getFullYear();
+      dates.push(`${day}-${month}-${year}`);
+      current.setDate(current.getDate() + 1);
+    }
+    return dates;
+  };
+
   return (
     <div className="admin-home">
       <AdminSidebar initials={initials} formattedName={formattedName} />
@@ -97,7 +146,7 @@ const EditTournament = () => {
                   type="text"
                   value={tournamentId}
                   disabled
-                  style={{ backgroundColor: '#f0f0f0', cursor: 'not-allowed' }}
+                  style={{ backgroundColor: '#f0f0f0', color: '#666', cursor: 'not-allowed' }}
                 />
               </label>
               <label>
@@ -118,15 +167,69 @@ const EditTournament = () => {
             <div className="players-list" style={{ display: 'flex', flexDirection: 'column', height: '40vh' }}>
               <label>Matches</label>
               <ul style={{ flexGrow: 1, overflowY: 'auto' }}>
-                {players.map((p, idx) => (
-                  <li key={idx}>
-                    {p.name} ({p.position})
-                    {p.isSubstitute && <span style={{ color: 'red', fontWeight: "bold" }}>&nbsp;Sub</span>}
-                  </li>
-                ))}
+                {matches.map((m, idx) => {
+                  const teamAName = availableTeams.find(t => String(t.team_id) === String(m.teamA))?.team_name || m.teamA;
+                  const teamBName = availableTeams.find(t => String(t.team_id) === String(m.teamB))?.team_name || m.teamB;
+                  return (
+                    <li
+                      key={idx}
+                      style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                    >
+                      <span>
+                        <strong>{teamAName}</strong> vs <strong>{teamBName}</strong> ({m.startTime} - {m.endTime}, {formatDate(m.date)})
+                      </span>
+                      <div style={{ display: 'flex', gap: '0.25rem' }}>
+                        <button
+                          type="button"
+                          className="btn-view"
+                          style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', width: '4rem' }}
+                          onClick={() => {
+                            setSelectedMatch(m);
+                            setViewMatchModal(true);
+                          }}
+                        >
+                          View
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-edit"
+                          style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', width: '4rem', backgroundColor: 'orange', color: 'white' }}
+                          onClick={() => {
+                            // Pre-fill match details, converting stored ISO date to dd-mm-yyyy format
+                            setMatchDetails({
+                              ...m,
+                              date: formatDate(m.date),
+                            });
+                            setShowMatchModal(true);
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-delete"
+                          style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', width: '4rem', backgroundColor: 'red', color: 'white' }}
+                          onClick={() => {
+                            if (window.confirm('Are you sure you want to delete this match?')) {
+                              const updated = matches.filter((_, i) => i !== idx);
+                              setMatches(updated);
+                              const updatedTournaments = tournaments.map(t =>
+                                String(t.id) === tournamentId ? { ...t, matches: updated } : t
+                              );
+                              setTournaments(updatedTournaments);
+                              localStorage.setItem('tournaments', JSON.stringify(updatedTournaments));
+                            }
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
               <div className="add-player" style={{ flexShrink: 0 }}>
-                <button type="button" onClick={() => setShowPlayerModal(true)}>
+                <button type="button" onClick={() => setShowMatchModal(true)}>
                   Add Match
                 </button>
               </div>
@@ -141,127 +244,181 @@ const EditTournament = () => {
           className="vertical-seal" 
         /> */}
       </main>
-      {showPlayerModal && (
+      {showMatchModal && (
         <div className="security-modal">
           <div className="security-modal-content" style={{ position: 'relative' }}>
             <button
-            className='close-button'
+              className='close-button'
               type="button"
-              onClick={() => setShowPlayerModal(false)}
-            //   style={{
-            //     position: 'absolute',
-            //     top: '0.5rem',
-            //     right: '0.75rem',
-            //     background: 'transparent',
-            //     border: 'none',
-            //     fontSize: '1.5rem',
-            //     cursor: 'pointer',
-            //     color: "white"
-            //   }}
+              onClick={() => setShowMatchModal(false)}
               aria-label="Close"
             >
               &times;
             </button>
-            <h2>Add New Player</h2>
-            <label>Tournament ID
-            <input
-              type="text"
-              placeholder="Tournament ID"
-              value={tournamentId}
-              disabled
-            />
-            </label>
-            <label>Player ID
-            <input
-              type="text"
-              placeholder="Player ID (e.g. s20xxxxxxx)"
-              value={playerDetails.id}
-              maxLength={10}
-              onChange={e => {
-                const value = e.target.value;
-                if (value.length <= 10) {
-                  setPlayerDetails({ ...playerDetails, id: value });
-                }
-              }}
-            />
-            </label>
-            
-            <label>Player Name
-            <input
-              type="text"
-              placeholder="Player Name"
-              value={playerDetails.name}
-              onChange={e => setPlayerDetails({ ...playerDetails, name: e.target.value })}
-            />
-            </label>
-
-            <label>Jersey Number
-            <input
-              type="number"
-              placeholder="Jersey Number"
-              min="1"
-              value={playerDetails.jerseyNumber}
-              onChange={e => {
-                const value = e.target.value;
-                if (Number(value) >= 1 || value === '') {
-                  setPlayerDetails({ ...playerDetails, jerseyNumber: value });
-                }
-              }}
-            />
-            </label>
-
-            <label>Player Position: 
+            <h2>{isEditing ? 'Edit Match' : 'Add New Match'}</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '1rem' }}>
+              <label>Match No:</label>
+              <input
+                type="text"
+                value={`${tournamentId}_${(tournaments.find(t => String(t.id) === tournamentId)?.matches?.length || 0) + 1}`}
+                disabled
+                style={{ backgroundColor: '#e0e0e0', color: '#666', cursor: 'not-allowed' }}
+              />
+            </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+              Team A:
               <select
-                value={playerDetails.position}
-                onChange={e => setPlayerDetails({ ...playerDetails, position: e.target.value })}
+                style={{ flex: 1 }}
+                value={matchDetails.teamA}
+                onChange={e => setMatchDetails({ ...matchDetails, teamA: e.target.value })}
               >
-                <option value="">Select Position</option>
-                <option value="Goalkeeper">Goalkeeper</option>
-                <option value="Right Back">Right Back</option>
-                <option value="Left Back">Left Back</option>
-                <option value="Center Back">Center Back</option>
-                <option value="Defensive Midfielder">Defensive Midfielder</option>
-                <option value="Central Midfielder">Central Midfielder</option>
-                <option value="Attacking Midfielder">Attacking Midfielder</option>
-                <option value="Right Winger">Right Winger</option>
-                <option value="Left Winger">Left Winger</option>
-                <option value="Striker">Striker</option>
-                <option value="Second Striker">Second Striker</option>
+                <option value="">Select Team A</option>
+                {availableTeams
+                  .filter(team => team.team_id !== matchDetails.teamB)
+                  .map((team) => (
+                    <option key={team.team_id} value={team.team_id}>
+                      {team.team_name}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+              Team B:
+              <select
+                style={{ flex: 1 }}
+                value={matchDetails.teamB}
+                onChange={e => setMatchDetails({ ...matchDetails, teamB: e.target.value })}
+              >
+                <option value="">Select Team B</option>
+                {availableTeams
+                  .filter(team => team.team_id !== matchDetails.teamA)
+                  .map((team) => (
+                    <option key={team.team_id} value={team.team_id}>
+                      {team.team_name}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+              Date:
+              <select
+                style={{ flex: 1 }}
+                value={matchDetails.date}
+                onChange={e => setMatchDetails({ ...matchDetails, date: e.target.value })}
+              >
+                <option value="">Select a Date</option>
+                {getDateOptions(startDate, endDate).map(date => (
+                  <option key={date} value={date}>{date}</option>
+                ))}
               </select>
             </label>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '1rem 0' }}>
-            <label style={{margin: "0rem"}}>Substitute: </label>
+            <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '1rem' }}>
+              <label>Start Time:</label>
               <input
-                type="checkbox"
-                style={{ width: '1rem', margin: "0rem" }}
-                checked={playerDetails.isSubstitute}
-                onChange={e => setPlayerDetails({ ...playerDetails, isSubstitute: e.target.checked })}
+                type="time"
+                style={{ flex: 1 }}
+                value={matchDetails.startTime || ''}
+                onChange={e => setMatchDetails({ ...matchDetails, startTime: e.target.value })}
               />
             </div>
-
+            <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '1rem' }}>
+              <label>End Time:</label>
+              <input
+                type="time"
+                style={{ flex: 1 }}
+                value={matchDetails.endTime || ''}
+                onChange={e => setMatchDetails({ ...matchDetails, endTime: e.target.value })}
+              />
+            </div>
             <div style={{ marginTop: '1rem' }}>
               <button
                 type="button"
                 onClick={() => {
-                  if (!/^s20.{7}$/.test(playerDetails.id)) {
-                    setPlayerError('Player ID must start with "s20" and be 10 characters long');
+                  if (!matchDetails.teamA || !matchDetails.teamB || !matchDetails.date || !matchDetails.startTime || !matchDetails.endTime) {
+                    alert('All fields are required for the match');
                     return;
                   }
-                  if (!playerDetails.id.trim() || !playerDetails.name.trim() || !playerDetails.jerseyNumber || !playerDetails.position.trim()) {
-                    setPlayerError('All fields are required');
+                  if (matchDetails.teamA === matchDetails.teamB) {
+                    alert('Team A and Team B must be different');
                     return;
                   }
-                  setPlayers(prev => [...prev, playerDetails]);
-                  setPlayerDetails({ id: '', name: '', jerseyNumber: '', position: '', isSubstitute: false });
-                  setPlayerError('');
-                  setShowPlayerModal(false);
+                  if (matchDetails.endTime <= matchDetails.startTime) {
+                    alert('End time must be after start time');
+                    return;
+                  }
+                  // If date is today, ensure start time is after now
+                  const [day, month, year] = matchDetails.date.split('-');
+                  const selectedDate = new Date(`${year}-${month}-${day}`);
+                  const today = new Date();
+                  const isToday = selectedDate.toDateString() === today.toDateString();
+                  if (isToday) {
+                    const [sh, sm] = matchDetails.startTime.split(':').map(Number);
+                    const matchStart = new Date();
+                    matchStart.setHours(sh, sm, 0, 0);
+                    if (matchStart <= today) {
+                      alert('Start time must be in the future for today\'s matches');
+                      return;
+                    }
+                  }
+                  const currentTournament = tournaments.find(t => String(t.id) === tournamentId);
+                  const existingMatches = currentTournament?.matches || [];
+                  const matchId = isEditing
+                    ? matchDetails.id
+                    : `${tournamentId}_${existingMatches.length + 1}`;
+                  // Convert dd-mm-yyyy back to yyyy-mm-dd
+                  const [d, m, y] = matchDetails.date.split('-');
+                  const formattedDate = `${y}-${m}-${d}`;
+                  const newMatch = {
+                    ...matchDetails,
+                    id: matchId,
+                    date: formattedDate,
+                  };
+                  const updatedTournaments = tournaments.map(t => {
+                    if (String(t.id) !== tournamentId) return t;
+                    const updatedMatches = isEditing
+                      ? t.matches.map(m => m.id === matchId ? newMatch : m)
+                      : [...(t.matches || []), newMatch];
+                    return { ...t, matches: updatedMatches };
+                  });
+                  localStorage.setItem('tournaments', JSON.stringify(updatedTournaments));
+                  setTournaments(updatedTournaments);
+                  setMatches(updatedTournaments.find(t => String(t.id) === tournamentId).matches);
+                  setShowMatchModal(false);
+                  setMatchDetails({ id: '', teamA: '', teamB: '', date: '', startTime: '', endTime: '' });
                 }}
               >
-                Add
+                {isEditing ? 'Save Changes' : 'Add Match'}
               </button>
-              {playerError && <p className="error">{playerError}</p>}
             </div>
+          </div>
+        </div>
+      )}
+      {viewMatchModal && selectedMatch && (
+        <div className="security-modal">
+          <div className="security-modal-content" style={{ position: 'relative' }}>
+            <button
+              className='close-button'
+              type="button"
+              onClick={() => setViewMatchModal(false)}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <h2>Match Details</h2>
+            <p><strong>Match No:</strong> {selectedMatch.id}</p>
+            <p>
+              <strong>Team A:</strong> {
+                availableTeams.find(t => String(t.team_id) === String(selectedMatch.teamA))?.team_name || selectedMatch.teamA
+              }
+            </p>
+            <p>
+              <strong>Team B:</strong> {
+                availableTeams.find(t => String(t.team_id) === String(selectedMatch.teamB))?.team_name || selectedMatch.teamB
+              }
+            </p>
+            <p><strong>Date:</strong> {formatDate(selectedMatch.date)}</p>
+            <p><strong>Time:</strong> {selectedMatch.startTime} - {selectedMatch.endTime}</p>
           </div>
         </div>
       )}

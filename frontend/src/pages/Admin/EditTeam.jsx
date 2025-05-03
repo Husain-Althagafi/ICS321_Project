@@ -98,7 +98,7 @@ const EditTeam = () => {
                   type="text"
                   value={teamId}
                   disabled
-                  style={{ backgroundColor: '#f0f0f0', cursor: 'not-allowed' }}
+                  style={{ backgroundColor: '#e0e0e0', color: '#666', cursor: 'not-allowed' }}
                 />
               </label>
               <label>
@@ -204,6 +204,7 @@ const EditTeam = () => {
               placeholder="Team ID"
               value={teamId}
               disabled
+              style={{ backgroundColor: '#e0e0e0', color: '#666', cursor: 'not-allowed' }}
             />
             </label>
             <label>Player ID
