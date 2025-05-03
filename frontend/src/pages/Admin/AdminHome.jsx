@@ -30,7 +30,7 @@ const AdminHome = () => {
             <div className="app-item" onClick={() => navigate('/admin/add-tournament')}>Add new tournament</div>
             <div className="app-item" onClick={() => navigate('/admin/add-team')}>Add new team</div>
             <div className="app-item" onClick={() => navigate('/admin/delete-tournament')}>Delete tournament</div>
-            <div className="app-item" onClick={() => navigate('/admin/update-score')}>Update match score</div>
+            <div className="app-item" onClick={() => navigate('/admin/update-match-details')}>Update match details</div>
           </div>
         </section>
         {/* <img 

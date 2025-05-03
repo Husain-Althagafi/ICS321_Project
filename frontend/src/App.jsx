@@ -11,6 +11,7 @@ import EditTeam from './pages/Admin/EditTeam';
 import Tournaments from './pages/Admin/Tournaments';
 import EditTournament from './pages/Admin/EditTournament';
 import DeleteTournaments from './pages/Admin/DeleteTournaments';
+import MatchDetails from './pages/Admin/MatchDetails';
 
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
         <Route path="/admin/tournaments" element={<Tournaments />} />
         <Route path="/admin/tournaments/:tournamentId/edit" element={<EditTournament />} />
         <Route path="/admin/delete-tournament" element={<DeleteTournaments />} />
+        <Route path="/admin/match-details" element={<MatchDetails />} />
       </Routes>
     </Router>
   );
