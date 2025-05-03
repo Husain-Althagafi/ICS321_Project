@@ -335,3 +335,15 @@
   background-color: #00934f;
   color: white;
 }
+/* Hover animations for Edit and Delete buttons */
+button[style*="background-color: red"]:hover {
+  background-color: darkred !important;
+  transform: scale(1.05);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+button[style*="background-color: orange"]:hover {
+  background-color: darkorange !important;
+  transform: scale(1.05);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}

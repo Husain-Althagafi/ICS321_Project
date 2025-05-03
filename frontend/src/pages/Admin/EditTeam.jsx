@@ -26,6 +26,9 @@ const EditTeam = () => {
   const [showPlayerModal, setShowPlayerModal] = useState(false);
   const [playerDetails, setPlayerDetails] = useState({ id: '', name: '', jerseyNumber: '', position: '', isSubstitute: false });
   const [playerError, setPlayerError] = useState('');
+  const [viewPlayerModal, setViewPlayerModal] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [editPlayerModal, setEditPlayerModal] = useState(false);
 
   useEffect(() => {
     const storedTeams = JSON.parse(localStorage.getItem('teams')) || [];
@@ -113,9 +116,47 @@ const EditTeam = () => {
               <label>Players</label>
               <ul style={{ flexGrow: 1, overflowY: 'auto' }}>
                 {players.map((p, idx) => (
-                  <li key={idx}>
-                    {p.name} ({p.position})
-                    {p.isSubstitute && <span style={{ color: 'red', fontWeight: "bold" }}>&nbsp;Sub</span>}
+                  <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>
+                      {p.name} ({p.position})
+                      {p.isSubstitute && <span style={{ color: 'red', fontWeight: "bold" }}>&nbsp;Sub</span>}
+                    </span>
+                    <div style={{ display: 'flex', gap: '0.25rem' }}>
+                      <button
+                        type="button"
+                        className="btn-view"
+                        style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', width: '4rem' }}
+                        onClick={() => {
+                          setSelectedPlayer(p);
+                          setViewPlayerModal(true);
+                        }}
+                      >
+                        View
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-edit"
+                        style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', width: '4rem', backgroundColor: 'orange', color: 'white' }}
+                        onClick={() => {
+                          setPlayerDetails(p);
+                          setEditPlayerModal(true);
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-delete"
+                        style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', width: '4rem', backgroundColor: 'red', color: 'white' }}
+                        onClick={() => {
+                          if (window.confirm('Are you sure you want to delete this player?')) {
+                            setPlayers(prev => prev.filter((_, i) => i !== idx));
+                          }
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -259,6 +300,109 @@ const EditTeam = () => {
           </div>
         </div>
       )}
+      {viewPlayerModal && selectedPlayer && (
+        <div className="security-modal">
+          <div className="security-modal-content" style={{ position: 'relative' }}>
+            <button
+              className='close-button'
+              type="button"
+              onClick={() => setViewPlayerModal(false)}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <h2>Player Details</h2>
+            <p><strong>ID:</strong> {selectedPlayer.id}</p>
+            <p><strong>Name:</strong> {selectedPlayer.name}</p>
+            <p><strong>Jersey Number:</strong> {selectedPlayer.jerseyNumber}</p>
+            <p><strong>Position:</strong> {selectedPlayer.position}</p>
+            <p><strong>Substitute:</strong> {selectedPlayer.isSubstitute ? 'Yes' : 'No'}</p>
+          </div>
+        </div>
+      )}
+      {editPlayerModal && (
+        <div className="security-modal">
+          <div className="security-modal-content" style={{ position: 'relative' }}>
+            <button
+              className='close-button'
+              type="button"
+              onClick={() => setEditPlayerModal(false)}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <h2>Edit Player</h2>
+            {/* Reuse the form structure here */}
+            {/* Replace "Add" button with "Update" */}
+            <label>Player ID
+              <input
+                type="text"
+                value={playerDetails.id}
+                disabled
+              />
+            </label>
+            <label>Player Name
+              <input
+                type="text"
+                value={playerDetails.name}
+                onChange={e => setPlayerDetails({ ...playerDetails, name: e.target.value })}
+              />
+            </label>
+            <label>Jersey Number
+              <input
+                type="number"
+                value={playerDetails.jerseyNumber}
+                onChange={e => setPlayerDetails({ ...playerDetails, jerseyNumber: e.target.value })}
+              />
+            </label>
+            <label>Player Position
+              <select
+                value={playerDetails.position}
+                onChange={e => setPlayerDetails({ ...playerDetails, position: e.target.value })}
+              >
+                <option value="">Select Position</option>
+                <option value="Goalkeeper">Goalkeeper</option>
+                <option value="Right Back">Right Back</option>
+                <option value="Left Back">Left Back</option>
+                <option value="Center Back">Center Back</option>
+                <option value="Defensive Midfielder">Defensive Midfielder</option>
+                <option value="Central Midfielder">Central Midfielder</option>
+                <option value="Attacking Midfielder">Attacking Midfielder</option>
+                <option value="Right Winger">Right Winger</option>
+                <option value="Left Winger">Left Winger</option>
+                <option value="Striker">Striker</option>
+                <option value="Second Striker">Second Striker</option>
+              </select>
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '1rem 0' }}>
+            <label style={{margin: "0rem"}}>Substitute: </label>
+              <input
+                type="checkbox"
+                style={{ width: '1rem', margin: "0rem" }}
+                checked={playerDetails.isSubstitute}
+                onChange={e => setPlayerDetails({ ...playerDetails, isSubstitute: e.target.checked })}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setPlayers(prev => prev.map(p => p.id === playerDetails.id ? playerDetails : p));
+                setEditPlayerModal(false);
+              }}
+            >
+              Update
+            </button>
+          </div>
+        </div>
+      )}
+    <style>
+    {`
+      .btn-view:hover {
+        transform: scale(1.05);
+        transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    `}
+    </style>
     </div>
   );
 };
