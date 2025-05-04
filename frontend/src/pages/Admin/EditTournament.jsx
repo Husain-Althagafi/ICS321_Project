@@ -381,6 +381,43 @@ const EditTournament = () => {
                 ))}
               </select>
             </label>
+            {/* Venue dropdown inserted before Date field */}
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+              Venue:
+              <select
+                style={{ flex: 1 }}
+                value={matchDetails.venueId || ''}
+                onChange={e => setMatchDetails({ ...matchDetails, venueId: e.target.value })}
+              >
+                <option value="">Select a Venue</option>
+                {(JSON.parse(localStorage.getItem('venues')) || [])
+                  .filter(venue => {
+                    if (venue.status === 'Available') return true;
+                    if (venue.status !== 'Reserved') return false;
+
+                    const matchesOnSameDate = matches.filter(m => m.venueId === venue.id && m.date === matchDetails.date);
+                    for (const m of matchesOnSameDate) {
+                      const matchStart = m.startTime;
+                      const matchEnd = m.endTime;
+                      const newStart = matchDetails.startTime;
+                      const newEnd = matchDetails.endTime;
+                      if (
+                        (newStart >= matchStart && newStart < matchEnd) ||
+                        (newEnd > matchStart && newEnd <= matchEnd) ||
+                        (newStart <= matchStart && newEnd >= matchEnd)
+                      ) {
+                        return false;
+                      }
+                    }
+                    return true;
+                  })
+                  .map(venue => (
+                    <option key={venue.id} value={venue.id}>
+                      {venue.id} ({venue.name})
+                    </option>
+                  ))}
+              </select>
+            </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
               Date:
               <select
@@ -467,6 +504,7 @@ const EditTournament = () => {
                     ...matchDetails,
                     id: matchId,
                     date: formattedDate,
+                    venueId: matchDetails.venueId
                   };
                   const updatedTournaments = tournaments.map(t => {
                     if (String(t.id) !== tournamentId) return t;
@@ -483,7 +521,7 @@ const EditTournament = () => {
                   setTournaments(updatedTournaments);
                   setMatches(updatedTournaments.find(t => String(t.id) === tournamentId).matches);
                   setShowMatchModal(false);
-                  setMatchDetails({ id: '', teamA: '', teamB: '', date: '', startTime: '', endTime: '', captainA: '', captainB: '' });
+                  setMatchDetails({ id: '', teamA: '', teamB: '', date: '', startTime: '', endTime: '', captainA: '', captainB: '', venueId: '' });
                 }}
               >
                 {isEditing ? 'Save Changes' : 'Add Match'}
@@ -517,6 +555,13 @@ const EditTournament = () => {
             </p>
             <p><strong>Date:</strong> {formatDate(selectedMatch.date)}</p>
             <p><strong>Time:</strong> {selectedMatch.startTime} - {selectedMatch.endTime}</p>
+            <p>
+              <strong>Venue:</strong>{' '}
+              {(() => {
+                const venue = (JSON.parse(localStorage.getItem('venues')) || []).find(v => String(v.id) === String(selectedMatch.venueId));
+                return venue ? venue.name : '—';
+              })()}
+            </p>
             <p>
               <strong>Captain A:</strong>{' '}
               {availableTeams

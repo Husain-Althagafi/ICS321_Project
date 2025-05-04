@@ -34,7 +34,7 @@
   margin-bottom: 1rem;
 }
 
-.tournament-list h2 {
+.venue-list h2 {
   font-size: 2rem;
   color: black;
   text-shadow: none;
@@ -98,13 +98,13 @@
   pointer-events: none;
 }
 
-.tournament-grid {
+.venue-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
 }
 
-.tournament-card {
+.venue-card {
   background-color: white;
   border-radius: 0.75rem;
   padding: 1em;
@@ -117,7 +117,7 @@
   flex-direction: column;
 }
 
-.tournament-card .edit-button {
+.venue-card .edit-button {
   position: absolute;
   bottom: 0.75rem;
   right: 0.75rem;
@@ -127,33 +127,33 @@
   width: 4rem;
 }
 
-.tournament-card h3{
+.venue-card h3{
     margin-top: 0.25rem;
 }
 
-.tournament-card:hover {
+.venue-card:hover {
   transform: translateY(-0.25rem);
   box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.15);
   cursor: pointer;
 }
 
-.tournament-grid.scrollable {
+.venue-grid.scrollable {
     max-height: 70vh;       /* or whatever max height you like */
     overflow-y: auto;
     padding-right: 8px;     /* so the scroll bar doesn’t overlap content */
 }
-.tournament-name-gradient {
+.venue-name-gradient {
   background: linear-gradient(135deg, #00713d, #00934f);
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.tournament-card p {
+.venue-card p {
   margin-top: 0.3rem;
   margin-bottom: 0.3rem;
 }
 
-.tournament-card-header{
+.venue-card-header{
   margin-bottom: 1rem
 }
 
@@ -165,4 +165,36 @@
 
 .delete-button-wrapper button {
   width: 100%;
+}
+
+.add-venue-button {
+  background-color: white;
+  background-image: linear-gradient(135deg, #017941, #02cb6d);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  border: 2px solid transparent;
+  cursor: pointer;
+  width: fit-content;
+  margin-right: 0;
+  border-radius: 2rem;
+  transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease, background-image 0.3s ease;
+}
+
+.add-venue-button:hover {
+  background-image: none;
+  background-color: transparent;
+  background: linear-gradient(135deg, #017941, #02cb6d);
+  color: white;
+  -webkit-text-fill-color: white;
+  transform: scale(1.05);
+}
+.venues-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.venues-header h2 {
+  margin: 0;
 }
