@@ -4,6 +4,7 @@ import "../../stylesheets/AdminSignUp.css";
 import showPasswordIcon from '../../assets/icons/find_15067049.png';
 import hidePasswordIcon from '../../assets/icons/see_4230235.png';
 import sealImage from '../../assets/icons/KFUPM Seal White.png';
+import axios from 'axios'
 
 function AdminSignUp() {
   const [username, setUsername] = useState('');
@@ -45,9 +46,21 @@ function AdminSignUp() {
       return;
     }
     // Simulate a sign-up process (for demo, just log and redirect)
-    alert("Sign-up successful! Redirecting to Admin login page...");
-    setError('');
-    navigate('/admin/login');
+
+    axios.post('http://localhost:5000/auth/register/admin', {
+      username: username,
+      password: password
+    })
+    .then((res) => {
+      localStorage.setItem('token', res.data.token)
+      alert("Sign-up successful! Redirecting to Admin login page...");
+      setError('');
+      navigate('/admin/login');
+    })
+    .catch((err) => {
+      setError(err)
+      setTimeout(() => alert(errorMsg), 0);
+    })
   };
 
   const togglePasswordVisibility = () => {
