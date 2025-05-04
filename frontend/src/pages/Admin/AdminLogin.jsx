@@ -7,6 +7,8 @@ import sealImage from '../../assets/icons/KFUPM Seal White.png';
 
 import securityQuestionImage from '../../assets/images/security-question.png';
 
+import axios from 'axios'
+
 function AdminLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -19,6 +21,8 @@ function AdminLogin() {
   const [securityAction, setSecurityAction] = useState('');
   const navigate = useNavigate();
 
+  const [token, setToken] = useState(null)
+
   // Predefined Admin credentials for demo purposes
   const adminUsername = 'admin';
   const adminPassword = 'password123';
@@ -27,15 +31,35 @@ function AdminLogin() {
 
   const handleLogin = (e) => {
     if (e) e.preventDefault();
-    if (username === adminUsername && password === adminPassword) {
-      setSecurityAction('login');
-      setShowSecurityModal(true);
-      setError('');
-    } else {
-      const errorMsg = 'Invalid username or password!';
+    
+    axios.post('http://localhost:5000/auth/login/admin', {
+      username: username,
+      password: password
+    })
+    .then((res) => {
+      setToken(res.data.token)
+      setSecurityAction('login')
+      setShowSecurityModal(true)
+      setError('')
+    })
+    .catch((err) => {
+      const errorMsg = err.response?.data?.message || 'Invalid username or password';
       setError(errorMsg);
       setTimeout(() => alert(errorMsg), 0);
-    }
+      console.error("Login error:", err);
+    })
+
+
+
+    // if (username === adminUsername && password === adminPassword) {
+    //   setSecurityAction('login');
+    //   setShowSecurityModal(true);
+    //   setError('');
+    // } else {
+    //   const errorMsg = 'Invalid username or password!';
+    //   setError(errorMsg);
+    //   setTimeout(() => alert(errorMsg), 0);
+    // }
   };
 
   const togglePasswordVisibility = () => {
@@ -50,7 +74,16 @@ function AdminLogin() {
       setSecurityError('');
       if (securityAction === 'signup') {
         navigate('/admin/signup');
-      } else if (securityAction === 'login') {
+      } else if (securityAction === 'login') { 
+
+        // axios.get('http://localhost:5000/auth/login/admin', {
+        //   username: username,
+        //   password: password
+        // })
+        // .then((res) => {
+          
+        // })
+        localStorage.setItem('token', token)
         navigate('/admin/home');
       }
     } else {
