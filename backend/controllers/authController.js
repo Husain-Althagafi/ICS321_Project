@@ -19,7 +19,7 @@ exports.loginAdmin = asyncHandler( async (req, res) => {
     }
 
     const token = jwt.sign(
-        {id : 'admin'},
+        {id : 'admin', role: 'admin'},
         'admin',
         {expiresIn: '1h'}
     )
@@ -65,7 +65,7 @@ exports.registerGuest = asyncHandler (async (req, res) => {
     }
 
     const token = jwt.sign(
-        {id: guest.username},
+        {id: guest.username, role: 'guest'},
         'SuperSecretKeyLiterallyImpossibleToGuess',
         {expiresIn:'1h'}
     )
@@ -101,7 +101,7 @@ exports.loginGuest = asyncHandler (async (req, res) => {
     }
 
     const token = jwt.sign(
-        {id: guest.username},
+        {id: guest.username, role: 'guest'},
         'SuperSecretKeyLiterallyImpossibleToGuess',
         {expiresIn:'1h'}
     )
@@ -142,7 +142,7 @@ exports.registerAdmin = asyncHandler (async (req, res) => {
     }
 
     const token = jwt.sign(
-        {id: admin.username},
+        {id: admin.username, role: 'admin'},
         'SuperSecretKeyLiterallyImpossibleToGuess',
         {expiresIn:'1h'}
     )

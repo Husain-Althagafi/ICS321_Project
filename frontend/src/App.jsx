@@ -13,6 +13,7 @@ import EditTournament from './pages/Admin/EditTournament';
 import DeleteTournaments from './pages/Admin/DeleteTournaments';
 import MatchDetails from './pages/Admin/MatchDetails';
 import Venues from './pages/Admin/Venues';
+import ProtectedRoute from './components/ProtectedRoute';
 
 
 function App() {
@@ -21,10 +22,13 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/admin/login" />} />
         <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin/home" element={<AdminHome />} />
+
         <Route path="/guest/login" element={<GuestLogin />} />
-        <Route path="/admin/signup" element={<AdminSignUp />} />
         <Route path="/guest/signup" element={<GuestSignUp />} />
+
+        {/* Protected Routes */}
+        <Route path="/admin/home" element={<ProtectedRoute element={<AdminHome />} />} />
+        <Route path="/admin/signup" element={<AdminSignUp />} />
         <Route path="/admin/add-tournament" element={<AddTournament />} />
         <Route path="/admin/add-team" element={<AddTeam />} />
         <Route path="/admin/teams" element={<Teams />} />
