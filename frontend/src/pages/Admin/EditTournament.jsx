@@ -13,6 +13,14 @@ const EditTournament = () => {
     const [y, m, d] = dateString.split('-');
     return `${d}-${m}-${y}`;
   };
+
+  // Helper to convert dd-mm-yyyy to yyyy-mm-dd
+  const reverseFormatDate = (dateString) => {
+    if (!dateString) return '';
+    const [d, m, y] = dateString.split('-');
+    return `${y}-${m}-${d}`;
+  };
+
   const navigate = useNavigate();
   const { tournamentId } = useParams();
   const username = 'john.doe'; // Replace with actual dynamic source later
@@ -45,7 +53,8 @@ const EditTournament = () => {
     startTime: '',
     endTime: '',
     captainA: '',
-    captainB: ''
+    captainB: '',
+    venueId: ''
   });
   const isEditing = Boolean(matchDetails.id);
   const [availableTeams, setAvailableTeams] = useState([]);
@@ -151,6 +160,63 @@ const EditTournament = () => {
       current.setDate(current.getDate() + 1);
     }
     return dates;
+  };
+
+  // Check if two time ranges overlap
+  const hasTimeOverlap = (start1, end1, start2, end2) => {
+    return start1 < end2 && start2 < end1;
+  };
+
+  // Helper to convert time string to minutes for easier comparison
+  const timeToMinutes = (timeStr) => {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  // returns only the venues that are free for the new match's date & time
+  const getAvailableVenues = () => {
+    const { date: newDateStr, startTime: newStart, endTime: newEnd, id: editingId } = matchDetails;
+    const allVenues = JSON.parse(localStorage.getItem('venues')) || [];
+
+    // If date, start time, or end time is not selected yet, don't perform filtering
+    if (!newDateStr || !newStart || !newEnd) {
+      return allVenues.filter(v => v.status === 'Available');
+    }
+
+    // Convert new match details to comparable formats
+    const newDateFormatted = reverseFormatDate(newDateStr); // Convert dd-mm-yyyy to yyyy-mm-dd
+    const newStartMins = timeToMinutes(newStart);
+    const newEndMins = timeToMinutes(newEnd);
+
+    // Get all matches from all tournaments
+    const allTournaments = JSON.parse(localStorage.getItem('tournaments')) || [];
+    const allMatches = allTournaments.flatMap(t => t.matches || []);
+
+    // Filter venues to exclude those with time conflicts
+    return allVenues.filter(venue => {
+      // Always include available venues
+      if (venue.status === 'Available') return true;
+
+      // For reserved venues, check if there's any conflict with existing matches
+      const venueMatches = allMatches.filter(m => 
+        String(m.venueId) === String(venue.id) && 
+        // Skip the match we're currently editing
+        !(isEditing && m.id === editingId)
+      );
+
+      // Check each match for this venue for conflicts
+      return !venueMatches.some(match => {
+        // If not on the same date, no conflict
+        if (match.date !== newDateFormatted) return false;
+        
+        // Convert match times to minutes for comparison
+        const matchStartMins = timeToMinutes(match.startTime);
+        const matchEndMins = timeToMinutes(match.endTime);
+        
+        // Check for time overlap
+        return hasTimeOverlap(newStartMins, newEndMins, matchStartMins, matchEndMins);
+      });
+    });
   };
 
   return (
@@ -260,7 +326,7 @@ const EditTournament = () => {
                   );
                 })}
               </ul>
-              <div className="add-player" style={{ flexShrink: 0 }}>
+              <div className="add-player" style={{ flexShrink: 0}}>
                 <button
                   type="button"
                   onClick={() => {
@@ -273,7 +339,8 @@ const EditTournament = () => {
                       startTime: '',
                       endTime: '',
                       captainA: '',
-                      captainB: ''
+                      captainB: '',
+                      venueId: ''
                     });
                     setShowMatchModal(true);
                   }}
@@ -361,6 +428,7 @@ const EditTournament = () => {
                 style={{ flex: 1 }}
                 value={matchDetails.captainA}
                 onChange={e => setMatchDetails({ ...matchDetails, captainA: e.target.value })}
+                disabled={!matchDetails.teamA}
               >
                 <option value="">Select Captain</option>
                 {getTeamPlayers(matchDetails.teamA).map(p => (
@@ -374,6 +442,7 @@ const EditTournament = () => {
                 style={{ flex: 1 }}
                 value={matchDetails.captainB}
                 onChange={e => setMatchDetails({ ...matchDetails, captainB: e.target.value })}
+                disabled={!matchDetails.teamB}
               >
                 <option value="">Select Captain</option>
                 {getTeamPlayers(matchDetails.teamB).map(p => (
@@ -381,49 +450,15 @@ const EditTournament = () => {
                 ))}
               </select>
             </label>
-            {/* Venue dropdown inserted before Date field */}
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-              Venue:
-              <select
-                style={{ flex: 1 }}
-                value={matchDetails.venueId || ''}
-                onChange={e => setMatchDetails({ ...matchDetails, venueId: e.target.value })}
-              >
-                <option value="">Select a Venue</option>
-                {(JSON.parse(localStorage.getItem('venues')) || [])
-                  .filter(venue => {
-                    if (venue.status === 'Available') return true;
-                    if (venue.status !== 'Reserved') return false;
-
-                    const matchesOnSameDate = matches.filter(m => m.venueId === venue.id && m.date === matchDetails.date);
-                    for (const m of matchesOnSameDate) {
-                      const matchStart = m.startTime;
-                      const matchEnd = m.endTime;
-                      const newStart = matchDetails.startTime;
-                      const newEnd = matchDetails.endTime;
-                      if (
-                        (newStart >= matchStart && newStart < matchEnd) ||
-                        (newEnd > matchStart && newEnd <= matchEnd) ||
-                        (newStart <= matchStart && newEnd >= matchEnd)
-                      ) {
-                        return false;
-                      }
-                    }
-                    return true;
-                  })
-                  .map(venue => (
-                    <option key={venue.id} value={venue.id}>
-                      {venue.id} ({venue.name})
-                    </option>
-                  ))}
-              </select>
-            </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
               Date:
               <select
                 style={{ flex: 1 }}
                 value={matchDetails.date}
-                onChange={e => setMatchDetails({ ...matchDetails, date: e.target.value })}
+                onChange={e => {
+                  // When date changes, we need to re-evaluate available venues
+                  setMatchDetails({ ...matchDetails, date: e.target.value, venueId: '' });
+                }}
               >
                 <option value="">Select a Date</option>
                 {getDateOptions(startDate, endDate).map(date => (
@@ -438,7 +473,10 @@ const EditTournament = () => {
                 type="time"
                 style={{ flex: 1 }}
                 value={matchDetails.startTime || ''}
-                onChange={e => setMatchDetails({ ...matchDetails, startTime: e.target.value })}
+                onChange={e => {
+                  // When start time changes, reset venue selection
+                  setMatchDetails({ ...matchDetails, startTime: e.target.value, venueId: '' });
+                }}
               />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '1rem' }}>
@@ -447,14 +485,39 @@ const EditTournament = () => {
                 type="time"
                 style={{ flex: 1 }}
                 value={matchDetails.endTime || ''}
-                onChange={e => setMatchDetails({ ...matchDetails, endTime: e.target.value })}
+                onChange={e => {
+                  // When end time changes, reset venue selection
+                  setMatchDetails({ ...matchDetails, endTime: e.target.value, venueId: '' });
+                }}
               />
             </div>
+            {/* Venue dropdown inserted after date & time fields */}
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+              Venue:
+              <select
+                style={{ flex: 1 }}
+                value={matchDetails.venueId || ''}
+                onChange={e => setMatchDetails({ ...matchDetails, venueId: e.target.value })}
+                disabled={
+                  !matchDetails.date ||
+                  !matchDetails.startTime ||
+                  !matchDetails.endTime ||
+                  matchDetails.startTime >= matchDetails.endTime
+                }
+              >
+                <option value="">Select a Venue</option>
+                {getAvailableVenues().map(venue => (
+                  <option key={venue.id} value={venue.id}>
+                    {venue.id} ({venue.name})
+                  </option>
+                ))}
+              </select>
+            </label>
             <div style={{ marginTop: '1rem' }}>
               <button
                 type="button"
                 onClick={() => {
-                  if (!matchDetails.teamA || !matchDetails.teamB || !matchDetails.date || !matchDetails.startTime || !matchDetails.endTime) {
+                  if (!matchDetails.teamA || !matchDetails.teamB || !matchDetails.date || !matchDetails.startTime || !matchDetails.endTime || !matchDetails.venueId) {
                     alert('All fields are required for the match');
                     return;
                   }
@@ -506,6 +569,27 @@ const EditTournament = () => {
                     date: formattedDate,
                     venueId: matchDetails.venueId
                   };
+                  // Prevent duplicate match (same teams, date, and time)
+                  const duplicateMatch = matches.some(m =>
+                    m.teamA === newMatch.teamA &&
+                    m.teamB === newMatch.teamB &&
+                    m.date === newMatch.date &&
+                    m.startTime === newMatch.startTime &&
+                    m.endTime === newMatch.endTime &&
+                    (!isEditing || m.id !== matchId) // Skip the current match when editing
+                  );
+                  if (duplicateMatch) {
+                    alert('This match already exists with the same teams, date, and time.');
+                    return;
+                  }
+                  // Set venue status to Reserved if it was Available
+                  const venues = JSON.parse(localStorage.getItem('venues')) || [];
+                  const updatedVenues = venues.map(v =>
+                    String(v.id) === String(matchDetails.venueId) && v.status === 'Available'
+                      ? { ...v, status: 'Reserved' }
+                      : v
+                  );
+                  localStorage.setItem('venues', JSON.stringify(updatedVenues));
                   const updatedTournaments = tournaments.map(t => {
                     if (String(t.id) !== tournamentId) return t;
                     const updatedMatches = isEditing
