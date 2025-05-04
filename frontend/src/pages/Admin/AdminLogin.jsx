@@ -48,18 +48,6 @@ function AdminLogin() {
       setTimeout(() => alert(errorMsg), 0);
       console.error("Login error:", err);
     })
-
-
-
-    // if (username === adminUsername && password === adminPassword) {
-    //   setSecurityAction('login');
-    //   setShowSecurityModal(true);
-    //   setError('');
-    // } else {
-    //   const errorMsg = 'Invalid username or password!';
-    //   setError(errorMsg);
-    //   setTimeout(() => alert(errorMsg), 0);
-    // }
   };
 
   const togglePasswordVisibility = () => {
@@ -75,14 +63,6 @@ function AdminLogin() {
       if (securityAction === 'signup') {
         navigate('/admin/signup');
       } else if (securityAction === 'login') { 
-
-        // axios.get('http://localhost:5000/auth/login/admin', {
-        //   username: username,
-        //   password: password
-        // })
-        // .then((res) => {
-          
-        // })
         localStorage.setItem('token', token)
         navigate('/admin/home');
       }
