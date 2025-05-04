@@ -28,7 +28,7 @@ function App() {
 
         {/* Protected Routes */}
         <Route path="/admin/home" element={<ProtectedRoute element={<AdminHome />} />} />
-        <Route path="/admin/signup" element={<ProtectedRoute element={<AdminSignUp />} />} />
+        <Route path="/admin/signup" element={<AdminSignUp />} />
         <Route path="/admin/add-tournament" element={<ProtectedRoute element={<AddTournament />} />} />
         <Route path="/admin/add-team" element={<ProtectedRoute element={<AddTeam />} />} />
         <Route path="/admin/teams" element={<ProtectedRoute element={<Teams />} />} />
