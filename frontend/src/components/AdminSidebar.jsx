@@ -6,6 +6,11 @@ import './stylesheets/AdminSidebar.css';
 const AdminSidebar = ({ initials, formattedName }) => {
   const navigate = useNavigate();
 
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    navigate('/admin/login');
+  }
+
   return (
     <aside className="sidebar">
       <div className="profile-wrapper">
@@ -18,7 +23,7 @@ const AdminSidebar = ({ initials, formattedName }) => {
           <li onClick={() => navigate('/admin/tournaments')}>Tournaments</li>
           <li onClick={() => navigate('/admin/teams')}>Teams</li>
           <li onClick={() => navigate('/admin/venues')}>Venues</li>
-          <li onClick={() => navigate('/admin/login')}>Logout</li>
+          <li onClick={handleLogout}>Logout</li>
         </ul>
       </nav>
     </aside>

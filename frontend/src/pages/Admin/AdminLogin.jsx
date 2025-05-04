@@ -43,6 +43,7 @@ function AdminLogin() {
       setError('')
     })
     .catch((err) => {
+      localStorage.removeItem('token')
       const errorMsg = err.response?.data?.message || 'Invalid username or password';
       setError(errorMsg);
       setTimeout(() => alert(errorMsg), 0);
@@ -67,6 +68,7 @@ function AdminLogin() {
         navigate('/admin/home');
       }
     } else {
+      localStorage.removeItem('token')
       const errorMsg = 'Incorrect answer to the security question!';
       alert(errorMsg);
       setShowSecurityModal(false);
