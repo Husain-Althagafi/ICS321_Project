@@ -14,6 +14,7 @@ import DeleteTournaments from './pages/Admin/DeleteTournaments';
 import MatchDetails from './pages/Admin/MatchDetails';
 import Venues from './pages/Admin/Venues';
 // import ProtectedRoute from './components/ProtectedRoute';
+import Tournaments_DetailedMatchStats from './pages/Admin/Tournaments_DetailedMatchStats';
 
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
         <Route path="/admin/delete-tournament" element={<DeleteTournaments />}  />
         <Route path="/admin/match-details" element={<MatchDetails />}  />
         <Route path="/admin/venues" element={<Venues />}  />
+        <Route path="/admin/detailed-match-stats" element={<Tournaments_DetailedMatchStats />}  />
       </Routes>
     </Router>
   );

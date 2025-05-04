@@ -44,11 +44,11 @@ const Tournaments_DetailedMatchStats = () => {
         <div className="bg-overlay"></div>
         <header className="topbar">
           <h1>
-            Tournaments
+            Detailed Match Stats
           </h1>
         </header>
         <section className="tournament-list">
-          <h2>Registered Tournaments</h2>
+          <h2>Choose the Tournament</h2>
           <div className="tournament-grid scrollable">
             {tournaments.length > 0 ? (
               tournaments.map(tournament => (
