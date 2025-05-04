@@ -117,14 +117,18 @@
   flex-direction: column;
 }
 
-.venue-card .edit-button {
+.edit-venue-button {
   position: absolute;
   bottom: 0.75rem;
   right: 0.75rem;
   font-size: 0.875rem;
-  padding: 0.2em 0.4em;
-  border-radius: 0.75rem;
-  width: 4rem;
+  padding: 0.3em 0.6em;
+  border-radius: 1.5625rem;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.venue-card .edit-venue-button:hover {
+  transform: scale(1.05);
 }
 
 .venue-card h3{
@@ -158,14 +162,14 @@
 }
 
 .delete-button-wrapper {
-  margin: 0;
+  margin: 1.5rem 0;
   align-self: flex-end;
   width: 25%;
 }
 
-.delete-button-wrapper button {
+/* .delete-button-wrapper button {
   width: 100%;
-}
+} */
 
 .add-venue-button {
   background-color: white;

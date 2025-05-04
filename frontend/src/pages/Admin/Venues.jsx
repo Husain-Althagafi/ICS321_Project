@@ -16,8 +16,10 @@ const Venues = () => {
 
   const [venues, setVenues] = useState([]);
   const [showVenueModal, setShowVenueModal] = useState(false);
-  const [newVenue, setNewVenue] = useState({ name: '', status: '', capacity: '' });
+  const [newVenue, setNewVenue] = useState({ name: '', status: 'Available', capacity: '' });
   const [venueError, setVenueError] = useState('');
+  const [hoveredVenueId, setHoveredVenueId] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const [lastVenueNumber, setLastVenueNumber] = useState(() => {
     const storedNum = parseInt(localStorage.getItem('lastVenueId'), 10);
@@ -51,11 +53,45 @@ const Venues = () => {
     return () => window.removeEventListener('focus', loadVenues);
   }, []);
 
+  const tournaments = JSON.parse(localStorage.getItem('tournaments')) || [];
+  const allMatches = tournaments.flatMap(t => t.matches || []);
+
+  useEffect(() => {
+    const updatedVenues = venues.map(v => {
+      const matched = allMatches.filter(m => String(m.venueId) === String(v.id));
+      if (v.status === 'Reserved' && matched.length === 0) {
+        return { ...v, status: 'Available' };
+      }
+      return v;
+    });
+    if (JSON.stringify(updatedVenues) !== JSON.stringify(venues)) {
+      setVenues(updatedVenues);
+      localStorage.setItem('venues', JSON.stringify(updatedVenues));
+    }
+  }, [allMatches, venues]);
+
+  // helper to format YYYY-MM-DD to DD-MM-YYYY
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const [year, month, day] = dateString.split('-');
+    return `${day}-${month}-${year}`;
+  };
+
   const handleDeleteVenue = (venueId) => {
-    const updated = venues.filter(v => String(v.id) !== String(venueId));
-    localStorage.setItem('venues', JSON.stringify(updated));
-    setVenues(updated);
-    // Do not update lastVenueId on delete
+    const storedTournaments = JSON.parse(localStorage.getItem('tournaments')) || [];
+    const updatedTournaments = storedTournaments.map(t => ({
+      ...t,
+      matches: (t.matches || []).map(m =>
+        String(m.venueId) === String(venueId)
+          ? { ...m, venueId: null }
+          : m
+      )
+    }));
+    localStorage.setItem('tournaments', JSON.stringify(updatedTournaments));
+
+    const updatedVenues = venues.filter(v => String(v.id) !== String(venueId));
+    localStorage.setItem('venues', JSON.stringify(updatedVenues));
+    setVenues(updatedVenues);
   };
 
   return (
@@ -74,7 +110,11 @@ const Venues = () => {
             <h2>Registered Venues</h2>
             <button
               className="add-venue-button"
-              onClick={() => setShowVenueModal(true)}
+              onClick={() => {
+                setShowVenueModal(true);
+                setIsEditing(false);
+                setNewVenue({ name: '', status: 'Available', capacity: '' });
+              }}
               style={{
                 padding: '0.5rem 1rem',
                 fontSize: '1rem',
@@ -89,7 +129,9 @@ const Venues = () => {
           </div>
           <div className="venue-grid scrollable">
             {venues.length > 0 ? (
-              venues.map(venue => (
+              venues.map(venue => {
+                const reservedMatchesForVenue = allMatches.filter(m => String(m.venueId) === String(venue.id));
+                return (
                 <div key={venue.id} className="venue-card">
                   <div className= "venue-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h3 style={{ margin: 0 }}>
@@ -97,27 +139,80 @@ const Venues = () => {
                     </h3>
                   </div>
                   <p><strong>Venue ID:</strong> {venue.id}</p>
-                  <p><strong>Venue Status:</strong> {venue.status}</p>
+                  <p
+                    onMouseEnter={() => setHoveredVenueId(venue.id)}
+                    onMouseLeave={() => setHoveredVenueId(null)}
+                    style={{ position: 'relative' }}
+                  >
+                    <strong>Venue Status:</strong> {venue.status}
+                    {hoveredVenueId === venue.id && venue.status === 'Reserved' && reservedMatchesForVenue.length > 0 && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        backgroundColor: 'white',
+                        border: '1px solid #ccc',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                        padding: '0.5rem',
+                        zIndex: 10,
+                        color: 'black',
+                        maxHeight: '150px',
+                        overflowY: 'auto',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        <strong>Reserved Matches:</strong>
+                        <ul style={{ paddingLeft: '1rem', margin: '0.5rem 0' }}>
+                          {reservedMatchesForVenue.map(m => (
+                            <li key={m.id}>
+                              Match {m.id}: {formatDate(m.date)} ({m.startTime}–{m.endTime})
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </p>
                   <p><strong>Capacity:</strong> {venue.capacity}</p>
-                  <div className="delete-button-wrapper">
-                    <DeleteVenueButton
-                      className="delete-venue-button"
-                      venueId={venue.id}
-                      onClick={() => {
-                        const confirmed = window.confirm('Are you sure you want to delete this venue?');
-                        if (confirmed) handleDeleteVenue(venue.id);
-                      }}
-                    >
-                      <img
-                        src={deleteIcon}
-                        alt="Delete"
-                        className="delete-icon"
-                        style={{ width: '1.2rem', height: '1.2rem', filter: 'invert(1)', objectFit: 'contain' }}
-                      />
-                    </DeleteVenueButton>
+                  <div className="delete-button-wrapper" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                    <button
+                        className="edit-venue-button"
+                        onClick={() => {
+                            setNewVenue({ ...venue });
+                            setShowVenueModal(true);
+                            setIsEditing(true);
+                        }}
+                        style={{
+                            marginLeft: '0.5rem',
+                            marginTop: '0.5rem',
+                            backgroundColor: '#ffc107',
+                            color: '#000',
+                            border: 'none',
+                            cursor: 'pointer',
+                            width: '24%',
+                            height: '2.2rem',
+                        }}
+                        >
+                        Edit
+                        </button>
+                        <DeleteVenueButton
+                        className="delete-venue-button"
+                        venueId={venue.id}
+                        onClick={() => {
+                            const confirmed = window.confirm('Are you sure you want to delete this venue?');
+                            if (confirmed) handleDeleteVenue(venue.id);
+                        }}
+                        >
+                        <img
+                            src={deleteIcon}
+                            alt="Delete"
+                            className="delete-icon"
+                            style={{ width: '1.2rem', height: '1.2rem', filter: 'invert(1)', objectFit: 'contain' }}
+                        />
+                        </DeleteVenueButton>
                   </div>
                 </div>
-              ))
+                );
+              })
             ) : (
               <p style={{color: 'black'}}>No venues have been registered yet.</p>
             )}
@@ -134,17 +229,20 @@ const Venues = () => {
               <button
                 className="close-button"
                 type="button"
-                onClick={() => setShowVenueModal(false)}
+                onClick={() => {
+                  setShowVenueModal(false);
+                  setIsEditing(false);
+                }}
                 aria-label="Close"
               >
                 &times;
               </button>
-              <h2>Add New Venue</h2>
+              <h2>{isEditing ? 'Edit Venue' : 'Add New Venue'}</h2>
 
               <label>Venue ID
                 <input
                   type="text"
-                  value={nextVenueId}
+                  value={isEditing ? newVenue.id : nextVenueId}
                   disabled
                   style={{ backgroundColor: '#e0e0e0', color: '#666', cursor: 'not-allowed' }}
                 />
@@ -159,18 +257,7 @@ const Venues = () => {
                 />
               </label>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                <label style={{ margin: 0 }}>Venue Status:</label>
-                <select
-                  value={newVenue.status}
-                  onChange={e => setNewVenue({ ...newVenue, status: e.target.value })}
-                  style={{ borderRadius: '0.25rem' }}
-                >
-                  <option value="">Select Status</option>
-                  <option value="Available">Available</option>
-                  <option value="Reserved">Reserved</option>
-                </select>
-              </div>
+
 
               <label>Audience Capacity
                 <input
@@ -205,20 +292,28 @@ const Venues = () => {
                       return;
                     }
                     const newEntry = {
-                      id: nextVenueId, // auto-incremented venue_id
+                      id: isEditing ? newVenue.id : nextVenueId,
                       ...newVenue
                     };
-                    const updated = [...venues, newEntry];
+
+                    let updated;
+                    if (isEditing) {
+                      updated = venues.map(v => (v.id === newVenue.id ? newEntry : v));
+                    } else {
+                      updated = [...venues, newEntry];
+                      setLastVenueNumber(nextVenueId);
+                      localStorage.setItem('lastVenueId', String(nextVenueId));
+                    }
+
                     localStorage.setItem('venues', JSON.stringify(updated));
-                    setLastVenueNumber(nextVenueId);
-                    localStorage.setItem('lastVenueId', String(nextVenueId));
                     setVenues(updated);
-                    setNewVenue({ name: '', status: '', capacity: '' });
+                    setNewVenue({ name: '', status: 'Available', capacity: '' });
                     setVenueError('');
                     setShowVenueModal(false);
+                    setIsEditing(false);
                   }}
                 >
-                  Add
+                  {isEditing ? 'Save Changes' : 'Add'}
                 </button>
                 {venueError && <p className="error">{venueError}</p>}
               </div>
