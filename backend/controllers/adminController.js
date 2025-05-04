@@ -4,7 +4,7 @@ const db = require('../config/db')
 exports.addTournament = asyncHandler( async (req, res) => {
     const {tr_id, tr_name, start_date, end_date} = req.body
 
-    if (!tr_id, !tr_name || !start_date || !end_date) {
+    if (!tr_id || !tr_name || !start_date || !end_date) {
         return res.status(400).json({error: 'Tournament info missing'})
     }
 
@@ -15,7 +15,10 @@ exports.addTournament = asyncHandler( async (req, res) => {
     `
     try {
         const result = await db.query(query, [tr_id, tr_name, start_date, end_date])
-        return res.status(200).json({data: result.rows[0]})
+        return res.status(200).json({
+            data: result.rows[0],
+            message: 'Successfully added tournament'
+        })
     }
     
     catch (err) {
@@ -28,7 +31,7 @@ exports.addTournament = asyncHandler( async (req, res) => {
 exports.addTeamToTournament = asyncHandler( async (req, res) => {
     const {team_id, tr_id, team_group} = req.body
 
-    if (!team_id || !tr_id, !team_group) {
+    if (!team_id || !tr_id || !team_group) {
         return res.status(400).json({error: 'Team info missing'})
     }
 
@@ -39,7 +42,9 @@ exports.addTeamToTournament = asyncHandler( async (req, res) => {
 
     try {
         const result = await db.query(query, [team_id, tr_id, team_group])
-        return res.status(200).json({data: result.rows[0]})
+        return res.status(200).json({
+            message: 'Successfully added team to tournament',
+            data: result.rows[0]})
     }
 
     catch (err) {
@@ -52,7 +57,7 @@ exports.selectCaptain = asyncHandler ( async (req, res) => {
     const tr_id = req.params.tournament
     const match_id = req.params.match
     const team_id = req.params.team
-    const player_id = req.body
+    const {player_id} = req.body
 
 
     if (!player_id || !team_id || !tr_id || !match_id) {
@@ -68,12 +73,15 @@ exports.selectCaptain = asyncHandler ( async (req, res) => {
         return res.status(404).json({error: 'Player not part of the team for the specified tournament'})
     }
 
-    await db.query(
-        `update match_captain set player_captain = $1 where team_id = $2 and match_no = $3`,
+    const result = await db.query(
+        `update match_captain set player_captain = $1 where team_id = $2 and match_no = $3 RETURNING *`,
         [player_id, team_id, match_id]
     )
 
-    return res.status(201).json({message: 'Successfully set captain'}) 
+    return res.status(201).json({
+        message: 'Successfully set captain',
+        data: result.rows[0]
+    }) 
 })
 
 
@@ -113,7 +121,21 @@ exports.approvePlayerToTeam = asyncHandler (async (req, res) => {
     if (!tournament) {
         return res.status(400).json({error: 'Tournament doesnt exist'})
     }
- 
 
+    // verified that player team and tournament exist
 
+    query `
+     INSERT INTO team_player VALUES ($1, $2, $3) RETURNING *
+    `
+
+    const result = await db.query(query, [player_id, team_id, tr_id])
+
+    if (!result) {
+        return res.status(400).json({error: 'Error adding player to team'})
+    }
+
+    return res.status(200).json({
+        message: 'Successfully added team to tournament',
+        data: result.rows[0]
+    })
 })
