@@ -13,6 +13,7 @@ import EditTournament from './pages/Admin/EditTournament';
 import DeleteTournaments from './pages/Admin/DeleteTournaments';
 import MatchDetails from './pages/Admin/MatchDetails';
 import Venues from './pages/Admin/Venues';
+import ProtectedRoute from './components/ProtectedRoute';
 
 
 function App() {
@@ -21,19 +22,22 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/admin/login" />} />
         <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin/home" element={<AdminHome />} />
+
         <Route path="/guest/login" element={<GuestLogin />} />
-        <Route path="/admin/signup" element={<AdminSignUp />} />
         <Route path="/guest/signup" element={<GuestSignUp />} />
-        <Route path="/admin/add-tournament" element={<AddTournament />} />
-        <Route path="/admin/add-team" element={<AddTeam />} />
-        <Route path="/admin/teams" element={<Teams />} />
-        <Route path="/admin/teams/:teamId/edit" element={<EditTeam />} />
-        <Route path="/admin/tournaments" element={<Tournaments />} />
-        <Route path="/admin/tournaments/:tournamentId/edit" element={<EditTournament />} />
-        <Route path="/admin/delete-tournament" element={<DeleteTournaments />} />
-        <Route path="/admin/match-details" element={<MatchDetails />} />
-        <Route path="/admin/venues" element={<Venues />} />
+
+        {/* Protected Routes */}
+        <Route path="/admin/home" element={<ProtectedRoute element={<AdminHome />} />} />
+        <Route path="/admin/signup" element={<ProtectedRoute element={<AdminSignUp />} />} />
+        <Route path="/admin/add-tournament" element={<ProtectedRoute element={<AddTournament />} />} />
+        <Route path="/admin/add-team" element={<ProtectedRoute element={<AddTeam />} />} />
+        <Route path="/admin/teams" element={<ProtectedRoute element={<Teams />} />} />
+        <Route path="/admin/teams/:teamId/edit" element={<ProtectedRoute element={<EditTeam />}  />} />
+        <Route path="/admin/tournaments" element={<ProtectedRoute element={<Tournaments />}  />} />
+        <Route path="/admin/tournaments/:tournamentId/edit" element={<ProtectedRoute element={<EditTournament />}  />} />
+        <Route path="/admin/delete-tournament" element={<ProtectedRoute element={<DeleteTournaments />}  />} />
+        <Route path="/admin/match-details" element={<ProtectedRoute element={<MatchDetails />}  />} />
+        <Route path="/admin/venues" element={<ProtectedRoute element={<Venues />}  />} />
       </Routes>
     </Router>
   );
