@@ -32,23 +32,34 @@ function AdminLogin() {
   const handleLogin = (e) => {
     if (e) e.preventDefault();
     
-    axios.post('http://localhost:5000/auth/login/admin', {
-      username: username,
-      password: password
-    })
-    .then((res) => {
-      setToken(res.data.token)
-      setSecurityAction('login')
-      setShowSecurityModal(true)
-      setError('')
-    })
-    .catch((err) => {
-      localStorage.removeItem('token')
-      const errorMsg = err.response?.data?.message || 'Invalid username or password';
+    // axios.post('http://localhost:5000/auth/login/admin', {
+    //   username: username,
+    //   password: password
+    // })
+    // .then((res) => {
+    //   setToken(res.data.token)
+    //   setSecurityAction('login')
+    //   setShowSecurityModal(true)
+    //   setError('')
+    // })
+    // .catch((err) => {
+    //   localStorage.removeItem('token')
+    //   const errorMsg = err.response?.data?.message || 'Invalid username or password';
+    //   setError(errorMsg);
+    //   setTimeout(() => alert(errorMsg), 0);
+    //   console.error("Login error:", err);
+    // });
+
+    // Original hardcoded login logic
+    if (username === adminUsername && password === adminPassword) {
+      setError('');
+      setSecurityAction('login');
+      setShowSecurityModal(true);
+    } else {
+      const errorMsg = 'Invalid username or password';
       setError(errorMsg);
       setTimeout(() => alert(errorMsg), 0);
-      console.error("Login error:", err);
-    })
+    }
   };
 
   const togglePasswordVisibility = () => {
