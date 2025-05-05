@@ -16,6 +16,9 @@ exports.getTournamentById = asyncHandler(async(req, res) => {
     return res.status(200).json({data: result.rows})
 })
 
+
+
+
 exports.getPlayersByTournamentId = asyncHandler(async (req, res) => {
     const result = await db.query(`
         SELECT 

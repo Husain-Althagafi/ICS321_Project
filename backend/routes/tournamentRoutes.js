@@ -20,3 +20,7 @@ router.get('/:id/teams', tournamentController.getTeamsByTournamentId)
 router.post('/:id', tournamentController.updateTournamentById)
 
 module.exports = router
+
+//DELETE
+
+// router.delete('/:id', tournamentController.deleteTournamentById)

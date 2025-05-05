@@ -27,6 +27,29 @@ exports.addTournament = asyncHandler( async (req, res) => {
 
 })
 
+exports.deleteTournament = asyncHandler(async(req, res) => {
+    const id = req.params.id
+    if (!id) {
+        return res.status(400).json({error: 'Missing id'})
+    }
+
+    try {
+        const result = await db.query(`
+        DELETE FROM tournament WHERE tr_id = $1
+        `, [id])
+        
+        return res.status(200).json({
+            message: 'Tournament successfully deleted',
+            data: result.rows
+        })
+    }
+
+    catch (err) {
+        return res.status(400).json({error: 'Error deleting tournament: '+err})
+    }
+    
+})
+
 
 exports.addTeam = asyncHandler(async(req, res) => {
     const {team_id, team_name, coach_name, manager_name} = req.body
