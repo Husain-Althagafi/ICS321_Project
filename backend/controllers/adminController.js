@@ -28,6 +28,30 @@ exports.addTournament = asyncHandler( async (req, res) => {
 })
 
 
+exports.addTeam = asyncHandler(async(req, res) => {
+    const {team_id, team_name, coach_name, manager_name} = req.body
+
+    if (!team_id || !team_name || !coach_name || !manager_name) {
+        return res.status(400).json({error: 'Missing inputs'})
+    }
+
+    try {
+        const result = await db.query(`
+            INSERT INTO team (team_name) VALUES ($1) RETURNING *
+            `, [team_name])
+
+
+        res.status(200).json({
+            data: result.rows[0]
+        })
+    }
+    catch (err) {
+        return res.status(400).json({error: 'Error inserting into team database' + err})
+    }
+
+})
+
+
 exports.addTeamToTournament = asyncHandler( async (req, res) => {
     const {team_id, tr_id, team_group} = req.body
 
@@ -141,31 +165,3 @@ exports.approvePlayerToTeam = asyncHandler (async (req, res) => {
 })
 
 
-exports.addTeam = asyncHandler(async(req, res) => {
-    const {team_id, team_name, coach_name, manager_name} = req.body
-
-    if (!team_id || !team_name || !coach_name || !manager_name) {
-        return res.status(400).json({error: 'Missing inputs'})
-    }
-
-    try {
-        const result = await db.query(`
-            INSERT INTO team VALUES ($1, $2) RETURNING *
-            `, [team_id, team_name])
-
-
-        res.status(200).json({
-            data: result.rows[0]
-        })
-    }
-    catch (err) {
-        return res.status(400).json({error: 'Error inserting into team database' + err})
-    }
-
-    
-    
-
-
-
-
-})

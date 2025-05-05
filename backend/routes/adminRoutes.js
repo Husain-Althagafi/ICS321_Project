@@ -7,7 +7,7 @@ const auth = require('../middleware/auth')
 router.post('/tournaments', adminController.addTournament)
 
 //add new team 
-router.post('/teams/', adminController.addTeam)
+router.post('/teams', adminController.addTeam)
 
 //add team to tournament
 router.post('/teams/:id', adminController.addTeamToTournament)
