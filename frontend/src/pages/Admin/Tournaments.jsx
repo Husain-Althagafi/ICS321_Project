@@ -18,8 +18,6 @@ const Tournaments = () => {
 
   //Token
 
-  const token = localStorage.getItem('token')
-
   useEffect(() => {
     const loadTournaments = () => {
 
@@ -80,7 +78,7 @@ const Tournaments = () => {
                   <button
                     type="button"
                     className="edit-button"
-                    onClick={() => navigate(`/admin/tournaments/${tournament.id}/edit`)}
+                    onClick={() => navigate(`/admin/tournaments/${tournament.tr_id}/edit`)}
                   >
                     Edit
                   </button>

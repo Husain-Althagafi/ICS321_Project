@@ -6,6 +6,8 @@ import DeleteTournamentButton from '../../components/DeleteTournamentButton';
 import bgImage from '../../assets/images/Illustration 1@4x.png';
 import '../../stylesheets/EditTournament.css';
 
+import axios from 'axios'
+
 const EditTournament = () => {
   // Helper to format yyyy-mm-dd to dd-mm-yyyy
   const formatDate = (dateString) => {
@@ -28,10 +30,14 @@ const EditTournament = () => {
   const initials = `${first[0]}${last[0]}`.toUpperCase();
   const formattedName = `${first.charAt(0).toUpperCase() + first.slice(1)} ${last.charAt(0).toUpperCase() + last.slice(1)}`;
 
-  const [tournaments, setTournaments] = useState(() => {
-    const stored = localStorage.getItem('tournaments');
-    return stored ? JSON.parse(stored) : [];
-  });
+  const [tournaments, setTournaments] = useState([])
+  const [tournament, setTournament] = useState({})
+  // const [tournaments, setTournaments] = useState(() => {
+
+    
+  //   const stored = localStorage.getItem('tournaments');
+  //   return stored ? JSON.parse(stored) : [];
+  // });
   const [tournamentName, setTournamentName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -45,6 +51,7 @@ const EditTournament = () => {
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [viewMatchModal, setViewMatchModal] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(null);
+  const [teams, setTeams] = useState([])
   const [matchDetails, setMatchDetails] = useState({
     id: '',
     teamA: '',
@@ -60,26 +67,77 @@ const EditTournament = () => {
   const [availableTeams, setAvailableTeams] = useState([]);
   // Helper to retrieve a team's player roster
   const getTeamPlayers = (teamId) => {
-    const team = availableTeams.find(t => String(t.team_id) === String(teamId));
-    return team?.players || [];
+    axios.get(`http://localhost:5000/teams/${teamId}/players`)
+    .then((res) => {
+      const players = res.data.data
+      return players
+
+    })
+    .catch(err => console.error(err))
+
+    
+
+    // const team = availableTeams.find(t => String(t.team_id) === String(teamId));
+    // return team?.players || [];
   };
 
   useEffect(() => {
-    const storedTournaments = JSON.parse(localStorage.getItem('tournaments')) || [];
-    const allTeams = JSON.parse(localStorage.getItem('teams')) || [];
-    setAvailableTeams(allTeams);
 
-    const tournament = storedTournaments.find(t => String(t.id) === tournamentId);
+    //get tournament by id
+    axios.get(`http://localhost:5000/tournaments/${tournamentId}`)
+    .then((res) => {
+      setTournament(res.data.data)
+      setTournamentName(res.data.data[0].tr_name)
+    })
+    .catch(err => console.error(err))
+
+    //get all tournaments
+    axios.get(`http://localhost:5000/tournaments`)
+    .then((res)=>{
+      setTournaments(res.data.data) 
+    })
+    
+    // const storedTournaments = JSON.parse(localStorage.getItem('tournaments')) || [];
+    // const allTeams = JSON.parse(localStorage.getItem('teams')) || [];
+
+    //get teams
+    axios.get('http://localhost:5000/teams')
+    .then((res) => {
+        setAvailableTeams(res.data.data);
+    })
+    .catch(err => console.error(err))
+
+
+    //get players in tournament
+    axios.get(`http://localhost:5000/tournaments/${tournamentId}/players`)
+    .then((res) => {
+      setPlayers(res.data.data)
+    })
+    .catch(err => console.error(err))
+
+
+    //get matches in tournament
+    axios.get(`http://localhost:5000/tournaments/${tournamentId}/matches`)
+    .then((res) => {
+      setMatches(res.data.data)
+    })
+
+    axios.get(`http://localhost:5000/tournaments/${tournamentId}/teams`)
+    .then((res) => {
+      setTeams(res.data.data)
+    })
+
+
     if (tournament) {
-      setTournamentName(tournament.name);
-      setStartDate(tournament.startDate);
-      setEndDate(tournament.endDate);
-      setTournaments(storedTournaments);
-      setPlayers(tournament.players || []);
-      setMatches(tournament.matches || []);
+      setTournamentName(tournament.tr_name);
+      setStartDate(tournament.start_date);
+      setEndDate(tournament.end_date);
+      setTournaments(tournaments);
+      setPlayers(players || []);
+      setMatches(matches || []);
       // Initialize persistent match counter if missing
       if (tournament.lastMatchNumber == null) {
-        const existing = tournament.matches || [];
+        const existing = matches || [];
         const maxSuffix = existing.reduce((max, m) => {
           const parts = m.id.split('_');
           const num = parseInt(parts[1], 10);
@@ -87,13 +145,14 @@ const EditTournament = () => {
         }, 0);
         tournament.lastMatchNumber = maxSuffix;
         // Update tournaments array and persist
-        const updatedAll = storedTournaments.map(t =>
+        const updatedAll = tournaments.map(t =>
           String(t.id) === tournamentId ? { ...t, lastMatchNumber: maxSuffix } : t
         );
         localStorage.setItem('tournaments', JSON.stringify(updatedAll));
         setTournaments(updatedAll);
       }
     } else {
+      localStorage.setItem('test', 999);
       navigate('/admin/tournaments');
     }
   }, [tournamentId, navigate]);
@@ -127,7 +186,13 @@ const EditTournament = () => {
         ? { ...t, name: tournamentName, startDate, endDate, players }
         : t
     );
-    localStorage.setItem('tournaments', JSON.stringify(updatedTournaments));
+
+
+    //Make the post request to update the tournament
+
+
+
+    // localStorage.setItem('tournaments', JSON.stringify(updatedTournaments));
     navigate('/admin/tournaments');
   };
 
@@ -264,8 +329,9 @@ const EditTournament = () => {
               <label>Matches</label>
               <ul style={{ flexGrow: 1, overflowY: 'auto' }}>
                 {matches.map((m, idx) => {
-                  const teamAName = availableTeams.find(t => String(t.team_id) === String(m.teamA))?.team_name || m.teamA;
-                  const teamBName = availableTeams.find(t => String(t.team_id) === String(m.teamB))?.team_name || m.teamB;
+
+                  const teamAName = teams.teams[0].team_name
+                  const teamBName = teams.teams[1].team_name
                   return (
                     <li
                       key={idx}
