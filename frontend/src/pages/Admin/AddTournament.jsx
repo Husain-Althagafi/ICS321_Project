@@ -5,6 +5,9 @@ import bgImage from "../../assets/images/Illustration 1@4x.png";
 import "../../stylesheets/AddTournament.css";
 import AdminSidebar from "../../components/AdminSidebar";
 
+//Import axios
+import axios from 'axios'
+
 const AddTournament = () => {
   const navigate = useNavigate();
   const username = "john.doe"; // Replace with actual dynamic source later
@@ -59,18 +62,40 @@ const AddTournament = () => {
       return;
     }
 
-    const newTournament = { id: nextId, name, startDate, endDate };
-    // Update persistent counter
-    localStorage.setItem("lastTournamentNumber", nextId);
-    setLastTournamentNumber(nextId);
-    const updated = [...tournaments, newTournament];
-    setTournaments(updated);
-    localStorage.setItem("tournaments", JSON.stringify(updated));
-    setName("");
-    setStartDate("");
-    setEndDate("");
-    setErrorMsg("");
-    alert("Tournament added!");
+
+    // New tournament data
+    const newTournament = { tr_id: nextId, tr_name: name, start_date: startDate, end_date: endDate };
+
+
+    //Send post request to create new tournament
+    axios.post('http://localhost:5000/admin/tournaments', newTournament)
+    .then((res) => {
+      if (!res.status === 200) {
+        throw new Error('Error adding new tournament')
+      }
+
+          
+      // Update persistent counter
+
+      localStorage.setItem("lastTournamentNumber", nextId);
+      setLastTournamentNumber(nextId);
+      const updated = [...tournaments, newTournament];
+      setTournaments(updated);
+      setName("");
+      setStartDate("");
+      setEndDate("");
+      setErrorMsg("");
+
+    })
+    .catch(err => console.error(err))
+
+    
+
+    
+    
+
+
+    
   };
 
   return (

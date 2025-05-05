@@ -4,7 +4,7 @@ const router = express.Router()
 const auth = require('../middleware/auth')
 
 
-router.post('/tournaments', auth, adminController.addTournament)
+router.post('/tournaments', adminController.addTournament)
 
 router.post('/teams', adminController.addTeamToTournament)
 
