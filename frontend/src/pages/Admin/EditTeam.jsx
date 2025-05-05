@@ -5,7 +5,7 @@ import DeleteTeamButton from '../../components/DeleteTeamButton';
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from '../../assets/images/Illustration 1@4x.png';
 import '../../stylesheets/EditTeam.css';
-
+import axios from 'axios'
 const EditTeam = () => {
   const navigate = useNavigate();
   const { teamId } = useParams();
@@ -30,15 +30,29 @@ const EditTeam = () => {
   const [viewPlayerModal, setViewPlayerModal] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [editPlayerModal, setEditPlayerModal] = useState(false);
+  const [team, setTeam] = useState({})
 
   useEffect(() => {
-    const storedTeams = JSON.parse(localStorage.getItem('teams')) || [];
-    const team = storedTeams.find(t => String(t.team_id) === teamId);
+    // Set TEAM and TEAM NAME
+    axios.get(`http://localhost:5000/teams/${teamId}`)
+    .then((res) => {
+      setTeam(res.data.data)
+      setTeamName(res.data.data.team_name)
+    })
+    .catch(err => console.error(err))
+
+    //Set Players in team
+    axios.get(`http://localhost:5000/teams/${teamId}/players`)
+    .then((res) => {
+      setPlayers(res.data.data)
+    })
+    .catch(err => console.error(err))
+
+
     if (team) {
       setTeamName(team.team_name);
       setCoachName(team.coach_name);
-      setManagerName(team.manager_name || '');
-      setTeams(storedTeams);
+      setManagerName(team.manager_name || 'No Manager');
       setPlayers(team.players || []);
     } else {
       navigate('/admin/teams');

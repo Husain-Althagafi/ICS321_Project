@@ -5,6 +5,8 @@ import AdminSidebar from '../../components/AdminSidebar';
 import bgImage from '../../assets/images/Illustration 1@4x.png';
 import '../../stylesheets/Teams.css';
 
+import axios from 'axios'
+
 const Teams = () => {
   const navigate = useNavigate();
   const username = 'john.doe'; // Replace with actual dynamic source later
@@ -14,12 +16,17 @@ const Teams = () => {
 
   const [teams, setTeams] = useState([]);
 
+
   useEffect(() => {
+
+      //get all teams
+
     const loadTeams = () => {
-      const stored = localStorage.getItem('teams');
-      if (stored) {
-        setTeams(JSON.parse(stored));
-      }
+      axios.get(`http://localhost:5000/teams`)
+      .then((res) => {
+        setTeams(res.data.data.rows)
+      })
+      .catch(err => console.error(err))
     };
 
     loadTeams(); // Load initially

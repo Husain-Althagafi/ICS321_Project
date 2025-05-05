@@ -96,6 +96,7 @@ const EditTournament = () => {
     .then((res)=>{
       setTournaments(res.data.data) 
     })
+    .catch(err => console.error(err))
     
     // const storedTournaments = JSON.parse(localStorage.getItem('tournaments')) || [];
     // const allTeams = JSON.parse(localStorage.getItem('teams')) || [];
@@ -121,11 +122,14 @@ const EditTournament = () => {
     .then((res) => {
       setMatches(res.data.data)
     })
+    .catch(err=>console.error(err))
 
     axios.get(`http://localhost:5000/tournaments/${tournamentId}/teams`)
     .then((res) => {
       setTeams(res.data.data)
     })
+    .catch(err=>console.error(err))
+
 
 
     if (tournament) {
@@ -330,8 +334,8 @@ const EditTournament = () => {
               <ul style={{ flexGrow: 1, overflowY: 'auto' }}>
                 {matches.map((m, idx) => {
 
-                  const teamAName = teams.teams[0].team_name
-                  const teamBName = teams.teams[1].team_name
+                  const teamAName = teams?.teams[0]?.team_name
+                  const teamBName = teams?.teams[1]?.team_name
                   return (
                     <li
                       key={idx}
