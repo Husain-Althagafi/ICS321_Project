@@ -1,35 +1,35 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import "../../stylesheets/GuestLogin.css";
-import showPasswordIcon from '../../assets/icons/find_15067049.png';
-import hidePasswordIcon from '../../assets/icons/see_4230235.png';
-import sealImage from '../../assets/icons/KFUPM Seal White.png';
+import showPasswordIcon from "../../assets/icons/find_15067049.png";
+import hidePasswordIcon from "../../assets/icons/see_4230235.png";
+import sealImage from "../../assets/icons/KFUPM Seal White.png";
 
 function GuestLogin() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordVisible, setPasswordVisible] = useState(false);  // State to toggle password visibility
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false); // State to toggle password visibility
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   // Predefined Admin credentials for demo purposes
-  const adminUsername = 'admin';
-  const adminPassword = 'password123';
+  const adminUsername = "admin";
+  const adminPassword = "password123";
 
   const handleLogin = (e) => {
     e.preventDefault();
     if (username === adminUsername && password === adminPassword) {
       // On successful login, redirect to Admin page
-      navigate('/guest/home');
+      navigate("/guest/home");
     } else {
-      const errorMsg = 'Invalid username or password!';
+      const errorMsg = "Invalid username or password!";
       setError(errorMsg);
       setTimeout(() => alert(errorMsg), 0);
     }
   };
 
   const togglePasswordVisibility = () => {
-    setPasswordVisible(!passwordVisible);  // Toggle the visibility of the password
+    setPasswordVisible(!passwordVisible); // Toggle the visibility of the password
   };
 
   return (
@@ -40,23 +40,23 @@ function GuestLogin() {
         <form onSubmit={handleLogin}>
           <div className="form-group">
             <label>Username</label>
-            <input 
-              type="text" 
-              value={username} 
-              onChange={(e) => setUsername(e.target.value)} 
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
           </div>
           <div className="password-container form-group">
             <label>Password</label>
             <div className="password-input-row">
-              <input 
+              <input
                 type={passwordVisible ? "text" : "password"}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)} 
+                onChange={(e) => setPassword(e.target.value)}
               />
-              <img 
-                src={passwordVisible ? hidePasswordIcon : showPasswordIcon} 
-                alt={passwordVisible ? "Hide password" : "Show password"} 
+              <img
+                src={passwordVisible ? hidePasswordIcon : showPasswordIcon}
+                alt={passwordVisible ? "Hide password" : "Show password"}
                 className="eye-icon"
                 onClick={togglePasswordVisibility}
               />
@@ -76,6 +76,5 @@ function GuestLogin() {
     </div>
   );
 }
-
 
 export default GuestLogin;

@@ -1,18 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-
+@import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
 
 .admin-home {
   display: flex;
   height: 100vh;
   width: 100vw;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   overflow: hidden;
 }
 
 /* Sidebar styling */
 .sidebar {
   width: 11rem;
-  background-color: #3B774D;
+  background-color: #3b774d;
   color: white;
   padding: 2rem 1rem;
   display: flex;
@@ -66,7 +65,10 @@
   padding: 0.5rem 1rem;
   cursor: pointer;
   border-radius: 0.5rem;
-  transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  transition:
+    background-color 0.2s,
+    transform 0.2s,
+    box-shadow 0.2s;
   color: white;
   font-weight: bold;
   font-size: 1.1rem;
@@ -194,7 +196,7 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  background-image: url('../assets/images/Illustration 1@4x.png');
+  background-image: url("../assets/images/Illustration 1@4x.png");
   background-size: contain;
   background-position: bottom right;
   background-repeat: no-repeat;
@@ -204,8 +206,7 @@
   z-index: 0;
   pointer-events: none;
 }
-.AddTournament.css
-.form-container form,
+.AddTournament.css .form-container form,
 .form-container form label,
 .form-container form input,
 .form-container form select,
@@ -229,14 +230,14 @@
 }
 
 .form-container {
-    background-color: white;
-    border-radius: 1rem;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
-    padding: 2rem;
-    max-width: 100%;
-    margin: 1rem 0;
-    z-index: 1;
-    position: relative;
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  max-width: 100%;
+  margin: 1rem 0;
+  z-index: 1;
+  position: relative;
 }
 
 .form-grid {
@@ -251,11 +252,11 @@
 }
 
 .form-error {
-    color: red;
-    font-weight: bold;
-    text-align: center;
-    margin-top: 0rem;
-    margin-bottom: 0rem;
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 0rem;
+  margin-bottom: 0rem;
 }
 
 .form-container .players-list {
@@ -289,10 +290,10 @@
   gap: 1.5rem;
   align-items: flex-start;
 }
-.players-list label{
-    color: black;
-    /* font-weight: light; */
-    margin: 0
+.players-list label {
+  color: black;
+  /* font-weight: light; */
+  margin: 0;
 }
 .security-modal-content .close-button {
   position: absolute;
@@ -309,7 +310,9 @@
   align-items: center;
   justify-content: center;
   color: white;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .security-modal-content .close-button:hover {
