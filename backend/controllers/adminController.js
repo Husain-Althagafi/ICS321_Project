@@ -9,12 +9,12 @@ exports.addTournament = asyncHandler( async (req, res) => {
     }
 
     const query = `
-    INSERT INTO tournament (tr_id, tr_name, start_date, end_date)
-    VALUES ($1, $2, $3, $4)
+    INSERT INTO tournament (tr_name, start_date, end_date)
+    VALUES ($1, $2, $3)
     RETURNING *;
     `
     try {
-        const result = await db.query(query, [tr_id, tr_name, start_date, end_date])
+        const result = await db.query(query, [ tr_name, start_date, end_date])
         return res.status(200).json({
             data: result.rows[0],
             message: 'Successfully added tournament'
@@ -153,7 +153,7 @@ exports.addTeam = asyncHandler(async(req, res) => {
             INSERT INTO team VALUES ($1, $2) RETURNING *
             `, [team_id, team_name])
 
-            
+
         res.status(200).json({
             data: result.rows[0]
         })
