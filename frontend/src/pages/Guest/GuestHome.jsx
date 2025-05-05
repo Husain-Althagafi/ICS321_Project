@@ -1,27 +1,28 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import AdminSidebar from "../../components/AdminSidebar.jsx";
+import GuestSidebar from "../../components/GuestSidebar.jsx";
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from "../../assets/images/Illustration 1@4x.png";
-import "../../stylesheets/AdminHome.css";
+import "../../stylesheets/GuestHome.css";
 
-const AdminHome = () => {
+const GuestHome = () => {
   const navigate = useNavigate();
   const username = "john.doe"; // Replace with actual dynamic source later
   const [first, last] = username.split(".");
   const initials = `${first[0]}${last[0]}`.toUpperCase();
   const formattedName = `${first.charAt(0).toUpperCase() + first.slice(1)} ${last.charAt(0).toUpperCase() + last.slice(1)}`;
+  const formattedFirstName = first.charAt(0).toUpperCase() + first.slice(1);
 
   return (
-    <div className="admin-home">
-      <AdminSidebar initials={initials} formattedName={formattedName} />
+    <div className="guest-home">
+      <GuestSidebar initials={initials} formattedName={formattedName} />
 
       <main className="main-content">
         <div className="bg-overlay"></div>
         <header className="topbar">
           <h1>
-            Welcome to the Admin Home,{" "}
-            <span className="highlighted-name">{formattedName}</span>
+            Welcome to the Guest Home,{" "}
+            <span className="highlighted-name">{formattedFirstName}</span>
           </h1>
         </header>
 
@@ -30,25 +31,25 @@ const AdminHome = () => {
           <div className="app-grid">
             <div
               className="app-item"
-              onClick={() => navigate("/admin/add-tournament")}
+              onClick={() => navigate("/guest/add-tournament")}
             >
               Add new tournament
             </div>
             <div
               className="app-item"
-              onClick={() => navigate("/admin/add-team")}
+              onClick={() => navigate("/guest/add-team")}
             >
               Add new team
             </div>
             <div
               className="app-item"
-              onClick={() => navigate("/admin/delete-tournament")}
+              onClick={() => navigate("/guest/delete-tournament")}
             >
               Delete tournament
             </div>
             <div
               className="app-item"
-              onClick={() => navigate("/admin/detailed-match-stats")}
+              onClick={() => navigate("/guest/detailed-match-stats")}
             >
               Detailed Match Stats
             </div>
@@ -64,4 +65,4 @@ const AdminHome = () => {
   );
 };
 
-export default AdminHome;
+export default GuestHome;

@@ -1,18 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-
+@import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
 
 .admin-home {
   display: flex;
   height: 100vh;
   width: 100vw;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   overflow: hidden;
 }
 
 /* Sidebar styling */
 .sidebar {
   width: 11rem;
-  background-color: #3B774D;
+  background-color: #3b774d;
   color: white;
   padding: 2rem 1rem;
   display: flex;
@@ -66,7 +65,10 @@
   padding: 0.5rem 1rem;
   cursor: pointer;
   border-radius: 0.5rem;
-  transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  transition:
+    background-color 0.2s,
+    transform 0.2s,
+    box-shadow 0.2s;
   color: white;
   font-weight: bold;
   font-size: 1.1rem;
@@ -131,7 +133,9 @@
   font-weight: 500;
   font-size: 1.1rem;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   color: black;
   aspect-ratio: 1 / 1;
   display: flex;
@@ -194,7 +198,7 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  background-image: url('../assets/images/Illustration 1@4x.png');
+  background-image: url("../assets/images/Illustration 1@4x.png");
   background-size: contain;
   background-position: bottom right;
   background-repeat: no-repeat;
@@ -204,8 +208,7 @@
   z-index: 0;
   pointer-events: none;
 }
-.AddTournament.css
-.form-container form,
+.AddTournament.css .form-container form,
 .form-container form label,
 .form-container form input,
 .form-container form select,
@@ -215,14 +218,14 @@
 }
 
 .form-container {
-    background-color: white;
-    border-radius: 1rem;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
-    padding: 2rem;
-    max-width: 30rem;
-    margin: 1rem auto;
-    z-index: 1;
-    position: relative;
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  max-width: 30rem;
+  margin: 1rem auto;
+  z-index: 1;
+  position: relative;
 }
 
 .form-grid {
@@ -231,9 +234,9 @@
   gap: 1.5rem;
 }
 .form-error {
-    color: red;
-    font-weight: bold;
-    text-align: center;
-    margin-top: 0rem;
-    margin-bottom: 0rem;
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 0rem;
+  margin-bottom: 0rem;
 }

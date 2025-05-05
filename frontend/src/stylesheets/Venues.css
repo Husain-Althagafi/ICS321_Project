@@ -1,11 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-
+@import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
 
 .admin-home {
   display: flex;
   height: 100vh;
   width: 100vw;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 /* Main content area */
@@ -87,7 +86,7 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  background-image: url('../assets/images/Illustration 1@4x.png');
+  background-image: url("../assets/images/Illustration 1@4x.png");
   background-size: contain;
   background-position: bottom right;
   background-repeat: no-repeat;
@@ -112,7 +111,9 @@
   box-shadow: 0 0.25em 0.5em rgba(0, 0, 0, 0.1);
   margin: 0 0;
   position: relative;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
 }
@@ -124,15 +125,17 @@
   font-size: 0.875rem;
   padding: 0.3em 0.6em;
   border-radius: 1.5625rem;
-  transition: transform 0.3s ease, background-color 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    background-color 0.3s ease;
 }
 
 .venue-card .edit-venue-button:hover {
   transform: scale(1.05);
 }
 
-.venue-card h3{
-    margin-top: 0.25rem;
+.venue-card h3 {
+  margin-top: 0.25rem;
 }
 
 .venue-card:hover {
@@ -142,9 +145,9 @@
 }
 
 .venue-grid.scrollable {
-    max-height: 70vh;       /* or whatever max height you like */
-    overflow-y: auto;
-    padding-right: 8px;     /* so the scroll bar doesn’t overlap content */
+  max-height: 70vh; /* or whatever max height you like */
+  overflow-y: auto;
+  padding-right: 8px; /* so the scroll bar doesn’t overlap content */
 }
 .venue-name-gradient {
   background: linear-gradient(135deg, #00713d, #00934f);
@@ -157,8 +160,8 @@
   margin-bottom: 0.3rem;
 }
 
-.venue-card-header{
-  margin-bottom: 1rem
+.venue-card-header {
+  margin-bottom: 1rem;
 }
 
 .delete-button-wrapper {
@@ -182,7 +185,11 @@
   width: fit-content;
   margin-right: 0;
   border-radius: 2rem;
-  transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease, background-image 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    background-color 0.3s ease,
+    color 0.3s ease,
+    background-image 0.3s ease;
 }
 
 .add-venue-button:hover {

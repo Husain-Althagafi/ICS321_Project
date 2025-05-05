@@ -1,13 +1,9 @@
-import './stylesheets/DeleteTournamentButton.css';
-import React from 'react';
+import "./stylesheets/DeleteTournamentButton.css";
+import React from "react";
 
-const DeleteTeamButton = ({ onClick, children = 'Delete Tournament' }) => {
+const DeleteTeamButton = ({ onClick, children = "Delete Tournament" }) => {
   return (
-    <button
-      className="delete-team-button"
-      type="button"
-      onClick={onClick}
-    >
+    <button className="delete-team-button" type="button" onClick={onClick}>
       {children}
     </button>
   );

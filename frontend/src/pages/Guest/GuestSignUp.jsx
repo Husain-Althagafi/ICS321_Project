@@ -1,18 +1,21 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import "../../stylesheets/GuestSignUp.css";
-import showPasswordIcon from '../../assets/icons/find_15067049.png';
-import hidePasswordIcon from '../../assets/icons/see_4230235.png';
-import sealImage from '../../assets/icons/KFUPM Seal White.png';
+import showPasswordIcon from "../../assets/icons/find_15067049.png";
+import hidePasswordIcon from "../../assets/icons/see_4230235.png";
+import sealImage from "../../assets/icons/KFUPM Seal White.png";
 
 function GuestSignUp() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordVisible, setPasswordVisible] = useState(false);  // State to toggle password visibility
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false); // State to toggle password visibility
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   // const adminUsername = 'admin';
@@ -22,26 +25,25 @@ function GuestSignUp() {
     e.preventDefault();
     const usernamePattern = /^s20\d{7}$/i;
     if (!usernamePattern.test(username.trim())) {
-      const errorMsg = 'Username must be in the format s20XXXXXXX';
+      const errorMsg = "Username must be in the format s20XXXXXXX";
       setError(errorMsg);
       setTimeout(() => alert(errorMsg), 0);
       return;
     }
     if (password.trim() !== confirmPassword.trim()) {
-      const errorMsg = 'Passwords do not match!';
+      const errorMsg = "Passwords do not match!";
       setError(errorMsg);
       setTimeout(() => alert(errorMsg), 0);
       return;
     }
     // Simulate successful sign-up
     alert("Sign-up successful! Redirecting to Guest login page...");
-    navigate('/guest/login');
+    navigate("/guest/login");
   };
 
   const togglePasswordVisibility = () => {
-    setPasswordVisible(!passwordVisible);  // Toggle the visibility of the password
+    setPasswordVisible(!passwordVisible); // Toggle the visibility of the password
   };
-
 
   const toggleConfirmPasswordVisibility = () => {
     setConfirmPasswordVisible(!confirmPasswordVisible);
@@ -54,28 +56,44 @@ function GuestSignUp() {
         <header>KFUPM Guest Sign Up</header>
         <form onSubmit={handleSignUp}>
           <div className="form-group">
+            <label>First Name</label>
+            <input
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="Enter your first name"
+            />
+          </div>
+          <div className="form-group">
+            <label>Last Name</label>
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Enter your last name"
+            />
+          </div>
+          <div className="form-group">
             <label>Username</label>
-            <input 
-              type="text" 
-              value={username} 
-              onChange={(e) => setUsername(e.target.value)} 
-
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               placeholder="For e.g. s20XXXXXXX"
             />
           </div>
           <div className="password-container form-group">
             <label>Password</label>
             <div className="password-input-row">
-              <input 
+              <input
                 type={passwordVisible ? "text" : "password"}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)} 
-
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your new account's password"
               />
-              <img 
-                src={passwordVisible ? hidePasswordIcon : showPasswordIcon} 
-                alt={passwordVisible ? "Hide password" : "Show password"} 
+              <img
+                src={passwordVisible ? hidePasswordIcon : showPasswordIcon}
+                alt={passwordVisible ? "Hide password" : "Show password"}
                 className="eye-icon"
                 onClick={togglePasswordVisibility}
               />
@@ -85,15 +103,17 @@ function GuestSignUp() {
           <div className="password-container form-group">
             <label>Confirm Password</label>
             <div className="password-input-row">
-              <input 
+              <input
                 type={confirmPasswordVisible ? "text" : "password"}
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)} 
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm your password"
               />
-              <img 
-                src={confirmPasswordVisible ? hidePasswordIcon : showPasswordIcon} 
-                alt={confirmPasswordVisible ? "Hide password" : "Show password"} 
+              <img
+                src={
+                  confirmPasswordVisible ? hidePasswordIcon : showPasswordIcon
+                }
+                alt={confirmPasswordVisible ? "Hide password" : "Show password"}
                 className="eye-icon"
                 onClick={toggleConfirmPasswordVisibility}
               />
@@ -102,7 +122,9 @@ function GuestSignUp() {
           {error && <p className="error">{error}</p>}
           <button type="submit">Sign Up</button>
           <p className="guest-login-link">
-            <Link to="/guest/login">Already have an account? Login as a Guest</Link>
+            <Link to="/guest/login">
+              Already have an account? Login as a Guest
+            </Link>
           </p>
           {/* <p className="admin-link">
             <Link to="/admin/login">Login as Admin</Link>
@@ -112,6 +134,5 @@ function GuestSignUp() {
     </div>
   );
 }
-
 
 export default GuestSignUp;
