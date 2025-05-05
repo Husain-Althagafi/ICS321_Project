@@ -13,7 +13,7 @@ import EditTournament from './pages/Admin/EditTournament';
 import DeleteTournaments from './pages/Admin/DeleteTournaments';
 import MatchDetails from './pages/Admin/MatchDetails';
 import Venues from './pages/Admin/Venues';
-// import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute from './components/ProtectedRoute';
 
 
 function App() {
