@@ -1426,11 +1426,29 @@ const DetailedMatchStats = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    // Persist data
+                    // Determine match winner
+                    const teamAName = availableTeams.find((t) => String(t.team_id) === String(match.teamA))?.team_name || match.teamA;
+                    const teamBName = availableTeams.find((t) => String(t.team_id) === String(match.teamB))?.team_name || match.teamB;
+                    const winner =
+                      scoreA > scoreB ? teamAName :
+                      scoreB > scoreA ? teamBName :
+                      'Draw';
+
+                    // Add winner to match and persist scores
+                    const updatedMatches = matches.map((m) =>
+                      m.id === match.id
+                        ? { ...m, scoreA, scoreB, winner }
+                        : m
+                    );
+                    setMatches(updatedMatches);
+
+                    // Persist back to tournaments in localStorage
                     const allTours = JSON.parse(localStorage.getItem("tournaments") || "[]").map((t) =>
-                      String(t.id) === tournamentId ? { ...t, matches } : t
+                      String(t.id) === tournamentId ? { ...t, matches: updatedMatches } : t
                     );
                     localStorage.setItem("tournaments", JSON.stringify(allTours));
+
+                    // Mark completed
                     setIsCompleted(true);
                     localStorage.setItem(`match-completed-${matchId}`, 'true');
                     setShowCompleteModal(false);

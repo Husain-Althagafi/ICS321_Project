@@ -166,3 +166,27 @@
 .match-card-header {
   margin-bottom: 1rem;
 }
+
+/* Gradient text for match winner */
+.winner-gradient {
+  background: linear-gradient(135deg, #00713d, #00934f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+}
+
+/* Grey gradient for draw */
+.draw-gradient {
+  background: linear-gradient(135deg, #6c6c6c, #a0a0a0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+}
+
+/* Override winner and draw gradient to plain white on match-card hover */
+.match-card:hover .winner-gradient,
+.match-card:hover .draw-gradient {
+  background: none !important;
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
