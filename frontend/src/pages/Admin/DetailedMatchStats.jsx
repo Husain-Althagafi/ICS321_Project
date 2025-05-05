@@ -28,6 +28,14 @@ const DetailedMatchStats = () => {
   const [motmPlayerId, setMotmPlayerId] = useState(null);
   const match = matches.find((m) => String(m.id) === matchId) || {};
 
+  // Track match completion
+  const [isCompleted, setIsCompleted] = useState(false);
+  // Persist completion status per match
+  useEffect(() => {
+    const completed = localStorage.getItem(`match-completed-${matchId}`) === 'true';
+    setIsCompleted(completed);
+  }, [matchId]);
+
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [goalTime, setGoalTime] = useState("");
   const [goalError, setGoalError] = useState("");
@@ -49,6 +57,13 @@ const DetailedMatchStats = () => {
   const [showYellowTimeModal, setShowYellowTimeModal] = useState(false);
   const [yellowTime, setYellowTime] = useState("");
   const [yellowError, setYellowError] = useState("");
+  // State for remove yellow card modal
+  const [showRemoveYellowModal, setShowRemoveYellowModal] = useState(false);
+  const [removeYellowTime, setRemoveYellowTime] = useState("");
+  const [removeYellowError, setRemoveYellowError] = useState("");
+
+  // Modal state for match completion confirmation
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
 
   // Show alert after rendering the error banner (deferred to allow banner to paint first)
   useEffect(() => {
@@ -80,10 +95,13 @@ const DetailedMatchStats = () => {
     setAvailableTeams(JSON.parse(localStorage.getItem("teams")) || []);
     const tour = stored.find((t) => String(t.id) === tournamentId);
     const loadedMatches = tour?.matches || [];
-    // initialize goalTimes on each match
+    // initialize goalTimes and yellowCards on each match
     const initialized = loadedMatches.map((m) => ({
       ...m,
       goalTimes: m.goalTimes || {},
+      yellowCards: Array.isArray(m.yellowCards)
+        ? m.yellowCards
+        : m.yellowCards || {},
     }));
     setMatches(initialized);
     const currentMatch =
@@ -165,6 +183,8 @@ const DetailedMatchStats = () => {
         <header className="topbar">
           <h1>Match Details</h1>
         </header>
+        {/* Disable interactive section if completed */}
+        <div style={{ pointerEvents: isCompleted ? "none" : "auto", opacity: isCompleted ? 0.6 : 1 }}>
         <section className="detailed-matches">
           <div
             className="detailed-match-stats-header"
@@ -689,6 +709,36 @@ const DetailedMatchStats = () => {
                               {match.startTime} (0) and {match.endTime} (
                               {durationMinutes})
                             </p>
+                            {yellowCardPlayer &&
+                              Array.isArray(
+                                match.yellowCards?.[yellowCardPlayer.id],
+                              ) &&
+                              match.yellowCards[yellowCardPlayer.id].length >
+                                0 && (
+                                <div
+                                  style={{
+                                    marginTop: "0.5rem",
+                                    fontWeight: "bold",
+                                    textAlign: "left",
+                                  }}
+                                >
+                                  <p>
+                                    <strong>Previous yellow cards:</strong>{" "}
+                                    {
+                                      match.yellowCards[yellowCardPlayer.id]
+                                        .length
+                                    }
+                                  </p>
+                                  <p>
+                                    <strong>Timings:</strong>{" "}
+                                    {match.yellowCards[yellowCardPlayer.id]
+                                      .slice()
+                                      .sort((a, b) => a - b)
+                                      .map((t) => `${t}'`)
+                                      .join(", ")}
+                                  </p>
+                                </div>
+                              )}
                             <input
                               type="text"
                               value={yellowTime}
@@ -743,7 +793,19 @@ const DetailedMatchStats = () => {
                                           ...m,
                                           yellowCards: {
                                             ...(m.yellowCards || {}),
-                                            [yellowCardPlayer.id]: minutesValue,
+                                            [yellowCardPlayer.id]:
+                                              Array.isArray(
+                                                m.yellowCards?.[
+                                                  yellowCardPlayer.id
+                                                ],
+                                              )
+                                                ? [
+                                                    ...m.yellowCards[
+                                                      yellowCardPlayer.id
+                                                    ],
+                                                    minutesValue,
+                                                  ]
+                                                : [minutesValue],
                                           },
                                         }
                                       : m,
@@ -780,10 +842,51 @@ const DetailedMatchStats = () => {
                               &times;
                             </button>
                             <h2>Yellow Card</h2>
-                            <p>
+                            {/* <p>
                               Player:{" "}
                               {yellowCardPlayer?.name.split(" ").slice(-1)[0]}
-                            </p>
+                            </p> */}
+                            {yellowCardPlayer &&
+                              Array.isArray(
+                                match.yellowCards?.[yellowCardPlayer.id],
+                              ) &&
+                              match.yellowCards[yellowCardPlayer.id].length >
+                                0 && (
+                                <div
+                                  style={{
+                                    margin: "0.5rem 0",
+                                    textAlign: "left",
+                                  }}
+                                >
+                                  <p>
+                                    <strong>Player ID:</strong>{" "}
+                                    {yellowCardPlayer.id}
+                                  </p>
+                                  <p>
+                                    <strong>Player:</strong>{" "}
+                                    {
+                                      yellowCardPlayer.name
+                                        .split(" ")
+                                        .slice(-1)[0]
+                                    }
+                                  </p>
+                                  <p>
+                                    <strong>Yellow cards:</strong>{" "}
+                                    {
+                                      match.yellowCards[yellowCardPlayer.id]
+                                        .length
+                                    }
+                                  </p>
+                                  <p>
+                                    <strong>Timings:</strong>{" "}
+                                    {match.yellowCards[yellowCardPlayer.id]
+                                      .slice()
+                                      .sort((a, b) => a - b)
+                                      .map((t) => `${t}'`)
+                                      .join(", ")}
+                                  </p>
+                                </div>
+                              )}
                             <div className="yellow-modal-buttons">
                               <button
                                 type="button"
@@ -799,14 +902,113 @@ const DetailedMatchStats = () => {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  // Remove yellow card logic here
-                                  console.log(
-                                    `Remove yellow card from ${yellowCardPlayer.id}`,
-                                  );
                                   setShowYellowModal(false);
+                                  setRemoveYellowTime("");
+                                  setRemoveYellowError("");
+                                  setShowRemoveYellowModal(true);
                                 }}
                               >
                                 Remove Card
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {showRemoveYellowModal && (
+                        <div className="modal-overlay">
+                          <div className="modal">
+                            <button
+                              className="close-button"
+                              type="button"
+                              onClick={() => setShowRemoveYellowModal(false)}
+                              aria-label="Close"
+                            >
+                              &times;
+                            </button>
+                            <h2>Remove Yellow Card Time</h2>
+                            <p>
+                              Select a yellow card time to remove for{" "}
+                              {yellowCardPlayer?.name.split(" ").slice(-1)[0]}:
+                            </p>
+                            <select
+                              value={removeYellowTime}
+                              onChange={(e) =>
+                                setRemoveYellowTime(e.target.value)
+                              }
+                              className="score-input"
+                            >
+                              <option value="" disabled>
+                                Select time
+                              </option>
+                              {Array.isArray(
+                                match.yellowCards?.[yellowCardPlayer?.id],
+                              )
+                                ? match.yellowCards[yellowCardPlayer.id]
+                                    .slice()
+                                    .sort((a, b) => a - b)
+                                    .map((t) => (
+                                      <option key={t} value={t}>
+                                        {t}'
+                                      </option>
+                                    ))
+                                : null}
+                            </select>
+                            {removeYellowError && (
+                              <p
+                                style={{
+                                  color: "red",
+                                  marginTop: "0.5rem",
+                                  fontWeight: "bold",
+                                }}
+                              >
+                                {removeYellowError}
+                              </p>
+                            )}
+                            <div className="modal-buttons">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (!removeYellowTime) {
+                                    setRemoveYellowError(
+                                      "Please select a time to remove",
+                                    );
+                                    return;
+                                  }
+                                  const tval = parseInt(removeYellowTime, 10);
+                                  const updatedMatches = matches.map((m) => {
+                                    if (m.id !== match.id) return m;
+                                    const cards = Array.isArray(
+                                      m.yellowCards?.[yellowCardPlayer.id],
+                                    )
+                                      ? [...m.yellowCards[yellowCardPlayer.id]]
+                                      : [];
+                                    const newCards = cards.filter(
+                                      (x) => x !== tval,
+                                    );
+                                    return {
+                                      ...m,
+                                      yellowCards: {
+                                        ...(m.yellowCards || {}),
+                                        [yellowCardPlayer.id]: newCards,
+                                      },
+                                    };
+                                  });
+                                  setMatches(updatedMatches);
+                                  const allTours = JSON.parse(
+                                    localStorage.getItem("tournaments") || "[]",
+                                  ).map((t) =>
+                                    String(t.id) === tournamentId
+                                      ? { ...t, matches: updatedMatches }
+                                      : t,
+                                  );
+                                  localStorage.setItem(
+                                    "tournaments",
+                                    JSON.stringify(allTours),
+                                  );
+                                  setShowRemoveYellowModal(false);
+                                }}
+                              >
+                                Remove
                               </button>
                             </div>
                           </div>
@@ -925,7 +1127,7 @@ const DetailedMatchStats = () => {
                             .sort((a, b) => a - b)
                             .map((t, i) => (
                               <option key={i} value={t}>
-                                {t} minutes
+                                {t}'
                               </option>
                             ));
                         })()}
@@ -1190,6 +1392,56 @@ const DetailedMatchStats = () => {
             )}
           </div>
         </section>
+        </div>
+        {/* Match Complete Button, only show if not completed */}
+        {!isCompleted && (
+          <div className="match-complete-container">
+            <button
+              className="match-complete-button"
+              onClick={() => setShowCompleteModal(true)}
+            >
+              Match Complete
+            </button>
+          </div>
+        )}
+        {showCompleteModal && (
+          <div className="modal-overlay">
+            <div className="modal">
+              <button
+                className="close-button"
+                type="button"
+                onClick={() => setShowCompleteModal(false)}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+              <h2>Confirm Match Completion</h2>
+              <p>Are you sure you want to complete this match?</p>
+              <p>
+                <span style={{ color: "red", fontWeight: "bold" }}>
+                  This will lock the page and make it view only.
+                </span>
+              </p>
+              <div className="modal-buttons">
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Persist data
+                    const allTours = JSON.parse(localStorage.getItem("tournaments") || "[]").map((t) =>
+                      String(t.id) === tournamentId ? { ...t, matches } : t
+                    );
+                    localStorage.setItem("tournaments", JSON.stringify(allTours));
+                    setIsCompleted(true);
+                    localStorage.setItem(`match-completed-${matchId}`, 'true');
+                    setShowCompleteModal(false);
+                  }}
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

@@ -386,3 +386,50 @@
   align-items: center;
   justify-content: center;
 }
+
+.match-complete-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.match-complete-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  height: 4rem;
+  padding: 1.5rem 3rem;
+  font-size: 1.75rem;
+  background-image: linear-gradient(135deg, #00713d, #00934f);
+  color: #fff;
+  border: none;
+  border-radius: 2rem;
+  cursor: pointer;
+  transition: background-image 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.match-complete-button:hover {
+  /* White background */
+  background-color: #fff;
+  /* Remove the background gradient */
+  background-image: none;
+  /* Apply the gradient to the text */
+  color: transparent;
+  background-image: linear-gradient(135deg, #00713d, #00934f);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* Scale up a bit */
+  transform: scale(1.05);
+}
+
+/* Lock inputs and selects when match is completed, but still allow buttons */
+.interactive-locked input,
+.interactive-locked select,
+.interactive-locked textarea {
+  pointer-events: none;
+  opacity: 0.6;
+}
