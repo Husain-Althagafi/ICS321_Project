@@ -5,6 +5,8 @@ import AdminSidebar from '../../components/AdminSidebar';
 import bgImage from '../../assets/images/Illustration 1@4x.png';
 import '../../stylesheets/Tournaments.css';
 
+import axios from 'axios'
+
 const Tournaments = () => {
   const navigate = useNavigate();
   const username = 'john.doe'; // Replace with actual dynamic source later
@@ -14,12 +16,26 @@ const Tournaments = () => {
 
   const [tournaments, setTournaments] = useState([]);
 
+  //Token
+
+  const token = localStorage.getItem('token')
+
   useEffect(() => {
     const loadTournaments = () => {
-      const stored = localStorage.getItem('tournaments');
-      if (stored) {
-        setTournaments(JSON.parse(stored));
-      }
+
+      axios.get('http://localhost:5000/tournaments')
+      .then((res) => {
+        setTournaments(res.data.data)
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+
+
+      // const stored = localStorage.getItem('tournaments');
+      // if (stored) {
+      //   setTournaments(JSON.parse(stored));
+      // }
     };
 
     loadTournaments();
@@ -52,15 +68,15 @@ const Tournaments = () => {
           <div className="tournament-grid scrollable">
             {tournaments.length > 0 ? (
               tournaments.map(tournament => (
-                <div key={tournament.id} className="tournament-card">
+                <div key={tournament.tr_id} className="tournament-card">
                   <div className= "tournament-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h3 style={{ margin: 0 }}>
-                      Tournament Name: <span className="tournament-name-gradient">{tournament.name}</span>
+                      Tournament Name: <span className="tournament-name-gradient">{tournament.tr_name}</span>
                     </h3>
                   </div>
-                  <p><strong>Tournament ID:</strong> {tournament.id}</p>
-                  <p><strong>Start Date:</strong> {new Date(tournament.startDate).toLocaleDateString('en-GB')}</p>
-                  <p><strong>End Date:</strong> {new Date(tournament.endDate).toLocaleDateString('en-GB')}</p>
+                  <p><strong>Tournament ID:</strong> {tournament.tr_id}</p>
+                  <p><strong>Start Date:</strong> {new Date(tournament.start_date).toLocaleDateString('en-GB')}</p>
+                  <p><strong>End Date:</strong> {new Date(tournament.end_date).toLocaleDateString('en-GB')}</p>
                   <button
                     type="button"
                     className="edit-button"
