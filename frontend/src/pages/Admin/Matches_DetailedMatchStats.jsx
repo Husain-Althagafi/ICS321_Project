@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminSidebar from "../../components/AdminSidebar";
 import "../../stylesheets/Matches_DetailedMatchStats.css";
-
+import axios from 'axios'
 const Matches_DetailedMatchStats = () => {
   // Helper to format yyyy-mm-dd to dd-mm-yyyy
   const formatDate = (dateString) => {
@@ -22,6 +22,19 @@ const Matches_DetailedMatchStats = () => {
   const [availableTeams, setAvailableTeams] = useState([]);
 
   useEffect(() => {
+
+    // get all matches for this tournament
+    axios.get(`http://localhost:5000/${tournamentId}/matches`)
+    .then((res) => {
+      setMatches(res.data.data)
+    })
+    .catch(err=>console.error(err))
+
+    //What is meant by available teams?
+
+
+
+
     const stored = JSON.parse(localStorage.getItem("tournaments")) || [];
     setAvailableTeams(JSON.parse(localStorage.getItem("teams")) || []);
     const tour = stored.find((t) => String(t.id) === tournamentId);
