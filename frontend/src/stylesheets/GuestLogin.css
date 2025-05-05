@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 
 .guest-background {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   background-color: #f4f4f9;
   position: relative;
   margin: 0;
@@ -13,7 +13,7 @@
 }
 
 .guest-background::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -27,28 +27,28 @@
 }
 
 .login-container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 1;  /* Ensure the form is above the background */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1; /* Ensure the form is above the background */
 }
 
 .guest-form-background {
-    background: linear-gradient(135deg, #00713d, #00934f);
-    border-radius: 1.5625rem;  /* Curved corners */
-    padding: 2.5rem;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
-    width: 21.25rem;
-    margin-bottom: 1.25rem;
-    position: relative;
-    z-index: 10;  /* Ensure the background box is above the page background */
-    border: none;
-    z-index: 1;  /* Ensure the form is above the background */
+  background: linear-gradient(135deg, #00713d, #00934f);
+  border-radius: 1.5625rem; /* Curved corners */
+  padding: 2.5rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+  width: 21.25rem;
+  margin-bottom: 1.25rem;
+  position: relative;
+  z-index: 10; /* Ensure the background box is above the page background */
+  border: none;
+  z-index: 1; /* Ensure the form is above the background */
 }
 
 .guest-form-background h2 {
@@ -68,27 +68,26 @@ form {
 }
 
 .guest-form-background label {
-    font-size: 0.75rem;
-    margin-bottom: 0.3125rem;
-    color: #ffffff;
-    letter-spacing: 1px;
-    /*font-weight: bold;*/
-    text-transform: uppercase;
-    display: block;
+  font-size: 0.75rem;
+  margin-bottom: 0.3125rem;
+  color: #ffffff;
+  letter-spacing: 1px;
+  /*font-weight: bold;*/
+  text-transform: uppercase;
+  display: block;
 }
 
 input {
-    padding: 0.625rem;
-    border: 2px solid #ccc;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-    font-family: 'Poppins', sans-serif;
-    background-color: #ffffff;
-    color: black;  /* Make the text color black */
-    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
-    width: 100%;
-    box-sizing: border-box;
-    
+  padding: 0.625rem;
+  border: 2px solid #ccc;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-family: "Poppins", sans-serif;
+  background-color: #ffffff;
+  color: black; /* Make the text color black */
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 button {
@@ -130,7 +129,7 @@ button:hover {
   border: 2px solid #ccc;
   border-radius: 0.5rem;
   font-size: 1rem;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   background-color: #ffffff;
   color: black;
   box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
@@ -166,7 +165,6 @@ button:hover {
 .form-group {
   margin-bottom: 1rem;
 }
-
 
 .guest-signup-link {
   text-align: center;

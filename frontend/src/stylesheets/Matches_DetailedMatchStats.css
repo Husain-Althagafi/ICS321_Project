@@ -33,7 +33,7 @@
   margin-bottom: 1rem;
 }
 
-.tournament-list h2 {
+.match-list h2 {
   font-size: 2rem;
   color: black;
   text-shadow: none;
@@ -97,13 +97,13 @@
   pointer-events: none;
 }
 
-.tournament-grid {
+.match-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
 }
 
-.tournament-card {
+.match-card {
   background-color: white;
   border-radius: 0.75rem;
   padding: 1em;
@@ -118,7 +118,7 @@
   flex-direction: column;
 }
 
-.tournament-card .edit-button {
+.match-card .edit-button {
   position: absolute;
   bottom: 0.75rem;
   right: 0.75rem;
@@ -128,32 +128,65 @@
   width: 4rem;
 }
 
-.tournament-card h3 {
+.match-card h3 {
   margin-top: 0.25rem;
 }
 
-.tournament-card:hover {
-  transform: translateY(-0.25rem);
+.match-card:hover {
+  transform: scale(1.01);
+  transform-origin: center;
   box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.15);
   cursor: pointer;
+  background: linear-gradient(135deg, #00713d, #00934f);
+  color: white;
 }
 
-.tournament-grid.scrollable {
+.match-card:hover .match-name-gradient {
+  background: linear-gradient(135deg, #ffffff, #cacaca);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.match-grid.scrollable {
   max-height: 70vh; /* or whatever max height you like */
   overflow-y: auto;
   padding-right: 8px; /* so the scroll bar doesn’t overlap content */
 }
-.tournament-name-gradient {
+.match-name-gradient {
   background: linear-gradient(135deg, #00713d, #00934f);
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.tournament-card p {
+.match-card p {
   margin-top: 0.3rem;
   margin-bottom: 0.3rem;
 }
 
-.tournament-card-header {
+.match-card-header {
   margin-bottom: 1rem;
+}
+
+/* Gradient text for match winner */
+.winner-gradient {
+  background: linear-gradient(135deg, #00713d, #00934f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+}
+
+/* Grey gradient for draw */
+.draw-gradient {
+  background: linear-gradient(135deg, #6c6c6c, #a0a0a0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+}
+
+/* Override winner and draw gradient to plain white on match-card hover */
+.match-card:hover .winner-gradient,
+.match-card:hover .draw-gradient {
+  background: none !important;
+  color: white !important;
+  -webkit-text-fill-color: white !important;
 }
