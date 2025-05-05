@@ -22,6 +22,7 @@ import Venues from "./pages/Admin/Venues";
 import Tournaments_DetailedMatchStats from "./pages/Admin/Tournaments_DetailedMatchStats";
 import Matches_DetailedMatchStats from "./pages/Admin/Matches_DetailedMatchStats";
 import DetailedMatchStats from "./pages/Admin/DetailedMatchStats";
+import GuestHome from "./pages/Guest/GuestHome";
 
 function App() {
   return (
@@ -63,6 +64,7 @@ function App() {
           path="/admin/detailed-match-stats/:tournamentId/:matchId/match-stats"
           element={<DetailedMatchStats />}
         />
+        <Route path = "/guest/home" element={<GuestHome />} />
       </Routes>
     </Router>
   );

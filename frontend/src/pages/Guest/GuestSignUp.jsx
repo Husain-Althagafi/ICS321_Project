@@ -9,6 +9,9 @@ function GuestSignUp() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false); // State to toggle password visibility
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
@@ -52,6 +55,24 @@ function GuestSignUp() {
         <img src={sealImage} alt="KFUPM Seal" className="seal-logo" />
         <header>KFUPM Guest Sign Up</header>
         <form onSubmit={handleSignUp}>
+          <div className="form-group">
+            <label>First Name</label>
+            <input
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="Enter your first name"
+            />
+          </div>
+          <div className="form-group">
+            <label>Last Name</label>
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Enter your last name"
+            />
+          </div>
           <div className="form-group">
             <label>Username</label>
             <input

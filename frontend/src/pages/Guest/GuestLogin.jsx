@@ -12,14 +12,14 @@ function GuestLogin() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Predefined Admin credentials for demo purposes
-  const adminUsername = "admin";
-  const adminPassword = "password123";
+  // Predefined guest credentials for demo purposes
+  const guestUsername = "s20123456";
+  const guestPassword = "password123!";
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (username === adminUsername && password === adminPassword) {
-      // On successful login, redirect to Admin page
+    if (username === guestUsername && password === guestPassword) {
+      // On successful login, redirect to guest page
       navigate("/guest/home");
     } else {
       const errorMsg = "Invalid username or password!";
@@ -68,8 +68,8 @@ function GuestLogin() {
           <p className="guest-signup-link">
             <Link to="/guest/signup">Don't have an account? Sign up</Link>
           </p>
-          <p className="admin-link">
-            <Link to="/admin/login">Login as Admin</Link>
+          <p className="guest-link">
+            <Link to="/guest/login">Login as guest</Link>
           </p>
         </form>
       </div>
