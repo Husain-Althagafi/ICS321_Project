@@ -64,9 +64,9 @@ const Tournaments_DetailedMatchStats = () => {
                   <button
                     type="button"
                     className="edit-button"
-                    onClick={() => navigate(`/admin/tournaments/${tournament.id}/edit`)}
+                    onClick={() => navigate(`/admin/detailed-match-stats/${tournament.id}/matches`)}
                   >
-                    Edit
+                    Select
                   </button>
                 </div>
               ))

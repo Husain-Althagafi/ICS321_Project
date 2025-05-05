@@ -15,6 +15,8 @@ import MatchDetails from './pages/Admin/MatchDetails';
 import Venues from './pages/Admin/Venues';
 // import ProtectedRoute from './components/ProtectedRoute';
 import Tournaments_DetailedMatchStats from './pages/Admin/Tournaments_DetailedMatchStats';
+import Matches_DetailedMatchStats from './pages/Admin/Matches_DetailedMatchStats';
+import DetailedMatchStats from './pages/Admin/DetailedMatchStats';
 
 
 function App() {
@@ -40,6 +42,8 @@ function App() {
         <Route path="/admin/match-details" element={<MatchDetails />}  />
         <Route path="/admin/venues" element={<Venues />}  />
         <Route path="/admin/detailed-match-stats" element={<Tournaments_DetailedMatchStats />}  />
+        <Route path="/admin/detailed-match-stats/:tournamentId/matches" element={<Matches_DetailedMatchStats />}  />
+        <Route path="/admin/detailed-match-stats/:tournamentId/:matchId/match-stats" element={<DetailedMatchStats />}  />
       </Routes>
     </Router>
   );

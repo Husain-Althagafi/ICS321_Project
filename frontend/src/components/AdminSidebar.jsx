@@ -23,6 +23,7 @@ const AdminSidebar = ({ initials, formattedName }) => {
           <li onClick={() => navigate('/admin/tournaments')}>Tournaments</li>
           <li onClick={() => navigate('/admin/teams')}>Teams</li>
           <li onClick={() => navigate('/admin/venues')}>Venues</li>
+          <li onClick={() => navigate('/admin/detailed-match-stats')}>Matches</li>
           <li onClick={handleLogout}>Logout</li>
         </ul>
       </nav>
