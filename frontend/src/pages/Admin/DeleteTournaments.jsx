@@ -42,13 +42,18 @@ const DeleteTournaments = () => {
     //send request to delete tournament
 
     axios.delete(`http://localhost:5000/admin/tournaments/${tournamentId}`)
+    .then((res) => {
+      if (res.data.data.length === 0) {
+        throw new Error('Nothing was deleted')
+      }
+      const updated = tournaments.filter(
+        (t) => String(t.id) !== String(tournamentId),
+      );
+      setTournaments(updated);
+    })
+    .catch(err => console.error(err))
 
-
-    const updated = tournaments.filter(
-      (t) => String(t.id) !== String(tournamentId),
-    );
-    localStorage.setItem("tournaments", JSON.stringify(updated));
-    setTournaments(updated);
+    
   };
 
   return (
