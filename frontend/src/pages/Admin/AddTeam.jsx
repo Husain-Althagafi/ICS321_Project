@@ -5,6 +5,9 @@ import AdminSidebar from "../../components/AdminSidebar";
 import bgImage from "../../assets/images/Illustration 1@4x.png";
 import "../../stylesheets/AddTournament.css";
 
+import axios from 'axios'
+
+
 const AddTeam = () => {
   const navigate = useNavigate();
   const username = "john.doe"; // Replace with actual dynamic source later
@@ -45,9 +48,7 @@ const AddTeam = () => {
       setTimeout(() => alert(msg), 0);
       return;
     }
-    // Update persistent team counter
-    localStorage.setItem("lastTeamNumber", nextTeamId);
-    setLastTeamNumber(nextTeamId);
+
 
     const newTeam = {
       team_id: nextTeamId,
@@ -55,14 +56,26 @@ const AddTeam = () => {
       coach_name: coachName,
       manager_name: managerName,
     };
-    const updated = [...teams, newTeam];
-    setTeams(updated);
-    localStorage.setItem("teams", JSON.stringify(updated));
-    setTeamName("");
-    setCoachName("");
-    setManagerName("");
-    setErrorMsg("");
-    alert("Team added!");
+
+
+    //Send request to add team 
+    axios.post(`http://localhost:5000/admin/teams`, newTeam)
+    .then((res) => {
+
+    // Update persistent team counter
+
+      localStorage.setItem("lastTeamNumber", nextTeamId);
+      setLastTeamNumber(nextTeamId);
+      const updated = [...teams, newTeam];
+      setTeams(updated);
+      setTeamName("");
+      setCoachName("");
+      setManagerName("");
+      setErrorMsg("");
+      alert("Team added!");
+    })
+    .catch(err => console.error(err))
+     
   };
 
   return (
