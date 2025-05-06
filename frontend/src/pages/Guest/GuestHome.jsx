@@ -43,7 +43,7 @@ const GuestHome = () => {
             </div>
             <div
               className="app-item"
-              onClick={() => navigate("/guest/add-team")}
+              onClick={() => navigate("/guest/browse-teams")}
             >
               Browse Teams
             </div>

@@ -24,6 +24,8 @@ import DetailedMatchStats from "./pages/Admin/DetailedMatchStats";
 import GuestHome from "./pages/Guest/GuestHome";
 import Tournaments_MatchResults from "./pages/Guest/Tournaments_MatchResults";
 import MatchesResults from "./pages/Guest/MatchesResults";
+import BrowseTeams from "./pages/Guest/BrowseTeams";
+import TeamDetails from "./pages/Guest/TeamDetails";
 
 function App() {
   return (
@@ -72,6 +74,14 @@ function App() {
         <Route
           path="/guest/match-results/:tournamentId/matches"
           element={<MatchesResults />}
+        />
+        <Route
+          path="/guest/browse-teams"
+          element={<BrowseTeams />}
+        />
+        <Route
+          path="/guest/browse-teams/:teamId"
+          element={<TeamDetails />}
         />
       </Routes>
     </Router>
