@@ -8,6 +8,8 @@ import redCardIcon from "../../assets/icons/red_card.png";
 import yellowCardIcon from "../../assets/icons/yellow_card.svg";
 import goldenBootIcon from "../../assets/icons/golden-boot.png";
 
+import axios from 'axios'
+
 const DetailedMatchStats = () => {
   // Helper to format yyyy-mm-dd to dd-mm-yyyy
   const formatDate = (dateString) => {
@@ -26,7 +28,18 @@ const DetailedMatchStats = () => {
   const [availableTeams, setAvailableTeams] = useState([]);
   const [goalCounts, setGoalCounts] = useState({});
   const [motmPlayerId, setMotmPlayerId] = useState(null);
-  const match = matches.find((m) => String(m.id) === matchId) || {};
+  const [match, setMatch] = useState({})
+
+useEffect(() => {
+  //get match by id from tournament
+  axios.get(`http://localhost:5000/tournaments/${tournamentId}/matches`)
+  .then((res) => {
+    setMatches(res.data.data)
+    setMatch(matches.find(m => m.match_no == matchId))
+  })
+  .catch(err => console.error(err))
+})
+
 
   // Track match completion
   const [isCompleted, setIsCompleted] = useState(false);
@@ -65,6 +78,8 @@ const DetailedMatchStats = () => {
   // Modal state for match completion confirmation
   const [showCompleteModal, setShowCompleteModal] = useState(false);
 
+
+
   // Show alert after rendering the error banner (deferred to allow banner to paint first)
   useEffect(() => {
     if (yellowError) {
@@ -75,6 +90,8 @@ const DetailedMatchStats = () => {
   }, [yellowError]);
 
   // Compute match time limits in minutes
+
+
   const startMinutes = match.startTime
     ? parseInt(match.startTime.split(":")[0], 10) * 60 +
       parseInt(match.startTime.split(":")[1], 10)

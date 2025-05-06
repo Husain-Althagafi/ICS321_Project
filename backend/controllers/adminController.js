@@ -35,7 +35,7 @@ exports.deleteTournament = asyncHandler(async(req, res) => {
 
     try {
         const result = await db.query(`
-        DELETE FROM tournament WHERE tr_id = $1
+        DELETE FROM tournament WHERE tr_id = $1 RETURN *
         `, [id])
         
         return res.status(200).json({
