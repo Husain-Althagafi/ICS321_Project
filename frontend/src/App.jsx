@@ -16,13 +16,14 @@ import EditTeam from "./pages/Admin/EditTeam";
 import Tournaments from "./pages/Admin/Tournaments";
 import EditTournament from "./pages/Admin/EditTournament";
 import DeleteTournaments from "./pages/Admin/DeleteTournaments";
-import MatchDetails from "./pages/Admin/MatchDetails";
 import Venues from "./pages/Admin/Venues";
 // import ProtectedRoute from './components/ProtectedRoute';
 import Tournaments_DetailedMatchStats from "./pages/Admin/Tournaments_DetailedMatchStats";
 import Matches_DetailedMatchStats from "./pages/Admin/Matches_DetailedMatchStats";
 import DetailedMatchStats from "./pages/Admin/DetailedMatchStats";
 import GuestHome from "./pages/Guest/GuestHome";
+import Tournaments_MatchResults from "./pages/Guest/Tournaments_MatchResults";
+import MatchesResults from "./pages/Guest/MatchesResults";
 
 function App() {
   return (
@@ -50,7 +51,6 @@ function App() {
           path="/admin/delete-tournament"
           element={<DeleteTournaments />}
         />
-        <Route path="/admin/match-details" element={<MatchDetails />} />
         <Route path="/admin/venues" element={<Venues />} />
         <Route
           path="/admin/detailed-match-stats"
@@ -65,6 +65,14 @@ function App() {
           element={<DetailedMatchStats />}
         />
         <Route path = "/guest/home" element={<GuestHome />} />
+        <Route
+          path="/guest/match-results/tournaments"
+          element={<Tournaments_MatchResults />}
+        />
+        <Route
+          path="/guest/match-results/:tournamentId/matches"
+          element={<MatchesResults />}
+        />
       </Routes>
     </Router>
   );

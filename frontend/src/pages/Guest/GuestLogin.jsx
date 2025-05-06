@@ -69,7 +69,7 @@ function GuestLogin() {
             <Link to="/guest/signup">Don't have an account? Sign up</Link>
           </p>
           <p className="guest-link">
-            <Link to="/guest/login">Login as guest</Link>
+            <Link to="/admin/login">Login as an Admin</Link>
           </p>
         </form>
       </div>
