@@ -82,9 +82,7 @@ const Tournaments_MatchResults = () => {
                     type="button"
                     className="edit-button"
                     onClick={() =>
-                      navigate(
-                        `/guest/match-results/${tournament.id}/matches`,
-                      )
+                      navigate(`/guest/match-results/${tournament.id}/matches`)
                     }
                   >
                     View

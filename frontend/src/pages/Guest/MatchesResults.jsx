@@ -29,6 +29,9 @@ const MatchesResults = () => {
   const [hoveredScoreAId, setHoveredScoreAId] = useState(null);
   const [hoveredScoreBId, setHoveredScoreBId] = useState(null);
 
+  // Sort order state: false = descending (latest first), true = ascending (oldest first)
+  const [isAscending, setIsAscending] = useState(false);
+
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem("tournaments")) || [];
     setAvailableTeams(JSON.parse(localStorage.getItem("teams")) || []);
@@ -36,6 +39,24 @@ const MatchesResults = () => {
     const tour = stored.find((t) => String(t.id) === tournamentId);
     setMatches(tour?.matches || []);
   }, [tournamentId]);
+
+  // Sort matches by date, then time; equal entries retain original order
+  const sortedMatches = [...matches].sort((a, b) => {
+    // Primary: date
+    const dateDiff = isAscending
+      ? a.date.localeCompare(b.date)
+      : b.date.localeCompare(a.date);
+    if (dateDiff !== 0) return dateDiff;
+    // Secondary: startTime
+    const timeA = a.startTime || "";
+    const timeB = b.startTime || "";
+    const timeDiff = isAscending
+      ? timeA.localeCompare(timeB)
+      : timeB.localeCompare(timeA);
+    if (timeDiff !== 0) return timeDiff;
+    // Tertiary: equal entries retain original order
+    return 0;
+  });
 
   return (
     <div className="admin-home">
@@ -49,17 +70,37 @@ const MatchesResults = () => {
 
         <section className="match-results-results-list">
           <h2>Completed Matches</h2>
+          <button
+            className="sort-button"
+            style={{
+              marginBottom: "1rem",
+              marginRight: "0",
+              width: "fit-content",
+            }}
+            onClick={() => setIsAscending(!isAscending)}
+          >
+            Sorted by Date:{" "}
+            <span className="winner-gradient">
+              {isAscending ? "Oldest" : "Latest"}
+            </span>
+          </button>
           <div className="match-results-grid scrollable">
             {matches.length > 0 ? (
-              matches.map((m) => {
-                const venueName = venues.find((v) => String(v.id) === String(m.venueId))?.name || "Unknown";
+              sortedMatches.map((m) => {
+                const venueName =
+                  venues.find((v) => String(v.id) === String(m.venueId))
+                    ?.name || "Unknown";
                 const computedWinner =
                   m.winner ||
                   (m.scoreA > m.scoreB
-                    ? (availableTeams.find((t) => String(t.team_id) === String(m.teamA))?.team_name || m.teamA)
+                    ? availableTeams.find(
+                        (t) => String(t.team_id) === String(m.teamA),
+                      )?.team_name || m.teamA
                     : m.scoreB > m.scoreA
-                    ? (availableTeams.find((t) => String(t.team_id) === String(m.teamB))?.team_name || m.teamB)
-                    : 'Draw');
+                      ? availableTeams.find(
+                          (t) => String(t.team_id) === String(m.teamB),
+                        )?.team_name || m.teamB
+                      : "Draw");
                 const motmName =
                   availableTeams
                     .flatMap((t) => t.players || [])
@@ -71,15 +112,17 @@ const MatchesResults = () => {
                   yellowDetails = m.yellowCards.map((t) => `(${t}')`);
                   yellowCount = m.yellowCards.length;
                 } else {
-                  yellowDetails = Object.entries(m.yellowCards || {}).flatMap(([pid, times]) =>
-                    (times || []).map((t) => {
-                      const player = availableTeams
-                        .flatMap((team) => team.players || [])
-                        .find((p) => p.id === pid);
-                      return `${player?.name || pid} (${t}')`;
-                    })
+                  yellowDetails = Object.entries(m.yellowCards || {}).flatMap(
+                    ([pid, times]) =>
+                      (times || []).map((t) => {
+                        const player = availableTeams
+                          .flatMap((team) => team.players || [])
+                          .find((p) => p.id === pid);
+                        return `${player?.name || pid} (${t}')`;
+                      }),
                   );
-                  yellowCount = Object.values(m.yellowCards || {}).flat().length;
+                  yellowCount = Object.values(m.yellowCards || {}).flat()
+                    .length;
                 }
                 const hasYellow = yellowCount > 0;
                 // Compute red card details and count
@@ -89,13 +132,14 @@ const MatchesResults = () => {
                   redDetails = m.redCards.map((t) => `(${t}')`);
                   redCount = m.redCards.length;
                 } else {
-                  redDetails = Object.entries(m.redCards || {}).flatMap(([pid, times]) =>
-                    (Array.isArray(times) ? times : [times]).map((t) => {
-                      const player = availableTeams
-                        .flatMap((team) => team.players || [])
-                        .find((p) => p.id === pid);
-                      return `${player?.name || pid} (${t}')`;
-                    })
+                  redDetails = Object.entries(m.redCards || {}).flatMap(
+                    ([pid, times]) =>
+                      (Array.isArray(times) ? times : [times]).map((t) => {
+                        const player = availableTeams
+                          .flatMap((team) => team.players || [])
+                          .find((p) => p.id === pid);
+                        return `${player?.name || pid} (${t}')`;
+                      }),
                   );
                   redCount = Object.values(m.redCards || {}).flat().length;
                 }
@@ -103,18 +147,24 @@ const MatchesResults = () => {
                 // Derive scorer player IDs for each team (for tooltip with goal times)
                 const goalEntries = Object.entries(m.goals || {}); // [ [pid, count], ... ]
                 // Get player IDs for each team
-                const teamAPlayerIds = availableTeams
-                  .find((t) => String(t.team_id) === String(m.teamA))
-                  ?.players.map((p) => p.id) || [];
-                const teamBPlayerIds = availableTeams
-                  .find((t) => String(t.team_id) === String(m.teamB))
-                  ?.players.map((p) => p.id) || [];
+                const teamAPlayerIds =
+                  availableTeams
+                    .find((t) => String(t.team_id) === String(m.teamA))
+                    ?.players.map((p) => p.id) || [];
+                const teamBPlayerIds =
+                  availableTeams
+                    .find((t) => String(t.team_id) === String(m.teamB))
+                    ?.players.map((p) => p.id) || [];
                 // Filter for player IDs with goals for each team
                 const scorerNamesA = goalEntries
-                  .filter(([pid, count]) => teamAPlayerIds.includes(pid) && count > 0)
+                  .filter(
+                    ([pid, count]) => teamAPlayerIds.includes(pid) && count > 0,
+                  )
                   .map(([pid]) => pid);
                 const scorerNamesB = goalEntries
-                  .filter(([pid, count]) => teamBPlayerIds.includes(pid) && count > 0)
+                  .filter(
+                    ([pid, count]) => teamBPlayerIds.includes(pid) && count > 0,
+                  )
                   .map(([pid]) => pid);
                 return (
                   <div key={m.id} className="match-results-card">
@@ -126,86 +176,143 @@ const MatchesResults = () => {
                         alignItems: "center",
                       }}
                     >
-                      <h3 className="match-results-teams" style={{marginTop: "1rem", marginBottom: "1rem"}}>
+                      <h3
+                        className="match-results-teams"
+                        style={{ marginTop: "1rem", marginBottom: "1rem" }}
+                      >
                         <span className="team-left-gradient">
-                          {availableTeams.find((t) => String(t.team_id) === String(m.teamA))?.team_name || m.teamA}
+                          {availableTeams.find(
+                            (t) => String(t.team_id) === String(m.teamA),
+                          )?.team_name || m.teamA}
                         </span>{" "}
                         vs{" "}
                         <span className="team-right-gradient">
-                          {availableTeams.find((t) => String(t.team_id) === String(m.teamB))?.team_name || m.teamB}
+                          {availableTeams.find(
+                            (t) => String(t.team_id) === String(m.teamB),
+                          )?.team_name || m.teamB}
                         </span>{" "}
                         (Match Winner:{" "}
-                          {computedWinner === 'Draw' ? (
-                            <span className="draw-gradient">{computedWinner}</span>
-                          ) : (
-                            <span className="winner-gradient">{computedWinner}</span>
-                          )}
+                        {computedWinner === "Draw" ? (
+                          <span className="draw-gradient">
+                            {computedWinner}
+                          </span>
+                        ) : (
+                          <span className="winner-gradient">
+                            {computedWinner}
+                          </span>
+                        )}
                         )
                       </h3>
-                      <button
-                        type="button"
-                        className="result-view-button"
+                      <div
+                        className="box-right-side"
                         style={{
-                          padding: 0,
-                          background: 'none',
-                          border: 'none',
-                          width: '2rem',
-                          height: '2rem',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
+                          width: "fit-content",
+                          display: "flex",
+                          alignItems: "center",
+                          columnGap: "1rem",
                         }}
-                        onClick={() =>
-                          setExpandedId(expandedId === m.id ? null : m.id)
-                        }
                       >
-                        <img
-                          src={downIcon}
-                          alt={expandedId === m.id ? "Collapse" : "Expand"}
+                        <span
+                          className="match-date"
+                          style={{ marginRight: "0.5rem", fontWeight: "bold" }}
+                        >
+                          {formatDate(m.date)}
+                        </span>
+                        <button
+                          type="button"
+                          className="result-view-button"
                           style={{
-                            width: '1.5rem',
-                            height: '1.5rem',
-                            transform: expandedId === m.id ? 'rotate(180deg)' : 'rotate(0deg)',
-                            transition: 'transform 0.3s ease',
+                            padding: 0,
+                            background: "none",
+                            border: "none",
+                            width: "2rem",
+                            height: "2rem",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
-                        />
-                      </button>
+                          onClick={() =>
+                            setExpandedId(expandedId === m.id ? null : m.id)
+                          }
+                        >
+                          <img
+                            src={downIcon}
+                            alt={expandedId === m.id ? "Collapse" : "Expand"}
+                            style={{
+                              width: "1.5rem",
+                              height: "1.5rem",
+                              transform:
+                                expandedId === m.id
+                                  ? "rotate(180deg)"
+                                  : "rotate(0deg)",
+                              transition: "transform 0.3s ease",
+                            }}
+                          />
+                        </button>
+                      </div>
                     </div>
                     <div
                       className="match-details-expanded"
                       style={{
-                        padding: expandedId === m.id ? '0.5rem 1rem' : '0 1rem',
-                        maxHeight: expandedId === m.id ? '20rem' : '0',
-                        overflow: 'hidden',
-                        transition: 'max-height 0.5s ease, padding 0.5s ease',
-                        color: 'black',
+                        padding: expandedId === m.id ? "0.5rem 1rem" : "0 1rem",
+                        maxHeight: expandedId === m.id ? "20rem" : "0",
+                        overflow: "hidden",
+                        transition: "max-height 0.5s ease, padding 0.5s ease",
+                        color: "black",
                       }}
                     >
                       <>
-                        <p><strong>Venue:</strong> {venueName}</p>
-                        <p><strong>Date:</strong> {formatDate(m.date)}</p>
-                        <p><strong>Time:</strong> {m.startTime} - {m.endTime}</p>
                         <p>
-                          <strong>Score:</strong>{" "}
-                          {/* Team A score */}
+                          <strong>Venue:</strong> {venueName}
+                        </p>
+                        <p>
+                          <strong>Time:</strong> {m.startTime} - {m.endTime}
+                        </p>
+                        <p>
+                          <strong>Score:</strong> {/* Team A score */}
                           <div
-                            style={{ display: "inline-block", position: "relative", marginRight: "0.25rem" }}
-                            onMouseEnter={() => m.scoreA > 0 && setHoveredScoreAId(m.id)}
+                            style={{
+                              display: "inline-block",
+                              position: "relative",
+                              marginRight: "0.25rem",
+                            }}
+                            onMouseEnter={() =>
+                              m.scoreA > 0 && setHoveredScoreAId(m.id)
+                            }
                             onMouseLeave={() => setHoveredScoreAId(null)}
                           >
-                            <span style={{ textDecoration: m.scoreA > 0 ? "underline" : "none", cursor: m.scoreA > 0 ? "help" : "default" }}>
+                            <span
+                              style={{
+                                textDecoration:
+                                  m.scoreA > 0 ? "underline" : "none",
+                                cursor: m.scoreA > 0 ? "help" : "default",
+                              }}
+                            >
                               {m.scoreA}
                             </span>
                             {hoveredScoreAId === m.id && (
-                              <div style={{
-                                position: "absolute", bottom: "100%", left: 0,
-                                backgroundColor: "white", border: "1px solid #ccc",
-                                borderRadius: "0.5rem", boxShadow: "0 0.25rem 0.5rem rgba(0,0,0,0.1)",
-                                padding: "0.5rem", zIndex: 10, color: "black",
-                                whiteSpace: "nowrap"
-                              }}>
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  bottom: "100%",
+                                  left: 0,
+                                  backgroundColor: "white",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "0.5rem",
+                                  boxShadow: "0 0.25rem 0.5rem rgba(0,0,0,0.1)",
+                                  padding: "0.5rem",
+                                  zIndex: 10,
+                                  color: "black",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
                                 <strong>Scorers:</strong>
-                                <ul style={{ margin: "0.25rem 0 0", paddingLeft: "1rem" }}>
+                                <ul
+                                  style={{
+                                    margin: "0.25rem 0 0",
+                                    paddingLeft: "1rem",
+                                  }}
+                                >
                                   {scorerNamesA.map((pid, i) => {
                                     const player = availableTeams
                                       .flatMap((team) => team.players || [])
@@ -213,7 +320,8 @@ const MatchesResults = () => {
                                     const times = m.goalTimes?.[pid] || [];
                                     return (
                                       <li key={i}>
-                                        {player?.name || pid} ({times.map(t => `${t}'`).join(', ')})
+                                        {player?.name || pid} (
+                                        {times.map((t) => `${t}'`).join(", ")})
                                       </li>
                                     );
                                   })}
@@ -224,23 +332,48 @@ const MatchesResults = () => {
                           – {/* separator */}
                           {/* Team B score */}
                           <div
-                            style={{ display: "inline-block", position: "relative", marginLeft: "0.25rem" }}
-                            onMouseEnter={() => m.scoreB > 0 && setHoveredScoreBId(m.id)}
+                            style={{
+                              display: "inline-block",
+                              position: "relative",
+                              marginLeft: "0.25rem",
+                            }}
+                            onMouseEnter={() =>
+                              m.scoreB > 0 && setHoveredScoreBId(m.id)
+                            }
                             onMouseLeave={() => setHoveredScoreBId(null)}
                           >
-                            <span style={{ textDecoration: m.scoreB > 0 ? "underline" : "none", cursor: m.scoreB > 0 ? "help" : "default" }}>
+                            <span
+                              style={{
+                                textDecoration:
+                                  m.scoreB > 0 ? "underline" : "none",
+                                cursor: m.scoreB > 0 ? "help" : "default",
+                              }}
+                            >
                               {m.scoreB}
                             </span>
                             {hoveredScoreBId === m.id && (
-                              <div style={{
-                                position: "absolute", bottom: "100%", left: 0,
-                                backgroundColor: "white", border: "1px solid #ccc",
-                                borderRadius: "0.5rem", boxShadow: "0 0.25rem 0.5rem rgba(0,0,0,0.1)",
-                                padding: "0.5rem", zIndex: 10, color: "black",
-                                whiteSpace: "nowrap"
-                              }}>
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  bottom: "100%",
+                                  left: 0,
+                                  backgroundColor: "white",
+                                  border: "1px solid #ccc",
+                                  borderRadius: "0.5rem",
+                                  boxShadow: "0 0.25rem 0.5rem rgba(0,0,0,0.1)",
+                                  padding: "0.5rem",
+                                  zIndex: 10,
+                                  color: "black",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
                                 <strong>Scorers:</strong>
-                                <ul style={{ margin: "0.25rem 0 0", paddingLeft: "1rem" }}>
+                                <ul
+                                  style={{
+                                    margin: "0.25rem 0 0",
+                                    paddingLeft: "1rem",
+                                  }}
+                                >
                                   {scorerNamesB.map((pid, i) => {
                                     const player = availableTeams
                                       .flatMap((team) => team.players || [])
@@ -248,7 +381,8 @@ const MatchesResults = () => {
                                     const times = m.goalTimes?.[pid] || [];
                                     return (
                                       <li key={i}>
-                                        {player?.name || pid} ({times.map(t => `${t}'`).join(', ')})
+                                        {player?.name || pid} (
+                                        {times.map((t) => `${t}'`).join(", ")})
                                       </li>
                                     );
                                   })}
@@ -257,17 +391,28 @@ const MatchesResults = () => {
                             )}
                           </div>
                         </p>
-                        <p><strong>Winner:</strong> {computedWinner}</p>
+                        <p>
+                          <strong>Winner:</strong> {computedWinner}
+                        </p>
                         <p>
                           <strong>Yellow Cards:</strong>{" "}
                           <div
-                            style={{ display: "inline-block", position: "relative" }}
-                            onMouseEnter={() => hasYellow && setHoveredYellowId(m.id)}
-                            onMouseLeave={() => hasYellow && setHoveredYellowId(null)}
+                            style={{
+                              display: "inline-block",
+                              position: "relative",
+                            }}
+                            onMouseEnter={() =>
+                              hasYellow && setHoveredYellowId(m.id)
+                            }
+                            onMouseLeave={() =>
+                              hasYellow && setHoveredYellowId(null)
+                            }
                           >
                             <span
                               style={{
-                                textDecoration: hasYellow ? "underline" : "none",
+                                textDecoration: hasYellow
+                                  ? "underline"
+                                  : "none",
                                 cursor: hasYellow ? "help" : "default",
                               }}
                             >
@@ -293,7 +438,12 @@ const MatchesResults = () => {
                                 }}
                               >
                                 <strong>Yellow Cards Details:</strong>
-                                <ul style={{ margin: "0.5rem 0 0", paddingLeft: "1rem" }}>
+                                <ul
+                                  style={{
+                                    margin: "0.5rem 0 0",
+                                    paddingLeft: "1rem",
+                                  }}
+                                >
                                   {yellowDetails.map((d, idx) => (
                                     <li key={idx}>{d}</li>
                                   ))}
@@ -305,7 +455,10 @@ const MatchesResults = () => {
                         <p>
                           <strong>Red Cards:</strong>{" "}
                           <div
-                            style={{ display: "inline-block", position: "relative" }}
+                            style={{
+                              display: "inline-block",
+                              position: "relative",
+                            }}
                             onMouseEnter={() => hasRed && setHoveredRedId(m.id)}
                             onMouseLeave={() => hasRed && setHoveredRedId(null)}
                           >
@@ -336,7 +489,12 @@ const MatchesResults = () => {
                                 }}
                               >
                                 <strong>Red Cards Details:</strong>
-                                <ul style={{ margin: "0.5rem 0 0", paddingLeft: "1rem" }}>
+                                <ul
+                                  style={{
+                                    margin: "0.5rem 0 0",
+                                    paddingLeft: "1rem",
+                                  }}
+                                >
                                   {redDetails.map((d, idx) => (
                                     <li key={idx}>{d}</li>
                                   ))}
@@ -346,8 +504,7 @@ const MatchesResults = () => {
                           </div>
                         </p>
                         <p>
-                          <strong>Man of the Match:</strong>{" "}
-                          {motmName}
+                          <strong>Man of the Match:</strong> {motmName}
                         </p>
                       </>
                     </div>

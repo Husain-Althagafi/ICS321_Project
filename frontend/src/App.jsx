@@ -64,7 +64,7 @@ function App() {
           path="/admin/detailed-match-stats/:tournamentId/:matchId/match-stats"
           element={<DetailedMatchStats />}
         />
-        <Route path = "/guest/home" element={<GuestHome />} />
+        <Route path="/guest/home" element={<GuestHome />} />
         <Route
           path="/guest/match-results/tournaments"
           element={<Tournaments_MatchResults />}

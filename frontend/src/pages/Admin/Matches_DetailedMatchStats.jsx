@@ -46,10 +46,14 @@ const Matches_DetailedMatchStats = () => {
                 const computedWinner =
                   m.winner ||
                   (m.scoreA > m.scoreB
-                    ? (availableTeams.find((t) => String(t.team_id) === String(m.teamA))?.team_name || m.teamA)
+                    ? availableTeams.find(
+                        (t) => String(t.team_id) === String(m.teamA),
+                      )?.team_name || m.teamA
                     : m.scoreB > m.scoreA
-                    ? (availableTeams.find((t) => String(t.team_id) === String(m.teamB))?.team_name || m.teamB)
-                    : 'Draw');
+                      ? availableTeams.find(
+                          (t) => String(t.team_id) === String(m.teamB),
+                        )?.team_name || m.teamB
+                      : "Draw");
                 return (
                   <div key={m.id} className="match-card">
                     <div
@@ -81,13 +85,18 @@ const Matches_DetailedMatchStats = () => {
                     <p>
                       <strong>Time:</strong> {m.startTime} - {m.endTime}
                     </p>
-                    {localStorage.getItem(`match-completed-${m.id}`) === 'true' && (
+                    {localStorage.getItem(`match-completed-${m.id}`) ===
+                      "true" && (
                       <p>
                         <strong>Match Winner:</strong>{" "}
-                        {computedWinner === 'Draw' ? (
-                          <span className="draw-gradient">{computedWinner}</span>
+                        {computedWinner === "Draw" ? (
+                          <span className="draw-gradient">
+                            {computedWinner}
+                          </span>
                         ) : (
-                          <span className="winner-gradient">{computedWinner}</span>
+                          <span className="winner-gradient">
+                            {computedWinner}
+                          </span>
                         )}
                       </p>
                     )}
