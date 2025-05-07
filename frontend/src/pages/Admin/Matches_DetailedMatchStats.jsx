@@ -79,7 +79,7 @@ const Matches_DetailedMatchStats = () => {
                       }}
                     >
                       <h3 style={{ margin: 0 }}>
-                        Match No:{" "}
+                        Match Id:{ ' '+m.match_no}
                         <span className="match-name-gradient">{m.id}</span>
                       </h3>
                     </div>
@@ -94,7 +94,7 @@ const Matches_DetailedMatchStats = () => {
                       )?.team_name || m.team2}
                     </p>
                     <p>
-                      <strong>Date:</strong> {formatDate('startDate')}
+                      <strong>Date:</strong> {formatDate(m.play_date.split("T")[0])}
                     </p>
                     <p>
                       <strong>Time:</strong> {'startTime'} - {'no end time' || endTime}
