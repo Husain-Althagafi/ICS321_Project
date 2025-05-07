@@ -68,9 +68,6 @@ const BrowseTeams = () => {
                       </span>
                     </h3>
                   </div>
-                  <p>
-                    <strong>Team ID:</strong> {team.team_id}
-                  </p>
                   <button
                     type="button"
                     className="edit-button"

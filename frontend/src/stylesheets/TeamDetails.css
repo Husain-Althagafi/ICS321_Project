@@ -372,3 +372,9 @@ button[style*="background-color: orange"]:hover {
   background-clip: border-box;
   transform: scale(1.05);
 }
+
+/* Card button hover: gradient green */
+.btn-red-card:hover,
+.btn-yellow-card:hover {
+  background: linear-gradient(135deg, #00713d, #00934f) !important;
+}
