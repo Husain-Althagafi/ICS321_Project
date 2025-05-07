@@ -48,12 +48,15 @@ exports.getMatchesByTournamentId = asyncHandler(async (req, res) => {
         SELECT 
             mp.match_no,
             mp.play_date,
+            mp.start_time,
+            mp.end_time,
             t1.team_name AS team1,
             t2.team_name AS team2,
             mp.goal_score,
             mp.results,
             v.venue_name,
-            tr.tr_name AS tournament_name
+            tr.tr_name AS tournament_name,
+            mp.completed
         FROM 
             match_played mp
         JOIN 
