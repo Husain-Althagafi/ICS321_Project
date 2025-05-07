@@ -421,7 +421,7 @@ const EditTournament = () => {
                             <span>
                               <strong>{teamAName}</strong> vs{" "}
                               <strong>{teamBName}</strong> ({m.startTime} -{" "}
-                              {m.endTime}, {formatDate(m.date)})
+                              {m.endTime}, {m.date.replace(/-/g, "/")})
                             </span>
                             <div style={{ display: "flex", gap: "0.25rem" }}>
                               <button
@@ -450,10 +450,10 @@ const EditTournament = () => {
                                   color: "white",
                                 }}
                                 onClick={() => {
-                                  // Pre-fill match details, converting stored ISO date to dd-mm-yyyy format
+                                  // Pre-fill match details, use m.date as is (already in dd-mm-yyyy format)
                                   setMatchDetails({
                                     ...m,
-                                    date: formatDate(m.date),
+                                    date: m.date,
                                     captainA: m.captainA || "",
                                     captainB: m.captainB || "",
                                   });
@@ -906,23 +906,17 @@ const EditTournament = () => {
               <select
                 style={{
                   flex: 1,
-                  backgroundColor: "white",
-                  color: "black",
+                  backgroundColor: "#f0f0f0",
+                  color: "#666",
                   borderRadius: "0.5rem",
                   padding: "0.5rem 0.25rem",
                   height: "2.5rem",
                   border: "1px solid #ccc",
                   fontFamily: "Poppins, sans-serif",
+                  cursor: "not-allowed",
                 }}
                 value={matchDetails.date}
-                onChange={(e) => {
-                  // When date changes, we need to re-evaluate available venues
-                  setMatchDetails({
-                    ...matchDetails,
-                    date: e.target.value,
-                    venueId: "",
-                  });
-                }}
+                disabled
               >
                 <option value="">Select a Date</option>
                 {getDateOptions(startDate, endDate).map((date) => (
@@ -1189,7 +1183,7 @@ const EditTournament = () => {
               )?.team_name || selectedMatch.teamB}
             </p>
             <p>
-              <strong>Date:</strong> {formatDate(selectedMatch.date)}
+              <strong>Date:</strong> {formatDate(selectedMatch.date).replace(/-/g, "/")}
             </p>
             <p>
               <strong>Time:</strong> {selectedMatch.startTime} -{" "}
