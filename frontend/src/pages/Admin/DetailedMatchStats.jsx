@@ -33,6 +33,7 @@ const DetailedMatchStats = () => {
   const [team1Players, setTeam1Players] = useState([])
   const [team2Players, setTeam2Players] = useState([])
   const [captains, setCaptains] = useState([])
+  const [cards, setCards] = useState([])
 
   // Track match completion
   const [isCompleted, setIsCompleted] = useState(false);
