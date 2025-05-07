@@ -4,4 +4,7 @@ const router = express.Router()
 
 router.get('/:match_no/goals', matchController.getGoalsByMatchNo)
 
+router.get('/:match_no/captains', matchController.getCaptainsByMatchId)
+
+
 module.exports = router

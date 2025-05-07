@@ -32,6 +32,7 @@ const DetailedMatchStats = () => {
   const [teams, setTeams] = useState([])
   const [team1Players, setTeam1Players] = useState([])
   const [team2Players, setTeam2Players] = useState([])
+  const [captains, setCaptains] = useState([])
 
   // Track match completion
   const [isCompleted, setIsCompleted] = useState(false);
@@ -42,9 +43,7 @@ useEffect(() => {
   //get match by id from tournament
   axios.get(`http://localhost:5000/tournaments/${tournamentId}/matches`)
   .then((res) => {
-    setMatches(res.data.data)
-    const selectedMatch = res.data.data.find((m) => m.match_no == matchId);
-    setMatch(selectedMatch);
+    setMatch(res.data.data.find((m) => m.match_no == matchId));
     setIsCompleted(res.data.data[0].completed)
   })
   .catch(err => console.error(err))
@@ -71,9 +70,12 @@ useEffect(() => {
   })
   .catch(err => console.error(err))
 
-
-  //get team 1 players
-  
+  //get captains
+  axios.get(`http://localhost:5000/matches/${matchId}/captains`)
+  .then((res) => {
+    setCaptains(res.data.captains[0])
+  })
+  .catch(err=>console.error(err))
 
 }, [])
 
@@ -309,7 +311,7 @@ const endMinutes = match?.end_time
                         {goalCounts[p.id] != null && (
                           <strong>[{goalCounts[p.id]}] </strong>
                         )}
-                        {p.name.split(" ").slice(-1)[0]} ({p.position})
+                        {p.name.split(" ").slice(-1)[0]} ({p.position_to_play})
                         {p.isSubstitute && (
                           <span
                             style={{
@@ -321,7 +323,7 @@ const endMinutes = match?.end_time
                             Sub
                           </span>
                         )}
-                        {match.captainA === p.id && (
+                        {captains.player1_id === p.player_id && (
                           <span
                             className="captain-status"
                             style={{ marginLeft: "0.5rem" }}
@@ -335,24 +337,24 @@ const endMinutes = match?.end_time
                           type="button"
                           className="btn-motm"
                           disabled={
-                            motmPlayerId !== null && motmPlayerId !== p.id
+                            motmPlayerId !== null && motmPlayerId !== p.player_id
                           }
                           onClick={() => {
-                            if (motmPlayerId === p.id) {
+                            if (motmPlayerId === p.player_id) {
                               setMotmPlayerId(null);
                             } else {
-                              setMotmPlayerId(p.id);
+                              setMotmPlayerId(p.player_id);
                             }
                           }}
                           style={{
                             backgroundImage:
-                              motmPlayerId === p.id
+                              motmPlayerId === p.player_id
                                 ? "linear-gradient(135deg, #00713d, #00934f)"
                                 : motmPlayerId !== null
                                   ? "#ccc"
                                   : undefined,
                             opacity:
-                              motmPlayerId !== null && motmPlayerId !== p.id
+                              motmPlayerId !== null && motmPlayerId !== p.player_id
                                 ? 0.6
                                 : 1,
                           }}
@@ -496,7 +498,7 @@ const endMinutes = match?.end_time
                             Sub
                           </span>
                         )}
-                        {match.captainB === p.id && (
+                        {captains.player2_id === p.player_id && (
                           <span
                             className="captain-status"
                             style={{ marginLeft: "0.5rem" }}
