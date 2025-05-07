@@ -21,37 +21,37 @@ const GuestHome = () => {
         <div className="bg-overlay"></div>
         <header className="topbar">
           <h1>
-            Welcome to the Guest Home,{" "}
+            Welcome to SOCCER@KFUPM,{" "}
             <span className="highlighted-name">{formattedFirstName}</span>
           </h1>
         </header>
 
         <section className="applications">
-          <h2>Quick Tools</h2>
+          <h2>Quick Access</h2>
           <div className="app-grid">
             <div
               className="app-item"
-              onClick={() => navigate("/guest/add-tournament")}
+              onClick={() => navigate("/guest/tournament-table")}
             >
-              Add new tournament
+              View Tournament Table
             </div>
             <div
               className="app-item"
-              onClick={() => navigate("/guest/add-team")}
+              onClick={() => navigate("/guest/match-results/tournaments")}
             >
-              Add new team
+              Browse Match Results
             </div>
             <div
               className="app-item"
-              onClick={() => navigate("/guest/delete-tournament")}
+              onClick={() => navigate("/guest/browse-teams")}
             >
-              Delete tournament
+              Browse Teams
             </div>
             <div
               className="app-item"
-              onClick={() => navigate("/guest/detailed-match-stats")}
+              onClick={() => navigate("/guest/top-goalscorers")}
             >
-              Detailed Match Stats
+              Top Goalscorers
             </div>
           </div>
         </section>

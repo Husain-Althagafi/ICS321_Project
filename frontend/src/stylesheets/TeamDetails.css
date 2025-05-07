@@ -1,0 +1,391 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
+
+.guest-home {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  font-family: "Poppins", sans-serif;
+  overflow: hidden;
+}
+
+/* Sidebar styling */
+.sidebar {
+  width: 11rem;
+  background-color: #3b774d;
+  color: white;
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(135deg, #00713d, #00934f);
+}
+
+.sidebar .profile {
+  background-color: white;
+  color: black;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 4rem;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* margin-bottom: 2rem; */
+  font-size: 1.25rem;
+  object-fit: cover;
+  overflow: hidden;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.3);
+}
+
+.sidebar .profile img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  text-shadow: 0 0.15rem 0.25rem rgba(0, 0, 0, 0.3);
+}
+
+.guest-name {
+  color: white;
+  font-weight: bold;
+  font-size: 1.35rem;
+  margin-top: 0.5rem;
+  text-align: center;
+  text-shadow: 0 0.15rem 0.25rem rgba(0, 0, 0, 0.3);
+}
+
+.sidebar nav ul {
+  list-style: none;
+  padding: 0;
+  width: 100%;
+}
+
+.sidebar nav ul li {
+  margin: 1rem 0;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  transition:
+    background-color 0.2s,
+    transform 0.2s,
+    box-shadow 0.2s;
+  color: white;
+  font-weight: bold;
+  font-size: 1.1rem;
+  text-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.25);
+}
+
+.sidebar nav ul li:hover {
+  background-color: #1b4332;
+  transform: translateY(-3px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
+}
+
+/* Main content area */
+.main-content {
+  flex: 1;
+  background-color: #f4f4f9;
+  padding: 2rem;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  max-width: 100vw;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0rem;
+}
+
+.topbar h1 {
+  font-size: 3rem;
+  font-weight: bold;
+  color: black;
+  text-shadow: none;
+  margin-top: 0rem;
+  margin-bottom: 1rem;
+}
+
+.tournament-form h2 {
+  font-size: 2rem;
+  color: black;
+  text-shadow: none;
+  text-align: left;
+}
+
+/* .app-grid {
+  display: grid;
+  align-self: self-start;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2%;
+  justify-items: center;
+  align-items: center;
+}
+
+.app-item {
+  background-color: rgba(255, 255, 255, 1);
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  text-align: center;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  color: black;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 98%;
+  height: 15rem;
+  z-index: 1;
+} */
+
+.app-item:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Widget boxes
+.widgets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.widget-box {
+  flex: 1;
+  min-width: 18rem;
+  background-color: white;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+} */
+
+.profile-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* KFUPM vertical seal styling
+.vertical-seal {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  opacity: 1;
+  height: 80vh;
+  pointer-events: none;
+  filter: invert(1);
+} */
+
+.highlighted-name {
+  background: linear-gradient(135deg, #017941, #02cb6d);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+}
+
+/* Semi-transparent background overlay image */
+.bg-overlay {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-image: url("../assets/images/Illustration 1@4x.png");
+  background-size: contain;
+  background-position: bottom right;
+  background-repeat: no-repeat;
+  opacity: 0.2;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+.AddTournament.css .form-container form,
+.form-container form label,
+.form-container form input,
+.form-container form select,
+.form-container form textarea,
+.form-container form button {
+  color: black;
+}
+
+.form-container form label {
+  display: block;
+  margin-bottom: 0.2rem;
+  text-align: left;
+  font-weight: 500;
+}
+
+.security-modal-content label {
+  display: block;
+  margin-bottom: 0.2rem;
+  text-align: left;
+  font-weight: 500;
+}
+
+.form-container {
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  max-width: 100%;
+  margin: 1rem 0;
+  z-index: 1;
+  position: relative;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+.form-container form input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-error {
+  color: red;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 0rem;
+  margin-bottom: 0rem;
+}
+
+.form-container .players-list {
+  max-height: 60vh;
+  /* overflow-y: auto; */
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding-top: 0rem;
+  padding-bottom: 0rem;
+}
+
+.form-container .players-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  color: black;
+}
+
+.form-container .players-list li {
+  background-color: white;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+  margin-bottom: 0.5rem;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.form-container .players-list li:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.edit-team-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+.players-list label {
+  color: black;
+  /* font-weight: light; */
+  margin: 0;
+}
+.security-modal-content .close-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.security-modal-content .close-button:hover {
+  background-color: white;
+  color: red;
+}
+
+/* .substitute-checkbox {
+  display: flex;
+  align-items: center;
+  width: 0%;
+  gap: 0.5rem;
+} */
+
+/* .substitute-label{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0rem;
+} */
+/* Save Changes button hover state */
+.form-container form button[type="submit"]:hover {
+  background-color: #00934f;
+  color: white;
+}
+/* Hover animations for Edit and Delete buttons */
+button[style*="background-color: red"]:hover {
+  background-color: darkred !important;
+  transform: scale(1.05);
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+
+button[style*="background-color: orange"]:hover {
+  background-color: darkorange !important;
+  transform: scale(1.05);
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+
+/* Return button gradient-to-white swap */
+.return-button {
+  background: linear-gradient(135deg, #00713d, #00934f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transform: scale(1);
+  transition:
+    background 0.3s ease,
+    -webkit-text-fill-color 0.3s ease,
+    background-clip 0.3s ease,
+    transform 0.3s ease;
+}
+
+.return-button:hover {
+  background: linear-gradient(135deg, #00713d, #00934f);
+  -webkit-text-fill-color: white;
+  background-clip: border-box;
+  transform: scale(1.05);
+}
+
+/* Card button hover: gradient green */
+.btn-red-card:hover,
+.btn-yellow-card:hover {
+  background: linear-gradient(135deg, #00713d, #00934f) !important;
+}
