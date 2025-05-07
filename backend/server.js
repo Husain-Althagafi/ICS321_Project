@@ -8,6 +8,7 @@ const adminRoutes = require('./routes/adminRoutes')
 const guestRoutes = require('./routes/guestRoutes')
 const tournamentRoutes = require('./routes/tournamentRoutes')
 const teamRoutes = require('./routes/teamRoutes')
+const matchRoutes = require('./routes/matchRoutes')
 
 
 //App
@@ -24,6 +25,7 @@ app.use('/admin', adminRoutes);
 app.use('/guest', guestRoutes);
 app.use('/tournaments', tournamentRoutes)
 app.use('/teams', teamRoutes)
+app.use('/matches', matchRoutes)
 
 
 

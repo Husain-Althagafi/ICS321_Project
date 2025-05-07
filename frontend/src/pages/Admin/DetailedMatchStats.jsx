@@ -33,6 +33,8 @@ const DetailedMatchStats = () => {
   // Track match completion
   const [isCompleted, setIsCompleted] = useState(false);
 
+  const [goals, setGoals] = useState([])
+
 useEffect(() => {
   //get match by id from tournament
   axios.get(`http://localhost:5000/tournaments/${tournamentId}/matches`)
@@ -80,6 +82,7 @@ useEffect(() => {
   const [removeYellowTime, setRemoveYellowTime] = useState("");
   const [removeYellowError, setRemoveYellowError] = useState("");
 
+  
   // Modal state for match completion confirmation
   const [showCompleteModal, setShowCompleteModal] = useState(false);
 
@@ -115,6 +118,15 @@ const endMinutes = match?.end_time
   // Goal handler using native prompt
 
   useEffect(() => {
+
+    axios.get(`http://localhost:5000/matches/${matchId}/goals`)
+    .then((res) => {
+      setGoals(res.data.data)
+    })
+    .catch(err => console.error(err))
+
+
+
     const stored = JSON.parse(localStorage.getItem("tournaments")) || [];
     setAvailableTeams(JSON.parse(localStorage.getItem("teams")) || []);
     const tour = stored.find((t) => String(t.id) === tournamentId);
