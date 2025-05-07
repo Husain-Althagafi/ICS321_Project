@@ -17,7 +17,7 @@ router.get('/:id/teams', tournamentController.getTeamsByTournamentId)
 //POST
 // router.post('/', tournamentController.addNewTournament)  this exists in admin route
 
-router.post('/:id', tournamentController.updateTournamentById)
+router.put('/:id', tournamentController.updateTournamentById)
 
 module.exports = router
 

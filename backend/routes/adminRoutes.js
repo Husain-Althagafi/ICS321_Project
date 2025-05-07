@@ -11,7 +11,7 @@ router.post('/teams', adminController.addTeam)
 
 //add team to tournament
 router.post('/teams/:id', adminController.addTeamToTournament)
-
+    
 router.post('/:tournament/:match/:team/captain', adminController.selectCaptain)
 
 router.post('/:team/:player', adminController.approvePlayerToTeam)

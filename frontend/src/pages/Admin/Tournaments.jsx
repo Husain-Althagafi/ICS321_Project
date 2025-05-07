@@ -84,7 +84,7 @@ const Tournaments = () => {
                     </h3>
                   </div>
                   <p>
-                    <strong>Tournament ID:</strong> {tournament.id}
+                    <strong>Tournament ID:</strong> {tournament.tr_id}
                   </p>
                   <p>
                     <strong>Start Date:</strong>{" "}

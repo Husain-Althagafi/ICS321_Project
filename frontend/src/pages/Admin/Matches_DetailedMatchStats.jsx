@@ -94,10 +94,10 @@ const Matches_DetailedMatchStats = () => {
                       )?.team_name || m.team2}
                     </p>
                     <p>
-                      <strong>Date:</strong> {formatDate(startDate)}
+                      <strong>Date:</strong> {formatDate('startDate')}
                     </p>
                     <p>
-                      <strong>Time:</strong> {startTime} - {'no end time' || endTime}
+                      <strong>Time:</strong> {'startTime'} - {'no end time' || endTime}
                     </p>
                     {localStorage.getItem(`match-completed-${m.id}`) ===
                       "true" && (

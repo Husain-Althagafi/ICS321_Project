@@ -5,7 +5,7 @@ import DeleteTournamentButton from "../../components/DeleteTournamentButton";
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from "../../assets/images/Illustration 1@4x.png";
 import "../../stylesheets/EditTournament.css";
-
+import axios from 'axios'
 const EditTournament = () => {
   // Helper to format yyyy-mm-dd to dd-mm-yyyy
   const formatDate = (dateString) => {
@@ -28,10 +28,7 @@ const EditTournament = () => {
   const initials = `${first[0]}${last[0]}`.toUpperCase();
   const formattedName = `${first.charAt(0).toUpperCase() + first.slice(1)} ${last.charAt(0).toUpperCase() + last.slice(1)}`;
 
-  const [tournaments, setTournaments] = useState(() => {
-    const stored = localStorage.getItem("tournaments");
-    return stored ? JSON.parse(stored) : [];
-  });
+  const [tournaments, setTournaments] = useState([]);
   const [tournamentName, setTournamentName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -52,6 +49,9 @@ const EditTournament = () => {
   const [viewMatchModal, setViewMatchModal] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [teams, setTeams] = useState([])
+  const [tournament, setTournament] = useState({})
+  const [captains, setCaptains] = useState([])
+
   const [matchDetails, setMatchDetails] = useState({
     id: "",
     teamA: "",
@@ -67,21 +67,64 @@ const EditTournament = () => {
   const [availableTeams, setAvailableTeams] = useState([]);
   // Helper to retrieve a team's player roster
   const getTeamPlayers = (teamId) => {
-    const team = availableTeams.find(
-      (t) => String(t.team_id) === String(teamId),
-    );
-    return team?.players || [];
+
+    axios.get(`http://localhost:5000/teams/${teamId}/players`)
+    .then((res) => {
+      setPlayers(res.data.data)
+    })
+    .catch(err=> console.error(err))
+
+    // const team = availableTeams.find(
+    //   (t) => String(t.team_id) === String(teamId),
+    // );
+    // return team?.players || [];
   };
 
-  useEffect(() => {
-    const storedTournaments =
-      JSON.parse(localStorage.getItem("tournaments")) || [];
-    const allTeams = JSON.parse(localStorage.getItem("teams")) || [];
-    setAvailableTeams(allTeams);
 
-    const tournament = storedTournaments.find(
-      (t) => String(t.id) === tournamentId,
-    );
+
+  useEffect(() => {
+    // const storedTournaments =
+    //   JSON.parse(localStorage.getItem("tournaments")) || [];
+    // const allTeams = JSON.parse(localStorage.getItem("teams")) || [];
+
+    //get all matches in tournaments
+    axios.get(`http://localhost:5000/tournaments/${tournamentId}/matches`)
+    .then((res) => {
+      setMatches(res.data.data)
+    })
+    .catch(err => console.error(err))
+
+    //get all teams in tournament
+    axios.get(`http://localhost:5000/tournaments/${tournamentId}/teams`)
+    .then((res) => {
+      setTeams(res.data.data.teams)
+    })
+    .catch(err => console.error(err))
+
+    // setAvailableTeams(allTeams);
+
+
+    //get tournement
+    axios.get(`http://localhost:5000/tournaments/${tournamentId}`)
+    .then((res) => {
+      setTournament(res.data.data[0])
+    })
+    .catch(err => console.error(err))
+
+
+    // get tournaments
+    axios.get(`http://localhost:5000/tournaments`)
+    .then((res) => {
+      setTournaments(res.data.data)
+    })
+    .catch(err => console.error(err))
+
+    axios.get(`http://localhost:5000/tournaments/${tournamentId}/players`)
+    .then((res) => {
+      setPlayers(res.data.data)
+    })
+    .catch(err => console.error(err)) 
+    
     if (tournament) {
       setTournamentName(tournament.tr_name);
       setStartDate(tournament.start_date);
@@ -90,23 +133,23 @@ const EditTournament = () => {
       setPlayers(players || []);
       setMatches(matches || []);
       // Initialize persistent match counter if missing
-      if (tournament.lastMatchNumber == null) {
-        const existing = matches || [];
-        const maxSuffix = existing.reduce((max, m) => {
-          const parts = m.id.split("_");
-          const num = parseInt(parts[1], 10);
-          return Math.max(max, isNaN(num) ? 0 : num);
-        }, 0);
-        tournament.lastMatchNumber = maxSuffix;
-        // Update tournaments array and persist
-        const updatedAll = storedTournaments.map((t) =>
-          String(t.id) === tournamentId
-            ? { ...t, lastMatchNumber: maxSuffix }
-            : t,
-        );
-        localStorage.setItem("tournaments", JSON.stringify(updatedAll));
-        setTournaments(updatedAll);
-      }
+      // if (tournament.lastMatchNumber == null) {
+      //   const existing = matches || [];
+      //   const maxSuffix = existing.reduce((max, m) => {
+      //     const parts = m.id.split("_");
+      //     const num = parseInt(parts[1], 10);
+      //     return Math.max(max, isNaN(num) ? 0 : num);
+      //   }, 0);
+      //   tournament.lastMatchNumber = maxSuffix;
+      //   // Update tournaments array and persist
+      //   const updatedAll = storedTournaments.map((t) =>
+      //     String(t.id) === tournamentId
+      //       ? { ...t, lastMatchNumber: maxSuffix }
+      //       : t,
+      //   );
+      //   localStorage.setItem("tournaments", JSON.stringify(updatedAll));
+      //   setTournaments(updatedAll);
+      // }
     } else {
       navigate("/admin/tournaments");
     }
@@ -136,13 +179,16 @@ const EditTournament = () => {
       setTimeout(() => alert(msg), 0);
       return;
     }
-    const updatedTournaments = tournaments.map((t) =>
-      String(t.id) === tournamentId
-        ? { ...t, name: tournamentName, startDate, endDate, players }
-        : t,
-    );
-    localStorage.setItem("tournaments", JSON.stringify(updatedTournaments));
-    navigate("/admin/tournaments");
+
+    axios.put(`http://localhost:5000/tournaments/${tournamentId}`, {
+      tr_name: tournamentName,
+      start_date: startDate,
+      end_date: endDate
+    })
+    .then((res) => {
+      navigate("/admin/tournaments");
+    })
+    .catch(err => console.error(err))
   };
 
   const handleAddPlayer = () => {
@@ -157,11 +203,13 @@ const EditTournament = () => {
     );
     if (!confirmDelete) return;
 
-    const updatedTournaments = tournaments.filter(
-      (t) => String(t.id) !== tournamentId,
-    );
-    localStorage.setItem("tournaments", JSON.stringify(updatedTournaments));
-    navigate("/admin/tournaments");
+
+    axios.delete(`http://localhost:5000/tournaments/${tournamentId}`)
+    .then((res) => {
+      navigate("/admin/tournaments");
+    })
+    .catch(err => console.error(err))
+    
   };
 
   // Utility function to get date options between start and end
@@ -268,7 +316,7 @@ const EditTournament = () => {
                   Tournament ID:
                   <input
                     type="text"
-                    value={tournamentId}
+                    value={tournament.tr_id}
                     disabled
                     style={{
                       backgroundColor: "#f0f0f0",
@@ -281,7 +329,7 @@ const EditTournament = () => {
                   Tournament Name:
                   <input
                     type="text"
-                    value={tournamentName}
+                    value={tournament.tr_name}
                     onChange={(e) => setTournamentName(e.target.value)}
                     required
                   />
@@ -290,7 +338,7 @@ const EditTournament = () => {
                   Start Date:
                   <input
                     type="date"
-                    value={startDate}
+                    value={tournament.start_date}
                     onChange={(e) => setStartDate(e.target.value)}
                     required
                   />
@@ -299,7 +347,7 @@ const EditTournament = () => {
                   End Date:
                   <input
                     type="date"
-                    value={endDate}
+                    value={tournament.end_date}
                     onChange={(e) => setEndDate(e.target.value)}
                     required
                   />
@@ -318,14 +366,14 @@ const EditTournament = () => {
                 <label>Matches</label>
                 <ul style={{ flexGrow: 1, overflowY: "auto" }}>
                   {matches.map((m, idx) => {
-                    const teamAName =
-                      availableTeams.find(
-                        (t) => String(t.team_id) === String(m.teamA),
-                      )?.team_name || m.teamA;
-                    const teamBName =
-                      availableTeams.find(
-                        (t) => String(t.team_id) === String(m.teamB),
-                      )?.team_name || m.teamB;
+                    const teamAName = m.team1
+                      // availableTeams.find(
+                      //   (t) => String(t.team_id) === String(m.teamA),
+                      // )?.team_name || m.teamA;
+                    const teamBName = m.team2
+                      // availableTeams.find(
+                      //   (t) => String(t.team_id) === String(m.teamB),
+                      // )?.team_name || m.teamB;
                     return (
                       <li
                         key={idx}
@@ -337,8 +385,8 @@ const EditTournament = () => {
                       >
                         <span>
                           <strong>{teamAName}</strong> vs{" "}
-                          <strong>{teamBName}</strong> ({m.startTime} -{" "}
-                          {m.endTime}, {formatDate(m.date)})
+                          <strong>{teamBName}</strong> ({m.play_date.split("T")[1].split(".")[0]} -{" "}
+                          {m.endTime}, {formatDate(m.play_date.split("T")[0])})
                         </span>
                         <div style={{ display: "flex", gap: "0.25rem" }}>
                           <button
@@ -370,8 +418,8 @@ const EditTournament = () => {
                               // Pre-fill match details, converting stored ISO date to dd-mm-yyyy format
                               setMatchDetails({
                                 ...m,
-                                date: formatDate(m.date),
-                                captainA: m.captainA || "",
+                                date: formatDate(m.play_date),
+                                captainA: m.captainA || "cap1",
                                 captainB: m.captainB || "",
                               });
                               setShowMatchModal(true);
