@@ -77,14 +77,8 @@ function App() {
           path="/guest/match-results/:tournamentId/matches"
           element={<MatchesResults />}
         />
-        <Route
-          path="/guest/browse-teams"
-          element={<BrowseTeams />}
-        />
-        <Route
-          path="/guest/browse-teams/:teamId"
-          element={<TeamDetails />}
-        />
+        <Route path="/guest/browse-teams" element={<BrowseTeams />} />
+        <Route path="/guest/browse-teams/:teamId" element={<TeamDetails />} />
         <Route
           path="/guest/top-goalscorers"
           element={<Tournaments_GoalscorersLeaderboard />}

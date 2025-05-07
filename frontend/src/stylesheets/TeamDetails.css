@@ -282,7 +282,9 @@
   padding: 0.75rem 1rem;
   box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
   margin-bottom: 0.5rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .form-container .players-list li:hover {
@@ -361,7 +363,6 @@ button[style*="background-color: orange"]:hover {
     background-color 0.2s ease;
 }
 
-
 /* Return button gradient-to-white swap */
 .return-button {
   background: linear-gradient(135deg, #00713d, #00934f);
@@ -369,7 +370,11 @@ button[style*="background-color: orange"]:hover {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   transform: scale(1);
-  transition: background 0.3s ease, -webkit-text-fill-color 0.3s ease, background-clip 0.3s ease, transform 0.3s ease;
+  transition:
+    background 0.3s ease,
+    -webkit-text-fill-color 0.3s ease,
+    background-clip 0.3s ease,
+    transform 0.3s ease;
 }
 
 .return-button:hover {

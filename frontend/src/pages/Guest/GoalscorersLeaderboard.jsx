@@ -43,14 +43,14 @@ const GoalscorersLeaderboard = () => {
         goalsMap[pid] += count;
       });
     });
-    
+
     // Get player details
     const allPlayers = availableTeams.flatMap((t) => t.players || []);
     const playerList = Object.entries(goalsMap)
       .map(([pid, count]) => {
         const player = allPlayers.find((p) => p.id === pid);
-        const team = availableTeams.find(t => 
-          t.players && t.players.some(p => p.id === pid)
+        const team = availableTeams.find(
+          (t) => t.players && t.players.some((p) => p.id === pid),
         );
         return {
           id: pid,
@@ -60,7 +60,7 @@ const GoalscorersLeaderboard = () => {
         };
       })
       .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-    
+
     setScorers(playerList);
   };
 
@@ -80,34 +80,37 @@ const GoalscorersLeaderboard = () => {
         </header>
 
         <section className="top-goalscorers-results-list">
-          <div className="leaderboard-header" style={{
-                  marginBottom: "1rem",
-                }}>
+          <div
+            className="leaderboard-header"
+            style={{
+              marginBottom: "1rem",
+            }}
+          >
             <h2>Players</h2>
             <button
-                className="return-button-goalscorers"
-                type="button"
-                onClick={() => navigate("/guest/top-goalscorers")}
-                style={{
-                  // background: "linear-gradient(135deg, #00713d, #00934f)",
-                  // WebkitBackgroundClip: "text",
-                  // WebkitTextFillColor: "transparent",
-                  border: "none",
-                  padding: "1rem",
-                  // marginBottom: "0.5rem",
-                  cursor: "pointer",
-                  fontSize: "1rem",
-                  fontWeight: "bold",
-                  display: "flex",
-                  alignItems: "center",
-                  height: "3rem",
-                  width: "fit-content",
-                  marginLeft: "0rem",
-                  marginBottom: "0rem",
-                }}
-              >
-                ← Back to Tournaments
-              </button>
+              className="return-button-goalscorers"
+              type="button"
+              onClick={() => navigate("/guest/top-goalscorers")}
+              style={{
+                // background: "linear-gradient(135deg, #00713d, #00934f)",
+                // WebkitBackgroundClip: "text",
+                // WebkitTextFillColor: "transparent",
+                border: "none",
+                padding: "1rem",
+                // marginBottom: "0.5rem",
+                cursor: "pointer",
+                fontSize: "1rem",
+                fontWeight: "bold",
+                display: "flex",
+                alignItems: "center",
+                height: "3rem",
+                width: "fit-content",
+                marginLeft: "0rem",
+                marginBottom: "0rem",
+              }}
+            >
+              ← Back to Tournaments
+            </button>
             {/* <button
               className="sort-button"
               style={{
@@ -122,14 +125,15 @@ const GoalscorersLeaderboard = () => {
               </span>
             </button> */}
           </div>
-          
+
           <div className="top-goalscorers-grid scrollable">
             {scorers.length > 0 ? (
               // Sort scorers based on the current sorting preference
               [...scorers]
-                .sort((a, b) => isAscending 
-                  ? a.count - b.count || a.name.localeCompare(b.name)
-                  : b.count - a.count || a.name.localeCompare(b.name)
+                .sort((a, b) =>
+                  isAscending
+                    ? a.count - b.count || a.name.localeCompare(b.name)
+                    : b.count - a.count || a.name.localeCompare(b.name),
                 )
                 .map((player, idx) => (
                   <div key={player.id} className="top-goalscorers-card">
@@ -144,18 +148,32 @@ const GoalscorersLeaderboard = () => {
                     >
                       <div className="player-info">
                         <span className="player-name">
-                          <strong className={idx === 0 ? 'gold' : idx === 1 ? 'silver' : idx === 2 ? 'bronze' : ''}>
+                          <strong
+                            className={
+                              idx === 0
+                                ? "gold"
+                                : idx === 1
+                                  ? "silver"
+                                  : idx === 2
+                                    ? "bronze"
+                                    : ""
+                            }
+                          >
                             {player.name}
-                          </strong> (Team: {player.teamName})
+                          </strong>{" "}
+                          (Team: {player.teamName})
                         </span>
                       </div>
-                      
-                      <div className="right-side" style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                        flexShrink: 0,
-                      }}>
+
+                      <div
+                        className="right-side"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                          flexShrink: 0,
+                        }}
+                      >
                         <strong>Goals: {player.count}</strong>
                         <button
                           type="button"
@@ -174,13 +192,16 @@ const GoalscorersLeaderboard = () => {
                         >
                           <img
                             src={downIcon}
-                            alt={expandedId === player.id ? "Collapse" : "Expand"}
+                            alt={
+                              expandedId === player.id ? "Collapse" : "Expand"
+                            }
                             style={{
                               width: "1.5rem",
                               height: "1.5rem",
-                              transform: expandedId === player.id
-                                ? "rotate(180deg)"
-                                : "rotate(0deg)",
+                              transform:
+                                expandedId === player.id
+                                  ? "rotate(180deg)"
+                                  : "rotate(0deg)",
                               transition: "transform 0.3s ease",
                             }}
                           />
@@ -190,7 +211,8 @@ const GoalscorersLeaderboard = () => {
                     <div
                       className="player-details-expanded"
                       style={{
-                        padding: expandedId === player.id ? "0.5rem 1rem" : "0 1rem",
+                        padding:
+                          expandedId === player.id ? "0.5rem 1rem" : "0 1rem",
                         maxHeight: expandedId === player.id ? "20rem" : "0",
                         overflow: "hidden",
                         transition: "max-height 0.5s ease, padding 0.5s ease",
@@ -200,41 +222,65 @@ const GoalscorersLeaderboard = () => {
                       <h4>Goals Details:</h4>
                       <ul className="goal-details-list">
                         {matches
-                          .filter(m => (m.goals && m.goals[player.id] && m.goals[player.id] > 0))
+                          .filter(
+                            (m) =>
+                              m.goals &&
+                              m.goals[player.id] &&
+                              m.goals[player.id] > 0,
+                          )
                           .map((match, index) => {
-                            const teamA = availableTeams.find(t => String(t.team_id) === String(match.teamA));
-                            const teamB = availableTeams.find(t => String(t.team_id) === String(match.teamB));
-                            const playerTeam = teamA && teamA.players && teamA.players.some(p => p.id === player.id) 
-                              ? teamA.team_name 
-                              : teamB && teamB.players && teamB.players.some(p => p.id === player.id)
-                                ? teamB.team_name 
-                                : "Unknown Team";
-                            
+                            const teamA = availableTeams.find(
+                              (t) => String(t.team_id) === String(match.teamA),
+                            );
+                            const teamB = availableTeams.find(
+                              (t) => String(t.team_id) === String(match.teamB),
+                            );
+                            const playerTeam =
+                              teamA &&
+                              teamA.players &&
+                              teamA.players.some((p) => p.id === player.id)
+                                ? teamA.team_name
+                                : teamB &&
+                                    teamB.players &&
+                                    teamB.players.some(
+                                      (p) => p.id === player.id,
+                                    )
+                                  ? teamB.team_name
+                                  : "Unknown Team";
+
                             const matchTitle = `${teamA?.team_name || match.teamA} vs ${teamB?.team_name || match.teamB}`;
                             const goalCount = match.goals[player.id];
-                            const goalTimes = match.goalTimes && match.goalTimes[player.id] 
-                              ? match.goalTimes[player.id].map(time => `${time}'`).join(', ')
-                              : 'N/A';
-                            
+                            const goalTimes =
+                              match.goalTimes && match.goalTimes[player.id]
+                                ? match.goalTimes[player.id]
+                                    .map((time) => `${time}'`)
+                                    .join(", ")
+                                : "N/A";
+
                             return (
                               <li key={index} className="goal-match-entry">
                                 <div>
-                                  <strong>Match:</strong> {matchTitle} ({new Date(match.date).toLocaleDateString('en-GB')})
+                                  <strong>Match:</strong> {matchTitle} (
+                                  {new Date(match.date).toLocaleDateString(
+                                    "en-GB",
+                                  )}
+                                  )
                                 </div>
-                                <div><strong>Goals:</strong> {goalCount}</div>
-                                <div><strong>Times:</strong> {goalTimes}</div>
+                                <div>
+                                  <strong>Goals:</strong> {goalCount}
+                                </div>
+                                <div>
+                                  <strong>Times:</strong> {goalTimes}
+                                </div>
                               </li>
                             );
-                          })
-                        }
+                          })}
                       </ul>
                     </div>
                   </div>
                 ))
             ) : (
-              <p style={{ color: "black" }}>
-                No goalscorers recorded yet.
-              </p>
+              <p style={{ color: "black" }}>No goalscorers recorded yet.</p>
             )}
           </div>
         </section>

@@ -247,7 +247,7 @@
   text-shadow: 0 0 1.5px rgba(192, 192, 192, 0.8);
 }
 .bronze {
-  background: linear-gradient(90deg, #7A4A20, #CD7F32, #7A4A20);
+  background: linear-gradient(90deg, #7a4a20, #cd7f32, #7a4a20);
   background-clip: text;
   color: transparent;
   font-weight: bold;
@@ -260,7 +260,11 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   transform: scale(1);
-  transition: background 0.3s ease, -webkit-text-fill-color 0.3s ease, background-clip 0.3s ease, transform 0.3s ease;
+  transition:
+    background 0.3s ease,
+    -webkit-text-fill-color 0.3s ease,
+    background-clip 0.3s ease,
+    transform 0.3s ease;
 }
 
 .return-button-goalscorers:hover {

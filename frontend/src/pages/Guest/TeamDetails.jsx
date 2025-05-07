@@ -70,9 +70,7 @@ const TeamDetails = () => {
       setPlayers(team.players || []);
       // Find all matches where this team played (as teamA or teamB)
       const playedMatches = allMatches.filter(
-        (m) =>
-          String(m.teamA) === teamId ||
-          String(m.teamB) === teamId
+        (m) => String(m.teamA) === teamId || String(m.teamB) === teamId,
       );
       setTeamMatches(playedMatches);
     } else {
@@ -163,7 +161,7 @@ const TeamDetails = () => {
                 height: "3rem",
                 width: "fit-content",
                 marginLeft: "0rem",
-                marginBottom: "0rem"
+                marginBottom: "0rem",
               }}
             >
               ← Back to Teams
@@ -232,12 +230,19 @@ const TeamDetails = () => {
                   height: "40vh",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    marginBottom: "0.5rem",
+                  }}
+                >
                   <label>Players</label>
                   <button
                     type="button"
                     className="btn-yellow-card"
-                    style={{marginRight: "0rem"}}
+                    style={{ marginRight: "0rem" }}
                     onClick={() => {
                       setYellowCardPlayer(null);
                       setShowYellowModal(true);
@@ -246,13 +251,13 @@ const TeamDetails = () => {
                     <img
                       src={yellowCardIcon}
                       alt="Yellow Card"
-                      style={{ width: "1.5rem", height: "1.5rem"}}
+                      style={{ width: "1.5rem", height: "1.5rem" }}
                     />
                   </button>
                   <button
                     type="button"
                     className="btn-red-card"
-                    style={{marginRight: "0rem", marginLeft: "1rem"}}
+                    style={{ marginRight: "0rem", marginLeft: "1rem" }}
                     onClick={() => {
                       setRedCardPlayer(null);
                       setShowRedModal(true);
@@ -261,7 +266,7 @@ const TeamDetails = () => {
                     <img
                       src={redCardIcon}
                       alt="Red Card"
-                      style={{ width: "1.5rem", height: "1.5rem"}}
+                      style={{ width: "1.5rem", height: "1.5rem" }}
                     />
                   </button>
                 </div>
@@ -650,15 +655,21 @@ const TeamDetails = () => {
               onChange={(e) => {
                 const matchId = e.target.value;
                 setSelectedYellowMatch(matchId);
-                const matchObj = teamMatches.find((m) => String(m.id) === matchId);
+                const matchObj = teamMatches.find(
+                  (m) => String(m.id) === matchId,
+                );
                 if (matchObj && matchObj.yellowCards) {
                   const list = Object.entries(matchObj.yellowCards)
-                    .filter(([pid]) => players.some((p) => String(p.id) === String(pid)))
+                    .filter(([pid]) =>
+                      players.some((p) => String(p.id) === String(pid)),
+                    )
                     .map(([pid, times]) => {
-                      const player = players.find((p) => String(p.id) === String(pid));
+                      const player = players.find(
+                        (p) => String(p.id) === String(pid),
+                      );
                       return {
                         name: player.name,
-                        timings: Array.isArray(times) ? times : [times]
+                        timings: Array.isArray(times) ? times : [times],
                       };
                     });
                   setYellowCardList(list);
@@ -672,7 +683,8 @@ const TeamDetails = () => {
               {teamMatches.length > 0 ? (
                 teamMatches.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {formatDateBR(m.date)}: {getTeamName(m.teamA)} vs {getTeamName(m.teamB)}
+                    {formatDateBR(m.date)}: {getTeamName(m.teamA)} vs{" "}
+                    {getTeamName(m.teamB)}
                   </option>
                 ))
               ) : (
@@ -680,35 +692,57 @@ const TeamDetails = () => {
               )}
             </select>
             {/* Replace match with actual match object if available */}
-            {yellowCardPlayer && Array.isArray(match?.yellowCards?.[yellowCardPlayer.id]) &&
+            {yellowCardPlayer &&
+              Array.isArray(match?.yellowCards?.[yellowCardPlayer.id]) &&
               match.yellowCards[yellowCardPlayer.id].length > 0 && (
-              <div style={{ margin: "0.5rem 0", textAlign: "left" }}>
-                <p><strong>Player ID:</strong> {yellowCardPlayer.id}</p>
-                <p><strong>Player:</strong> {yellowCardPlayer.name.split(" ").slice(-1)[0]}</p>
-                <p><strong>Yellow cards:</strong> {match.yellowCards[yellowCardPlayer.id].length}</p>
-                <p><strong>Timings:</strong> {match.yellowCards[yellowCardPlayer.id].slice().sort((a, b) => a - b).map(t => `${t}'`).join(", ")}</p>
-              </div>
-            )}
-            
-            {selectedYellowMatch && (
-              yellowCardList.length > 0 ? (
+                <div style={{ margin: "0.5rem 0", textAlign: "left" }}>
+                  <p>
+                    <strong>Player ID:</strong> {yellowCardPlayer.id}
+                  </p>
+                  <p>
+                    <strong>Player:</strong>{" "}
+                    {yellowCardPlayer.name.split(" ").slice(-1)[0]}
+                  </p>
+                  <p>
+                    <strong>Yellow cards:</strong>{" "}
+                    {match.yellowCards[yellowCardPlayer.id].length}
+                  </p>
+                  <p>
+                    <strong>Timings:</strong>{" "}
+                    {match.yellowCards[yellowCardPlayer.id]
+                      .slice()
+                      .sort((a, b) => a - b)
+                      .map((t) => `${t}'`)
+                      .join(", ")}
+                  </p>
+                </div>
+              )}
+
+            {selectedYellowMatch &&
+              (yellowCardList.length > 0 ? (
                 <div className="carded-players-list">
                   {yellowCardList.map((entry, idx) => (
                     <div
                       key={idx}
                       style={{
-                        borderBottom: idx !== yellowCardList.length - 1 ? "1px solid #ccc" : "none",
-                        padding: "0.25rem 0"
+                        borderBottom:
+                          idx !== yellowCardList.length - 1
+                            ? "1px solid #ccc"
+                            : "none",
+                        padding: "0.25rem 0",
                       }}
                     >
-                      {entry.name}: {entry.timings.sort((a,b) => a - b).map(t => `${t}'`).join(", ")}
+                      {entry.name}:{" "}
+                      {entry.timings
+                        .sort((a, b) => a - b)
+                        .map((t) => `${t}'`)
+                        .join(", ")}
                     </div>
                   ))}
                 </div>
               ) : (
                 <p>No carded players found!</p>
-              )
-            )}
+              ))}
           </div>
         </div>
       )}
@@ -731,15 +765,21 @@ const TeamDetails = () => {
               onChange={(e) => {
                 const matchId = e.target.value;
                 setSelectedRedMatch(matchId);
-                const matchObj = teamMatches.find((m) => String(m.id) === matchId);
+                const matchObj = teamMatches.find(
+                  (m) => String(m.id) === matchId,
+                );
                 if (matchObj && matchObj.redCards) {
                   const list = Object.entries(matchObj.redCards)
-                    .filter(([pid]) => players.some((p) => String(p.id) === String(pid)))
+                    .filter(([pid]) =>
+                      players.some((p) => String(p.id) === String(pid)),
+                    )
                     .map(([pid, time]) => {
-                      const player = players.find((p) => String(p.id) === String(pid));
+                      const player = players.find(
+                        (p) => String(p.id) === String(pid),
+                      );
                       return {
                         name: player.name,
-                        timings: [time]
+                        timings: [time],
                       };
                     });
                   setRedCardList(list);
@@ -753,7 +793,8 @@ const TeamDetails = () => {
               {teamMatches.length > 0 ? (
                 teamMatches.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {formatDateBR(m.date)}: {getTeamName(m.teamA)} vs {getTeamName(m.teamB)}
+                    {formatDateBR(m.date)}: {getTeamName(m.teamA)} vs{" "}
+                    {getTeamName(m.teamB)}
                   </option>
                 ))
               ) : (
@@ -761,35 +802,54 @@ const TeamDetails = () => {
               )}
             </select>
             {/* Replace match with actual match object if available */}
-            {redCardPlayer && Array.isArray(match?.redCards?.[redCardPlayer.id]) &&
+            {redCardPlayer &&
+              Array.isArray(match?.redCards?.[redCardPlayer.id]) &&
               match.redCards[redCardPlayer.id].length > 0 && (
-              <div style={{ margin: "0.5rem 0", textAlign: "left" }}>
-                <p><strong>Player ID:</strong> {redCardPlayer.id}</p>
-                <p><strong>Player:</strong> {redCardPlayer.name.split(" ").slice(-1)[0]}</p>
-                <p><strong>Red cards:</strong> {match.redCards[redCardPlayer.id].length}</p>
-                <p><strong>Timings:</strong> {match.redCards[redCardPlayer.id].slice().sort((a, b) => a - b).map(t => `${t}'`).join(", ")}</p>
-              </div>
-            )}
-            
-            {selectedRedMatch && (
-              redCardList.length > 0 ? (
+                <div style={{ margin: "0.5rem 0", textAlign: "left" }}>
+                  <p>
+                    <strong>Player ID:</strong> {redCardPlayer.id}
+                  </p>
+                  <p>
+                    <strong>Player:</strong>{" "}
+                    {redCardPlayer.name.split(" ").slice(-1)[0]}
+                  </p>
+                  <p>
+                    <strong>Red cards:</strong>{" "}
+                    {match.redCards[redCardPlayer.id].length}
+                  </p>
+                  <p>
+                    <strong>Timings:</strong>{" "}
+                    {match.redCards[redCardPlayer.id]
+                      .slice()
+                      .sort((a, b) => a - b)
+                      .map((t) => `${t}'`)
+                      .join(", ")}
+                  </p>
+                </div>
+              )}
+
+            {selectedRedMatch &&
+              (redCardList.length > 0 ? (
                 <div className="carded-players-list">
                   {redCardList.map((entry, idx) => (
                     <div
                       key={idx}
                       style={{
-                        borderBottom: idx !== redCardList.length - 1 ? "1px solid #ccc" : "none",
-                        padding: "0.25rem 0"
+                        borderBottom:
+                          idx !== redCardList.length - 1
+                            ? "1px solid #ccc"
+                            : "none",
+                        padding: "0.25rem 0",
                       }}
                     >
-                      {entry.name}: {entry.timings.map(t => `${t}'`).join(", ")}
+                      {entry.name}:{" "}
+                      {entry.timings.map((t) => `${t}'`).join(", ")}
                     </div>
                   ))}
                 </div>
               ) : (
                 <p>No carded players found!</p>
-              )
-            )}
+              ))}
           </div>
         </div>
       )}
