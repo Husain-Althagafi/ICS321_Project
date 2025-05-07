@@ -30,6 +30,9 @@ const DetailedMatchStats = () => {
   const [motmPlayerId, setMotmPlayerId] = useState(null);
   const [match, setMatch] = useState({})
   const [teams, setTeams] = useState([])
+  const [team1Players, setTeam1Players] = useState([])
+  const [team2Players, setTeam2Players] = useState([])
+
   // Track match completion
   const [isCompleted, setIsCompleted] = useState(false);
 
@@ -50,9 +53,27 @@ useEffect(() => {
 
   axios.get(`http://localhost:5000/teams/matches/${matchId}`)
   .then((res) => {
-    setTeams(res.data.data)
+    setTeams()
+  
+    //get team 1 players
+    axios.get(`http://localhost:5000/teams/${res.data.data[0].team_id}/players`)
+    .then((res) => {
+      setTeam1Players(res.data.data)
+    })
+    .catch(err => console.error(err))
+
+    //get team 2 players
+    axios.get(`http://localhost:5000/teams/${res.data.data[2].team_id}/players`)
+    .then((res) => {
+      setTeam2Players(res.data.data)
+    })
+    .catch(err => console.error(err))
   })
   .catch(err => console.error(err))
+
+
+  //get team 1 players
+  
 
 }, [])
 
@@ -119,6 +140,7 @@ const endMinutes = match?.end_time
 
   useEffect(() => {
 
+    //get goal details from match
     axios.get(`http://localhost:5000/matches/${matchId}/goals`)
     .then((res) => {
       setGoals(res.data.data)
@@ -243,17 +265,13 @@ const endMinutes = match?.end_time
               }}
             >
               <h1 className="teamA-name">
-                {availableTeams.find(
-                  (t) => String(t.team_id) === String(match.teamA),
-                )?.team_name || match.teamA}
+                {match.team1}
               </h1>
               <h2>
-                {scoreA} - {scoreB}
+                {match.goal_score}
               </h2>
               <h1 className="teamB-name">
-                {availableTeams.find(
-                  (t) => String(t.team_id) === String(match.teamB),
-                )?.team_name || match.teamB}
+                {match.team2}
               </h1>
             </div>
             <div
@@ -276,11 +294,9 @@ const endMinutes = match?.end_time
               >
                 <label>Players</label>
                 <ul style={{ flexGrow: 1, overflowY: "auto" }}>
-                  {(
-                    availableTeams.find(
-                      (t) => String(t.team_id) === String(match.teamA),
-                    )?.players || []
-                  ).map((p, idx) => (
+                  {
+                    
+                    team1Players.map((p, idx) => (
                     <li
                       key={idx}
                       style={{
@@ -453,11 +469,9 @@ const endMinutes = match?.end_time
               >
                 <label>Players</label>
                 <ul style={{ flexGrow: 1, overflowY: "auto" }}>
-                  {(
-                    availableTeams.find(
-                      (t) => String(t.team_id) === String(match.teamB),
-                    )?.players || []
-                  ).map((p, idx) => (
+                  {
+                    
+                  team2Players.map((p, idx) => (
                     <li
                       key={idx}
                       style={{
