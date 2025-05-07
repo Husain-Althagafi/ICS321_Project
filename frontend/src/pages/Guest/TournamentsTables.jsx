@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminSidebar from "../../components/AdminSidebar";
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from "../../assets/images/Illustration 1@4x.png";
-import "../../stylesheets/Tournaments.css";
+import "../../stylesheets/TournamentsTables.css";
+import GuestSidebar from "../../components/GuestSidebar";
 
-const Tournaments = () => {
+const TournamentsTables = () => {
   const navigate = useNavigate();
   const username = "john.doe"; // Replace with actual dynamic source later
   const [first, last] = username.split(".");
@@ -28,29 +28,29 @@ const Tournaments = () => {
     return () => window.removeEventListener("focus", loadTournaments);
   }, []);
 
-  const handleDeleteTournament = (tournamentId) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this tournament?",
-    );
-    if (!confirmed) return;
-    const updated = tournaments.filter(
-      (t) => String(t.id) !== String(tournamentId),
-    );
-    localStorage.setItem("tournaments", JSON.stringify(updated));
-    setTournaments(updated);
-  };
+  // const handleDeleteTournament = (tournamentId) => {
+  //   const confirmed = window.confirm(
+  //     "Are you sure you want to delete this tournament?",
+  //   );
+  //   if (!confirmed) return;
+  //   const updated = tournaments.filter(
+  //     (t) => String(t.id) !== String(tournamentId),
+  //   );
+  //   localStorage.setItem("tournaments", JSON.stringify(updated));
+  //   setTournaments(updated);
+  // };
 
   return (
-    <div className="admin-home">
-      <AdminSidebar initials={initials} formattedName={formattedName} />
+    <div className="guest-home">
+      <GuestSidebar initials={initials} formattedName={formattedName} />
 
       <main className="main-content">
         <div className="bg-overlay"></div>
         <header className="topbar">
-          <h1>Tournaments</h1>
+          <h1>View Tournament Table</h1>
         </header>
         <section className="tournament-list">
-          <h2>Registered Tournaments</h2>
+          <h2>Tournament: </h2>
           <div className="tournament-grid scrollable">
             {tournaments.length > 0 ? (
               tournaments.map((tournament) => (
@@ -71,9 +71,6 @@ const Tournaments = () => {
                     </h3>
                   </div>
                   <p>
-                    <strong>Tournament ID:</strong> {tournament.id}
-                  </p>
-                  <p>
                     <strong>Start Date:</strong>{" "}
                     {new Date(tournament.startDate).toLocaleDateString("en-GB")}
                   </p>
@@ -81,17 +78,14 @@ const Tournaments = () => {
                     <strong>End Date:</strong>{" "}
                     {new Date(tournament.endDate).toLocaleDateString("en-GB")}
                   </p>
-                  <p>
-                    <strong>Number of Teams:</strong> {tournament.numTeams}
-                  </p>
                   <button
                     type="button"
-                    className="edit-button"
+                    className="tournament-view-button"
                     onClick={() =>
-                      navigate(`/admin/tournaments/${tournament.id}/edit`)
+                      navigate(`/guest/top-goalscorers/${tournament.id}`)
                     }
                   >
-                    Edit
+                    View
                   </button>
                 </div>
               ))
@@ -112,4 +106,4 @@ const Tournaments = () => {
   );
 };
 
-export default Tournaments;
+export default TournamentsTables;

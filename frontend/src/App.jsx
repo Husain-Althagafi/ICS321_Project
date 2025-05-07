@@ -28,6 +28,8 @@ import BrowseTeams from "./pages/Guest/BrowseTeams";
 import TeamDetails from "./pages/Guest/TeamDetails";
 import GoalscorersLeaderboard from "./pages/Guest/GoalscorersLeaderboard";
 import Tournaments_GoalscorersLeaderboard from "./pages/Guest/Tournaments_GoalscorersLeaderboard";
+import Tournaments_TournamentsTables from "./pages/Guest/Tournaments_TournamentsTables";
+import TournamentsTables from "./pages/Guest/TournamentsTables";
 
 function App() {
   return (
@@ -86,6 +88,14 @@ function App() {
         <Route
           path="/guest/top-goalscorers/:tournamentId"
           element={<GoalscorersLeaderboard />}
+        />
+        <Route
+          path="/guest/view-tournament-table"
+          element={<Tournaments_TournamentsTables />}
+        />
+        <Route
+          path="/guest/view-tournament-table/:tournamentId"
+          element={<TournamentsTables />}
         />
       </Routes>
     </Router>
