@@ -35,14 +35,14 @@ const AddTournament = () => {
   const [endDate, setEndDate] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-useEffect(() => {
-  if (startDate) {
-    const sd = new Date(startDate);
-    sd.setDate(sd.getDate() + parseInt(numTeams, 10) - 2);
-    const iso = sd.toISOString().split('T')[0];
-    setEndDate(iso);
-  }
-}, [startDate, numTeams]);
+  useEffect(() => {
+    if (startDate) {
+      const sd = new Date(startDate);
+      sd.setDate(sd.getDate() + parseInt(numTeams, 10) - 2);
+      const iso = sd.toISOString().split("T")[0];
+      setEndDate(iso);
+    }
+  }, [startDate, numTeams]);
 
   // Persistent nextId using lastTournamentNumber
   const nextId = lastTournamentNumber + 1;
@@ -62,8 +62,13 @@ useEffect(() => {
       return;
     }
 
-
-    const newTournament = { id: nextId, name, startDate, endDate, numTeams: parseInt(numTeams, 10) };
+    const newTournament = {
+      id: nextId,
+      name,
+      startDate,
+      endDate,
+      numTeams: parseInt(numTeams, 10),
+    };
     // Update persistent counter
     localStorage.setItem("lastTournamentNumber", nextId);
     setLastTournamentNumber(nextId);
@@ -98,7 +103,11 @@ useEffect(() => {
                   type="text"
                   value={nextId}
                   disabled
-                  style={{ backgroundColor: "#f0f0f0", color:"#666", cursor: "not-allowed" }}
+                  style={{
+                    backgroundColor: "#f0f0f0",
+                    color: "#666",
+                    cursor: "not-allowed",
+                  }}
                 />
               </label>
               <label>
@@ -121,15 +130,10 @@ useEffect(() => {
               </label>
               <label>
                 End Date:
-                <input
-                  type="date"
-                  value={endDate}
-                  disabled
-                  readOnly
-                />
+                <input type="date" value={endDate} disabled readOnly />
               </label>
               <label>
-                Number of Teams: 
+                Number of Teams:
                 <select
                   value={numTeams}
                   onChange={(e) => setNumTeams(e.target.value)}
