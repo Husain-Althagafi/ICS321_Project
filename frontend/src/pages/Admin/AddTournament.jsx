@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from "../../assets/images/Illustration 1@4x.png";
@@ -31,8 +31,18 @@ const AddTournament = () => {
   });
   const [name, setName] = useState("");
   const [startDate, setStartDate] = useState("");
+  const [numTeams, setNumTeams] = useState("2");
   const [endDate, setEndDate] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+
+useEffect(() => {
+  if (startDate) {
+    const sd = new Date(startDate);
+    sd.setDate(sd.getDate() + parseInt(numTeams, 10) - 2);
+    const iso = sd.toISOString().split('T')[0];
+    setEndDate(iso);
+  }
+}, [startDate, numTeams]);
 
   // Persistent nextId using lastTournamentNumber
   const nextId = lastTournamentNumber + 1;
@@ -52,14 +62,8 @@ const AddTournament = () => {
       return;
     }
 
-    if (end <= start) {
-      const msg = "End date must be after Start date!";
-      setErrorMsg(msg);
-      setTimeout(() => alert(msg), 0);
-      return;
-    }
 
-    const newTournament = { id: nextId, name, startDate, endDate };
+    const newTournament = { id: nextId, name, startDate, endDate, numTeams: parseInt(numTeams, 10) };
     // Update persistent counter
     localStorage.setItem("lastTournamentNumber", nextId);
     setLastTournamentNumber(nextId);
@@ -69,6 +73,7 @@ const AddTournament = () => {
     setName("");
     setStartDate("");
     setEndDate("");
+    setNumTeams("2");
     setErrorMsg("");
     alert("Tournament added!");
   };
@@ -93,7 +98,7 @@ const AddTournament = () => {
                   type="text"
                   value={nextId}
                   disabled
-                  style={{ backgroundColor: "#f0f0f0", cursor: "not-allowed" }}
+                  style={{ backgroundColor: "#f0f0f0", color:"#666", cursor: "not-allowed" }}
                 />
               </label>
               <label>
@@ -119,9 +124,23 @@ const AddTournament = () => {
                 <input
                   type="date"
                   value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  required
+                  disabled
+                  readOnly
                 />
+              </label>
+              <label>
+                Number of Teams: 
+                <select
+                  value={numTeams}
+                  onChange={(e) => setNumTeams(e.target.value)}
+                  required
+                >
+                  {[2, 4, 6, 8, 10, 12].map((n) => (
+                    <option key={n} value={String(n)}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
               </label>
               {errorMsg && <p className="form-error">{errorMsg}</p>}
               <button type="submit">Add Tournament</button>

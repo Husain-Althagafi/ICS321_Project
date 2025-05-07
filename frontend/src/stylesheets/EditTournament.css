@@ -206,16 +206,16 @@
   z-index: 0;
   pointer-events: none;
 }
-.AddTournament.css .form-container form,
-.form-container form label,
-.form-container form input,
-.form-container form select,
-.form-container form textarea,
-.form-container form button {
+.AddTournament.css .form-container-tournament form,
+.form-container-tournament form label,
+.form-container-tournament form input,
+.form-container-tournament form select,
+.form-container-tournament form textarea,
+.form-container-tournament form button {
   color: black;
 }
 
-.form-container form label {
+.form-container-tournament form label {
   display: block;
   margin-bottom: 0.2rem;
   text-align: left;
@@ -229,7 +229,7 @@
   font-weight: 500;
 }
 
-.form-container {
+.form-container-tournament {
   background-color: white;
   border-radius: 1rem;
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
@@ -245,7 +245,7 @@
   grid-template-columns: 1fr;
   gap: 1.5rem;
 }
-.form-container form input {
+.form-container-tournament form input {
   display: block;
   width: 100%;
   box-sizing: border-box;
@@ -259,7 +259,7 @@
   margin-bottom: 0rem;
 }
 
-.form-container .players-list {
+.form-container-tournament .players-list {
   max-height: 60vh;
   /* overflow-y: auto; */
   display: grid;
@@ -269,14 +269,14 @@
   padding-bottom: 0rem;
 }
 
-.form-container .players-list ul {
+.form-container-tournament .players-list ul {
   list-style: none;
   margin: 0;
   padding: 0;
   color: black;
 }
 
-.form-container .players-list li {
+.form-container-tournament .players-list li {
   background-color: white;
   border-radius: 0.75rem;
   padding: 0.75rem 1rem;
@@ -316,8 +316,8 @@
 }
 
 .security-modal-content .close-button:hover {
-  background-color: white;
-  color: red;
+  background: white !important;
+  color: red !important;
 }
 
 /* .substitute-checkbox {
@@ -334,7 +334,96 @@
     margin: 0rem;
 } */
 /* Save Changes button hover state */
-.form-container form button[type="submit"]:hover {
+.form-container-tournament form button[type="submit"]:hover {
   background-color: #00934f;
   color: white;
+}
+
+.tournament-edit-h2, .form-container-tournament {
+  margin-top: 0rem;
+}
+
+.matches-dropdown {
+  background: transparent !important;
+  border: none !important;
+  color: black;
+  border-radius: 0.5rem;
+  font-family: 'Poppins', sans-serif;
+}
+
+
+.btn-create-matches {
+  background: linear-gradient(135deg, #28a745, #218838);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  font-size: 1.125rem;;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s, transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-create-matches:hover {
+  background: white;
+  color: #28a745;
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-add-team, .btn-remove-team {
+  transition: background 0.3s, color 0.3s, transform 0.2s, box-shadow 0.2s;
+  border-radius: 1rem;
+}
+
+.btn-add-team:hover {
+  background: white !important;
+  color: #28a745 !important;
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-remove-team:hover {
+  background: white !important;
+  color: #dc3545 !important;
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-confirm-create-matches{
+  background: linear-gradient(135deg, #28a745, #218838);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  font-size: 1.125rem;;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s, transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-confirm-create-matches:hover{
+  transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  background: white;
+  color: #28a745;
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+.btn-save-match-details {
+  background: white; /* default green background */
+  color: black;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  font-size: 1.125rem;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-save-match-details:hover {
+  background: linear-gradient(135deg, #28a745, #218838);
+  color: white;
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }

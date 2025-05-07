@@ -81,6 +81,9 @@ const Tournaments = () => {
                     <strong>End Date:</strong>{" "}
                     {new Date(tournament.endDate).toLocaleDateString("en-GB")}
                   </p>
+                  <p>
+                    <strong>Number of Teams:</strong> {tournament.numTeams}
+                  </p>
                   <button
                     type="button"
                     className="edit-button"
