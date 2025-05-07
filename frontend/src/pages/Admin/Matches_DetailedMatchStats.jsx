@@ -57,26 +57,17 @@ const Matches_DetailedMatchStats = () => {
           <div className="match-grid scrollable">
             {matches.length > 0 ? (
               matches.map((m) => {
-                
-
-                const [score1, score2] = m.goal_score.trim().split("-").map(Number)
-
-                const computedWinner = (score1 > score2) ? m.team1 : score1 < score2 ? m.team2: 'Draw'
-
-                const [startDate, startTime] = m.play_date.split('.')[0].split('T')
-                
-
-                 
-
-                
-
-                // const computedWinner =
-                //   m.winner ||
-                //   (m.scoreA > m.scoreB
-                //     ? (availableTeams.find((t) => String(t.team_id) === String(m.teamA))?.team_name || m.teamA)
-                //     : m.scoreB > m.scoreA
-                //     ? (availableTeams.find((t) => String(t.team_id) === String(m.teamB))?.team_name || m.teamB)
-                //     : 'Draw');
+                const computedWinner =
+                  m.winner ||
+                  (m.scoreA > m.scoreB
+                    ? availableTeams.find(
+                        (t) => String(t.team_id) === String(m.teamA),
+                      )?.team_name || m.teamA
+                    : m.scoreB > m.scoreA
+                      ? availableTeams.find(
+                          (t) => String(t.team_id) === String(m.teamB),
+                        )?.team_name || m.teamB
+                      : "Draw");
                 return (
                   <div key={m.match_no} className="match-card">
                     <div
@@ -108,13 +99,18 @@ const Matches_DetailedMatchStats = () => {
                     <p>
                       <strong>Time:</strong> {startTime} - {'no end time' || endTime}
                     </p>
-                    {localStorage.getItem(`match-completed-${m.match_no}`) === 'true' && (
+                    {localStorage.getItem(`match-completed-${m.id}`) ===
+                      "true" && (
                       <p>
                         <strong>Match Winner:</strong>{" "}
-                        {computedWinner === 'Draw' ? (
-                          <span className="draw-gradient">{computedWinner}</span>
+                        {computedWinner === "Draw" ? (
+                          <span className="draw-gradient">
+                            {computedWinner}
+                          </span>
                         ) : (
-                          <span className="winner-gradient">{computedWinner}</span>
+                          <span className="winner-gradient">
+                            {computedWinner}
+                          </span>
                         )}
                       </p>
                     )}

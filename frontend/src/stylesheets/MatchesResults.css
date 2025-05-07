@@ -1,0 +1,232 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
+
+.admin-home {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Main content area */
+.main-content {
+  flex: 1;
+  background-color: #f4f4f9;
+  padding: 2rem;
+  position: relative;
+  z-index: 1;
+  max-width: 100vw;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0rem;
+}
+
+.topbar h1 {
+  font-size: 3rem;
+  font-weight: bold;
+  color: black;
+  text-shadow: none;
+  margin-top: 0rem;
+  margin-bottom: 1rem;
+}
+
+.match-results-results-list h2 {
+  font-size: 2rem;
+  color: black;
+  text-shadow: none;
+  text-align: left;
+}
+
+/* Widget boxes
+.widgets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.widget-box {
+  flex: 1;
+  min-width: 18rem;
+  background-color: white;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+} */
+
+.profile-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* KFUPM vertical seal styling
+.vertical-seal {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  opacity: 1;
+  height: 80vh;
+  pointer-events: none;
+  filter: invert(1);
+} */
+.highlighted-name {
+  background: linear-gradient(135deg, #017941, #02cb6d);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+}
+
+/* Semi-transparent background overlay image */
+.bg-overlay {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-image: url("../assets/images/Illustration 1@4x.png");
+  background-size: contain;
+  background-position: bottom right;
+  background-repeat: no-repeat;
+  opacity: 0.2;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.match-results-results-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.match-results-card {
+  background-color: white;
+  border-radius: 0.75rem;
+  padding: 1em;
+  padding-bottom: 0em;
+  padding-top: 0em;
+  color: black;
+  box-shadow: 0 0.25em 0.5em rgba(0, 0, 0, 0.1);
+  margin: 0 0;
+  position: relative;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.match-results-card-header .result-view-button {
+  margin-right: 0rem;
+  font-size: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  object-fit: cover;
+}
+
+.match-results-card h3 {
+  margin-top: 0.25rem;
+}
+
+.match-results-card:hover {
+  transform: scale(1.003);
+  transform-origin: center;
+  box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  /* background: linear-gradient(135deg, #00713d, #00934f); */
+  /* color: white; */
+}
+
+.match-results-card:hover .match-results-name-gradient {
+  background: linear-gradient(135deg, #ffffff, #cacaca);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.match-results-grid.scrollable {
+  max-height: 70vh; /* or whatever max height you like */
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.5rem; /* so the scroll bar doesn’t overlap content */
+}
+
+.match-results-card {
+  box-sizing: border-box;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.match-results-name-gradient {
+  background: linear-gradient(135deg, #00713d, #00934f);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.match-results-card p {
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
+}
+
+.match-results-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Gradient text for match winner */
+.winner-gradient {
+  background: linear-gradient(135deg, #00713d, #00934f);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+}
+
+/* Grey gradient for draw */
+.draw-gradient {
+  background: linear-gradient(135deg, #6c6c6c, #a0a0a0);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+}
+
+/* Gradient for left team */
+.team-left-gradient {
+  background: linear-gradient(135deg, #ff0000, #ff6e6e);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+}
+
+/* Gradient for right team */
+.team-right-gradient {
+  background: linear-gradient(135deg, #6e6eff, #0000ff);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+}
+.match-results-card-header .result-view-button:hover {
+  background-color: rgb(38, 38, 38) !important;
+}
+
+.match-results-card-header .result-view-button:hover img {
+  filter: invert(1);
+}
+
+/* Smooth accordion roll-down for match details */
+.match-details-expanded {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease;
+}
+.match-details-expanded .match-details {
+  /* Set to a value large enough for your content */
+  max-height: 20rem;
+}
