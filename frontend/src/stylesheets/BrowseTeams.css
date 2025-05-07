@@ -118,10 +118,11 @@
   flex-direction: column;
 }
 
-.team-card .edit-button {
+.team-card .view-team-button {
   position: absolute;
-  bottom: 0.75rem;
+  top: 50%;
   right: 0.75rem;
+  transform: translateY(-50%);
   font-size: 0.875rem;
   padding: 0.2em 0.4em;
   border-radius: 0.75rem;
