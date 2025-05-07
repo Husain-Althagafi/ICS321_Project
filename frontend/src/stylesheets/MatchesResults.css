@@ -230,3 +230,19 @@
   /* Set to a value large enough for your content */
   max-height: 20rem;
 }
+
+.return-button-matches {
+  background: linear-gradient(135deg, #00713d, #00934f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transform: scale(1);
+  transition: background 0.3s ease, -webkit-text-fill-color 0.3s ease, background-clip 0.3s ease, transform 0.3s ease;
+}
+
+.return-button-matches:hover {
+  background: linear-gradient(135deg, #00713d, #00934f);
+  -webkit-text-fill-color: white;
+  background-clip: border-box;
+  transform: scale(1.05);
+}

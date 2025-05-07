@@ -253,3 +253,19 @@
   font-weight: bold;
   text-shadow: 0 0 1.5px rgba(205, 127, 50, 0.8);
 }
+
+.return-button-goalscorers {
+  background: linear-gradient(135deg, #00713d, #00934f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transform: scale(1);
+  transition: background 0.3s ease, -webkit-text-fill-color 0.3s ease, background-clip 0.3s ease, transform 0.3s ease;
+}
+
+.return-button-goalscorers:hover {
+  background: linear-gradient(135deg, #00713d, #00934f);
+  -webkit-text-fill-color: white;
+  background-clip: border-box;
+  transform: scale(1.05);
+}

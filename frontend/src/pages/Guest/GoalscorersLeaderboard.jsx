@@ -80,8 +80,34 @@ const GoalscorersLeaderboard = () => {
         </header>
 
         <section className="top-goalscorers-results-list">
-          <div className="leaderboard-header">
+          <div className="leaderboard-header" style={{
+                  marginBottom: "1rem",
+                }}>
             <h2>Players</h2>
+            <button
+                className="return-button-goalscorers"
+                type="button"
+                onClick={() => navigate("/guest/top-goalscorers")}
+                style={{
+                  // background: "linear-gradient(135deg, #00713d, #00934f)",
+                  // WebkitBackgroundClip: "text",
+                  // WebkitTextFillColor: "transparent",
+                  border: "none",
+                  padding: "1rem",
+                  // marginBottom: "0.5rem",
+                  cursor: "pointer",
+                  fontSize: "1rem",
+                  fontWeight: "bold",
+                  display: "flex",
+                  alignItems: "center",
+                  height: "3rem",
+                  width: "fit-content",
+                  marginLeft: "0rem",
+                  marginBottom: "0rem",
+                }}
+              >
+                ← Back to Tournaments
+              </button>
             {/* <button
               className="sort-button"
               style={{

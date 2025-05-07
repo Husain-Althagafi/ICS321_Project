@@ -70,20 +70,46 @@ const MatchesResults = () => {
 
         <section className="match-results-results-list">
           <h2>Completed Matches</h2>
-          <button
-            className="sort-button"
-            style={{
-              marginBottom: "1rem",
-              marginRight: "0",
-              width: "fit-content",
-            }}
-            onClick={() => setIsAscending(!isAscending)}
-          >
-            Sorted by Date:{" "}
-            <span className="winner-gradient">
-              {isAscending ? "Oldest" : "Latest"}
-            </span>
-          </button>
+          <div className='top-buttons'>
+            <button
+                className="return-button-matches"
+                type="button"
+                onClick={() => navigate("/guest/match-results/tournaments")}
+                style={{
+                  // background: "linear-gradient(135deg, #00713d, #00934f)",
+                  // WebkitBackgroundClip: "text",
+                  // WebkitTextFillColor: "transparent",
+                  border: "none",
+                  padding: "1rem",
+                  // marginBottom: "0.5rem",
+                  cursor: "pointer",
+                  fontSize: "1rem",
+                  fontWeight: "bold",
+                  display: "flex",
+                  alignItems: "center",
+                  height: "3rem",
+                  width: "fit-content",
+                  marginLeft: "0rem",
+                  marginBottom: "0rem",
+                }}
+              >
+                ← Back to Tournaments
+              </button>
+            <button
+              className="sort-button"
+              style={{
+                marginBottom: "1rem",
+                marginRight: "0",
+                width: "fit-content",
+              }}
+              onClick={() => setIsAscending(!isAscending)}
+            >
+              Sorted by Date:{" "}
+              <span className="winner-gradient">
+                {isAscending ? "Oldest" : "Latest"}
+              </span>
+            </button>
+          </div>
           <div className="match-results-grid scrollable">
             {matches.length > 0 ? (
               sortedMatches.map((m) => {
