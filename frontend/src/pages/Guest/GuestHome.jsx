@@ -49,9 +49,9 @@ const GuestHome = () => {
             </div>
             <div
               className="app-item"
-              onClick={() => navigate("/guest/detailed-match-stats")}
+              onClick={() => navigate("/guest/top-goalscorers")}
             >
-              View Player Stats
+              Top Goalscorers
             </div>
           </div>
         </section>
