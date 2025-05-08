@@ -680,10 +680,12 @@ const EditTournament = () => {
                   setMatches(generated);
                   setListType("matches");
                   // Persist to localStorage
+                  const selectedTeamIds = players;
                   const updated = tournaments.map((t) =>
                     String(t.id) === tournamentId
                       ? {
                           ...t,
+                          teamIds: selectedTeamIds,
                           matches: generated,
                           lastMatchNumber: generated.length,
                         }

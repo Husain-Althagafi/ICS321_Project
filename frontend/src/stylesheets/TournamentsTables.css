@@ -166,3 +166,42 @@
 .tournament-card-header {
   margin-bottom: 1rem;
 }
+
+.league-table {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+}
+
+/* Optional: ensure header cells have no border-radius clipping issues */
+.league-table thead th:first-child {
+  border-top-left-radius: 0.75rem;
+}
+.league-table thead th:last-child {
+  border-top-right-radius: 0.75rem;
+}
+.league-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 0.75rem;
+}
+.league-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 0.75rem;
+}
+
+.league-table th,
+.league-table td {
+  color: black;
+  text-align: center;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  border-left: none;
+  border-right: none;
+}
+
+.table-container.scrollable table {
+  width: 100%;        /* ensure table spans full container width */
+  border-collapse: collapse; /* restore standard table layout */
+}
