@@ -52,16 +52,16 @@ exports.deleteTournament = asyncHandler(async(req, res) => {
 
 
 exports.addTeam = asyncHandler(async(req, res) => {
-    const {team_id, team_name, coach_name, manager_name} = req.body
+    const {team_name, coach_name, manager_name} = req.body
 
-    if (!team_id || !team_name || !coach_name || !manager_name) {
+    if (!team_name || !coach_name || !manager_name) {
         return res.status(400).json({error: 'Missing inputs'})
     }
 
     try {
         const result = await db.query(`
-            INSERT INTO team (team_name) VALUES ($1) RETURNING *
-            `, [team_name])
+            INSERT INTO team (team_name, manager_name, coach_name) VALUES ($1, $2, $3) RETURNING *
+            `, [team_name, manager_name, coach_name])
 
 
         res.status(200).json({
