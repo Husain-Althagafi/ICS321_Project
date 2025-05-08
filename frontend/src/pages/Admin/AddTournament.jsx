@@ -15,23 +15,7 @@ const AddTournament = () => {
   const initials = `${first[0]}${last[0]}`.toUpperCase();
   const formattedName = `${first.charAt(0).toUpperCase() + first.slice(1)} ${last.charAt(0).toUpperCase() + last.slice(1)}`;
 
-  const [tournaments, setTournaments] = useState(() => {
-    const stored = localStorage.getItem("tournaments");
-    return stored ? JSON.parse(stored) : [];
-  });
-  // Persistent tournament counter
-  const [lastTournamentNumber, setLastTournamentNumber] = useState(() => {
-    const storedNum = parseInt(
-      localStorage.getItem("lastTournamentNumber"),
-      10,
-    );
-    if (!isNaN(storedNum)) return storedNum;
-    const maxId = tournaments.length
-      ? Math.max(...tournaments.map((t) => t.id || 0))
-      : 0;
-    localStorage.setItem("lastTournamentNumber", maxId);
-    return maxId;
-  });
+
   const [name, setName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [numTeams, setNumTeams] = useState("2");
@@ -47,9 +31,7 @@ const AddTournament = () => {
     }
   }, [startDate, numTeams]);
 
-  // Persistent nextId using lastTournamentNumber
-  const nextId = lastTournamentNumber + 1;
-
+  
   const handleAddTournament = (e) => {
     e.preventDefault();
 
@@ -66,18 +48,15 @@ const AddTournament = () => {
     }
 
     const newTournament = {
-      id: nextId,
-      name,
-      startDate,
-      endDate,
-      numTeams: parseInt(numTeams, 10),
+      tr_name: name,
+      start_date: startDate,
+      end_date: endDate,
+      num_teams: parseInt(numTeams, 10),
     };
-    // Update persistent counter
-    localStorage.setItem("lastTournamentNumber", nextId);
-    setLastTournamentNumber(nextId);
-    const updated = [...tournaments, newTournament];
-    setTournaments(updated);
-    localStorage.setItem("tournaments", JSON.stringify(updated));
+
+    axios.post(`http://localhost:5000/admin/tournaments`, newTournament)
+    .catch(err => console.error(err))
+    
     setName("");
     setStartDate("");
     setEndDate("");
@@ -100,7 +79,8 @@ const AddTournament = () => {
           <h2>Tournament Details</h2>
           <div className="form-container">
             <form onSubmit={handleAddTournament} className="form-grid">
-              <label>
+              
+              {/* <label>                       dont need this since u dont fill in the tournament id
                 Tournament ID:
                 <input
                   type="text"
@@ -112,7 +92,10 @@ const AddTournament = () => {
                     cursor: "not-allowed",
                   }}
                 />
-              </label>
+              </label> */}
+
+
+
               <label>
                 Tournament Name:
                 <input
