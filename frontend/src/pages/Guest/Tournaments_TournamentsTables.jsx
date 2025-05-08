@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminSidebar from "../../components/AdminSidebar";
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from "../../assets/images/Illustration 1@4x.png";
-import "../../stylesheets/Tournaments.css";
+import "../../stylesheets/Tournaments_TournamentsTables.css";
+import GuestSidebar from "../../components/GuestSidebar";
 
-import axios from 'axios'
-
-const Tournaments = () => {
+const Tournaments_TournamentsTables = () => {
   const navigate = useNavigate();
   const username = "john.doe"; // Replace with actual dynamic source later
   const [first, last] = username.split(".");
@@ -16,16 +14,12 @@ const Tournaments = () => {
 
   const [tournaments, setTournaments] = useState([]);
 
-  //Token
-
   useEffect(() => {
     const loadTournaments = () => {
-      
-      axios.get(`http://localhost:5000/tournaments`)
-      .then((res) => {
-        setTournaments(res.data.data)
-      })
-      .catch(err => console.error(err))      
+      const stored = localStorage.getItem("tournaments");
+      if (stored) {
+        setTournaments(JSON.parse(stored));
+      }
     };
 
     loadTournaments();
@@ -34,40 +28,33 @@ const Tournaments = () => {
     return () => window.removeEventListener("focus", loadTournaments);
   }, []);
 
-  const handleDeleteTournament = (tournamentId) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this tournament?",
-    );
-    if (!confirmed) return;
-
-    //delete tournament via admin api
-    axios.delete(`http://localhost:5000/admin/tournaments/${tournamentId}`)
-    .then((res) => {
-      if (res.status === 200){ 
-        const updated = tournaments.filter(
-          (t) => String(t.tr_id) !== String(tournamentId),
-        );
-        setTournaments(updated);
-      }
-    })
-
-  };
+  // const handleDeleteTournament = (tournamentId) => {
+  //   const confirmed = window.confirm(
+  //     "Are you sure you want to delete this tournament?",
+  //   );
+  //   if (!confirmed) return;
+  //   const updated = tournaments.filter(
+  //     (t) => String(t.id) !== String(tournamentId),
+  //   );
+  //   localStorage.setItem("tournaments", JSON.stringify(updated));
+  //   setTournaments(updated);
+  // };
 
   return (
-    <div className="admin-home">
-      <AdminSidebar initials={initials} formattedName={formattedName} />
+    <div className="guest-home">
+      <GuestSidebar initials={initials} formattedName={formattedName} />
 
       <main className="main-content">
         <div className="bg-overlay"></div>
         <header className="topbar">
-          <h1>Tournaments</h1>
+          <h1>View Tournament Table</h1>
         </header>
         <section className="tournament-list">
-          <h2>Registered Tournaments</h2>
+          <h2>Choose the Tournament</h2>
           <div className="tournament-grid scrollable">
             {tournaments.length > 0 ? (
               tournaments.map((tournament) => (
-                <div key={tournament.tr_id} className="tournament-card">
+                <div key={tournament.id} className="tournament-card">
                   <div
                     className="tournament-card-header"
                     style={{
@@ -79,32 +66,26 @@ const Tournaments = () => {
                     <h3 style={{ margin: 0 }}>
                       Tournament Name:{" "}
                       <span className="tournament-name-gradient">
-                        {tournament.tr_name}
+                        {tournament.name}
                       </span>
                     </h3>
                   </div>
                   <p>
-                    <strong>Tournament ID:</strong> {tournament.tr_id}
-                  </p>
-                  <p>
                     <strong>Start Date:</strong>{" "}
-                    {new Date(tournament.start_date).toLocaleDateString("en-GB")}
+                    {new Date(tournament.startDate).toLocaleDateString("en-GB")}
                   </p>
                   <p>
                     <strong>End Date:</strong>{" "}
-                    {new Date(tournament.end_date).toLocaleDateString("en-GB")}
-                  </p>
-                  <p>
-                    <strong>Number of Teams:</strong> {tournament.numTeams}
+                    {new Date(tournament.endDate).toLocaleDateString("en-GB")}
                   </p>
                   <button
                     type="button"
-                    className="edit-button"
+                    className="tournament-view-button"
                     onClick={() =>
-                      navigate(`/admin/tournaments/${tournament.tr_id}/edit`)
+                      navigate(`/guest/view-tournament-table/${tournament.id}`)
                     }
                   >
-                    Edit
+                    View
                   </button>
                 </div>
               ))
@@ -125,4 +106,4 @@ const Tournaments = () => {
   );
 };
 
-export default Tournaments;
+export default Tournaments_TournamentsTables;

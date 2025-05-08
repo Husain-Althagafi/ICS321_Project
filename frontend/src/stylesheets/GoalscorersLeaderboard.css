@@ -33,7 +33,7 @@
   margin-bottom: 1rem;
 }
 
-.match-results-results-list h2 {
+.top-goalscorers-results-list h2 {
   font-size: 2rem;
   color: black;
   text-shadow: none;
@@ -97,18 +97,18 @@
   pointer-events: none;
 }
 
-.match-results-results-grid {
+.top-goalscorers-results-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1rem;
 }
 
-.match-results-card {
+.top-goalscorers-card {
   background-color: white;
   border-radius: 0.75rem;
   padding: 1em;
-  padding-bottom: 0em;
-  padding-top: 0em;
+  /* padding-bottom: 0em;
+  padding-top: 0em; */
   color: black;
   box-shadow: 0 0.25em 0.5em rgba(0, 0, 0, 0.1);
   margin: 0 0;
@@ -120,9 +120,10 @@
   flex-direction: column;
   width: 100%;
   margin-bottom: 0.5rem;
+  border-radius: 2rem;
 }
 
-.match-results-card-header .result-view-button {
+.top-goalscorers-card-header .info-view-button {
   margin-right: 0rem;
   font-size: 0.75rem;
   width: 2rem;
@@ -130,11 +131,11 @@
   object-fit: cover;
 }
 
-.match-results-card h3 {
+.top-goalscorers-card h3 {
   margin-top: 0.25rem;
 }
 
-.match-results-card:hover {
+.top-goalscorers-card:hover {
   transform: scale(1.003);
   transform-origin: center;
   box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.15);
@@ -143,39 +144,40 @@
   /* color: white; */
 }
 
-.match-results-card:hover .match-results-name-gradient {
+.top-goalscorers-card:hover .top-goalscorers-name-gradient {
   background: linear-gradient(135deg, #ffffff, #cacaca);
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.match-results-grid.scrollable {
+.top-goalscorers-grid.scrollable {
   max-height: 70vh; /* or whatever max height you like */
   width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-right: 0.5rem; /* so the scroll bar doesn’t overlap content */
+  padding: 1rem; /* so the scroll bar doesn’t overlap content */
+  padding-right: 2rem;
 }
 
-.match-results-card {
+.top-goalscorers-card {
   box-sizing: border-box;
   width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-.match-results-name-gradient {
+.top-goalscorers-name-gradient {
   background: linear-gradient(135deg, #00713d, #00934f);
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.match-results-card p {
+.top-goalscorers-card p {
   margin-top: 0.3rem;
   margin-bottom: 0.3rem;
 }
 
-.match-results-card-header {
+.top-goalscorers-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -212,11 +214,11 @@
   -webkit-text-fill-color: transparent;
   font-weight: bold;
 }
-.match-results-card-header .result-view-button:hover {
+.top-goalscorers-card-header .info-view-button:hover {
   background-color: rgb(38, 38, 38) !important;
 }
 
-.match-results-card-header .result-view-button:hover img {
+.top-goalscorers-card-header .info-view-button:hover img {
   filter: invert(1);
 }
 
@@ -231,7 +233,29 @@
   max-height: 20rem;
 }
 
-.return-button-matches {
+.gold {
+  background: linear-gradient(90deg, #e5a605, #cfb002, #e2a202);
+  background-clip: text;
+  color: transparent;
+  font-weight: bold;
+  text-shadow: 0 0 1.5px rgba(255, 215, 0, 0.8);
+}
+.silver {
+  background: linear-gradient(90deg, #696969, #919191, #7d7d7d);
+  background-clip: text;
+  color: transparent;
+  font-weight: bold;
+  text-shadow: 0 0 1.5px rgba(192, 192, 192, 0.8);
+}
+.bronze {
+  background: linear-gradient(90deg, #7a4a20, #cd7f32, #7a4a20);
+  background-clip: text;
+  color: transparent;
+  font-weight: bold;
+  text-shadow: 0 0 1.5px rgba(205, 127, 50, 0.8);
+}
+
+.return-button-goalscorers {
   border: none;
   padding: 1rem;
   cursor: pointer;
@@ -248,7 +272,7 @@
   transition: transform 0.2s ease;
 }
 
-.return-button-matches:hover {
+.return-button-goalscorers:hover {
   background: linear-gradient(135deg, #00713d, #00934f);
   color: white;
   background-clip: border-box;
@@ -256,9 +280,10 @@
   transform: scale(1.05);
 }
 
-.return-button-matches-wrapper {
+.return-button-goalscorers-wrapper {
   display: inline-flex;
   align-items: center;
   background: white;
   border-radius: 1.5rem;
+  margin-left: 1rem;
 }

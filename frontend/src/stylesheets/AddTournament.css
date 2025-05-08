@@ -240,3 +240,19 @@
   margin-top: 0rem;
   margin-bottom: 0rem;
 }
+
+.tournament-form .form-grid select {
+  width: 100%;
+  background-color: transparent;
+  border: 1px solid #ccc; /* match other inputs if needed */
+  padding: 0.5rem;
+  box-sizing: border-box;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  height: 2.5rem;
+}
+
+.tournament-form .form-grid input[type="date"][disabled] {
+  background-color: #f0f0f0;
+  color: #666;
+}

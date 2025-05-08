@@ -57,6 +57,9 @@ const MatchesResults = () => {
     // Tertiary: equal entries retain original order
     return 0;
   });
+  const completedMatches = sortedMatches.filter(
+    (m) => m.scoreA != null && m.scoreB != null,
+  );
 
   return (
     <div className="admin-home">
@@ -70,37 +73,53 @@ const MatchesResults = () => {
 
         <section className="match-results-results-list">
           <h2>Completed Matches</h2>
-          <button
-            className="sort-button"
-            style={{
-              marginBottom: "1rem",
-              marginRight: "0",
-              width: "fit-content",
-            }}
-            onClick={() => setIsAscending(!isAscending)}
-          >
-            Sorted by Date:{" "}
-            <span className="winner-gradient">
-              {isAscending ? "Oldest" : "Latest"}
-            </span>
-          </button>
+          <div className="top-buttons">
+            <div className="return-button-matches-wrapper">
+              <button
+                className="return-button-matches"
+                type="button"
+                onClick={() => navigate("/guest/match-results/tournaments")}
+              >
+                ← Back to Tournaments
+              </button>
+            </div>
+            <button
+              className="sort-button"
+              style={{
+                marginBottom: "1rem",
+                marginRight: "0",
+                width: "fit-content",
+              }}
+              onClick={() => setIsAscending(!isAscending)}
+            >
+              Sorted by Date:{" "}
+              <span className="winner-gradient">
+                {isAscending ? "Oldest" : "Latest"}
+              </span>
+            </button>
+          </div>
           <div className="match-results-grid scrollable">
-            {matches.length > 0 ? (
-              sortedMatches.map((m) => {
+            {completedMatches.length > 0 ? (
+              completedMatches.map((m) => {
                 const venueName =
                   venues.find((v) => String(v.id) === String(m.venueId))
                     ?.name || "Unknown";
-                const computedWinner =
-                  m.winner ||
-                  (m.scoreA > m.scoreB
-                    ? availableTeams.find(
-                        (t) => String(t.team_id) === String(m.teamA),
-                      )?.team_name || m.teamA
-                    : m.scoreB > m.scoreA
+                let computedWinner;
+                if (m.scoreA == null || m.scoreB == null) {
+                  computedWinner = "Match not completed";
+                } else {
+                  computedWinner =
+                    m.winner ||
+                    (m.scoreA > m.scoreB
                       ? availableTeams.find(
-                          (t) => String(t.team_id) === String(m.teamB),
-                        )?.team_name || m.teamB
-                      : "Draw");
+                          (t) => String(t.team_id) === String(m.teamA),
+                        )?.team_name || m.teamA
+                      : m.scoreB > m.scoreA
+                        ? availableTeams.find(
+                            (t) => String(t.team_id) === String(m.teamB),
+                          )?.team_name || m.teamB
+                        : "Draw");
+                }
                 const motmName =
                   availableTeams
                     .flatMap((t) => t.players || [])
@@ -147,14 +166,17 @@ const MatchesResults = () => {
                 // Derive scorer player IDs for each team (for tooltip with goal times)
                 const goalEntries = Object.entries(m.goals || {}); // [ [pid, count], ... ]
                 // Get player IDs for each team
-                const teamAPlayerIds =
-                  availableTeams
-                    .find((t) => String(t.team_id) === String(m.teamA))
-                    ?.players.map((p) => p.id) || [];
-                const teamBPlayerIds =
-                  availableTeams
-                    .find((t) => String(t.team_id) === String(m.teamB))
-                    ?.players.map((p) => p.id) || [];
+                const teamAPlayerIds = (
+                  availableTeams.find(
+                    (t) => String(t.team_id) === String(m.teamA),
+                  )?.players || []
+                ).map((p) => p.id);
+
+                const teamBPlayerIds = (
+                  availableTeams.find(
+                    (t) => String(t.team_id) === String(m.teamB),
+                  )?.players || []
+                ).map((p) => p.id);
                 // Filter for player IDs with goals for each team
                 const scorerNamesA = goalEntries
                   .filter(
@@ -191,17 +213,23 @@ const MatchesResults = () => {
                             (t) => String(t.team_id) === String(m.teamB),
                           )?.team_name || m.teamB}
                         </span>{" "}
-                        (Match Winner:{" "}
-                        {computedWinner === "Draw" ? (
-                          <span className="draw-gradient">
-                            {computedWinner}
-                          </span>
+                        {computedWinner === "Match not completed" ? (
+                          <> (Match Not Completed) </>
                         ) : (
-                          <span className="winner-gradient">
-                            {computedWinner}
-                          </span>
+                          <>
+                            (Match Winner:{" "}
+                            {computedWinner === "Draw" ? (
+                              <span className="draw-gradient">
+                                {computedWinner}
+                              </span>
+                            ) : (
+                              <span className="winner-gradient">
+                                {computedWinner}
+                              </span>
+                            )}
+                            )
+                          </>
                         )}
-                        )
                       </h3>
                       <div
                         className="box-right-side"

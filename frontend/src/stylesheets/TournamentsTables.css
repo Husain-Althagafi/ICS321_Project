@@ -33,7 +33,7 @@
   margin-bottom: 1rem;
 }
 
-.match-results-results-list h2 {
+.tournament-list h2 {
   font-size: 2rem;
   color: black;
   text-shadow: none;
@@ -97,18 +97,16 @@
   pointer-events: none;
 }
 
-.match-results-results-grid {
+.tournament-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
 }
 
-.match-results-card {
+.tournament-card {
   background-color: white;
   border-radius: 0.75rem;
   padding: 1em;
-  padding-bottom: 0em;
-  padding-top: 0em;
   color: black;
   box-shadow: 0 0.25em 0.5em rgba(0, 0, 0, 0.1);
   margin: 0 0;
@@ -118,120 +116,97 @@
     box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  margin-bottom: 0.5rem;
 }
 
-.match-results-card-header .result-view-button {
-  margin-right: 0rem;
-  font-size: 0.75rem;
-  width: 2rem;
-  height: 2rem;
-  object-fit: cover;
+.tournament-card .tournament-view-button {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  font-size: 0.875rem;
+  padding: 0.2em 0.4em;
+  border-radius: 0.75rem;
+  width: 4rem;
 }
 
-.match-results-card h3 {
+.tournament-card h3 {
   margin-top: 0.25rem;
 }
 
-.match-results-card:hover {
-  transform: scale(1.003);
+.tournament-card:hover {
+  transform: scale(1.01);
   transform-origin: center;
   box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.15);
   cursor: pointer;
-  /* background: linear-gradient(135deg, #00713d, #00934f); */
-  /* color: white; */
+  background: linear-gradient(135deg, #00713d, #00934f);
+  color: white;
 }
 
-.match-results-card:hover .match-results-name-gradient {
+.tournament-card:hover .tournament-name-gradient {
   background: linear-gradient(135deg, #ffffff, #cacaca);
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.match-results-grid.scrollable {
+.tournament-grid.scrollable {
   max-height: 70vh; /* or whatever max height you like */
-  width: 100%;
   overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 0.5rem; /* so the scroll bar doesn’t overlap content */
+  padding-right: 8px; /* so the scroll bar doesn’t overlap content */
 }
-
-.match-results-card {
-  box-sizing: border-box;
-  width: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-.match-results-name-gradient {
+.tournament-name-gradient {
   background: linear-gradient(135deg, #00713d, #00934f);
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.match-results-card p {
+.tournament-card p {
   margin-top: 0.3rem;
   margin-bottom: 0.3rem;
 }
 
-.match-results-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.tournament-card-header {
+  margin-bottom: 1rem;
 }
 
-/* Gradient text for match winner */
-.winner-gradient {
-  background: linear-gradient(135deg, #00713d, #00934f);
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: bold;
-}
-
-/* Grey gradient for draw */
-.draw-gradient {
-  background: linear-gradient(135deg, #6c6c6c, #a0a0a0);
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: bold;
-}
-
-/* Gradient for left team */
-.team-left-gradient {
-  background: linear-gradient(135deg, #ff0000, #ff6e6e);
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: bold;
-}
-
-/* Gradient for right team */
-.team-right-gradient {
-  background: linear-gradient(135deg, #6e6eff, #0000ff);
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: bold;
-}
-.match-results-card-header .result-view-button:hover {
-  background-color: rgb(38, 38, 38) !important;
-}
-
-.match-results-card-header .result-view-button:hover img {
-  filter: invert(1);
-}
-
-/* Smooth accordion roll-down for match details */
-.match-details-expanded {
-  max-height: 0;
+.league-table {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+  border-collapse: separate;
+  border-spacing: 0;
   overflow: hidden;
-  transition: max-height 0.5s ease;
-}
-.match-details-expanded .match-details {
-  /* Set to a value large enough for your content */
-  max-height: 20rem;
 }
 
-.return-button-matches {
+/* Optional: ensure header cells have no border-radius clipping issues */
+.league-table thead th:first-child {
+  border-top-left-radius: 0.75rem;
+}
+.league-table thead th:last-child {
+  border-top-right-radius: 0.75rem;
+}
+.league-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 0.75rem;
+}
+.league-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 0.75rem;
+}
+
+.league-table th,
+.league-table td {
+  color: black;
+  text-align: center;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  border-left: none;
+  border-right: none;
+}
+
+.table-container.scrollable table {
+  width: 100%; /* ensure table spans full container width */
+  border-collapse: collapse; /* restore standard table layout */
+}
+
+.return-button-tables {
   border: none;
   padding: 1rem;
   cursor: pointer;
@@ -248,7 +223,7 @@
   transition: transform 0.2s ease;
 }
 
-.return-button-matches:hover {
+.return-button-tables:hover {
   background: linear-gradient(135deg, #00713d, #00934f);
   color: white;
   background-clip: border-box;
@@ -256,9 +231,11 @@
   transform: scale(1.05);
 }
 
-.return-button-matches-wrapper {
+.return-button-wrapper {
   display: inline-flex;
   align-items: center;
   background: white;
   border-radius: 1.5rem;
+  margin-left: 1rem;
+  margin-bottom: 1rem;
 }

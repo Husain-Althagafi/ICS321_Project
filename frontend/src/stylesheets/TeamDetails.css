@@ -282,6 +282,14 @@
   padding: 0.75rem 1rem;
   box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
   margin-bottom: 0.5rem;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.form-container .players-list li:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
 
 .edit-team-content {
@@ -355,7 +363,6 @@ button[style*="background-color: orange"]:hover {
     background-color 0.2s ease;
 }
 
-
 /* Return button gradient-to-white swap */
 .return-button {
   background: linear-gradient(135deg, #00713d, #00934f);
@@ -363,7 +370,11 @@ button[style*="background-color: orange"]:hover {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   transform: scale(1);
-  transition: background 0.3s ease, -webkit-text-fill-color 0.3s ease, background-clip 0.3s ease, transform 0.3s ease;
+  transition:
+    background 0.3s ease,
+    -webkit-text-fill-color 0.3s ease,
+    background-clip 0.3s ease,
+    transform 0.3s ease;
 }
 
 .return-button:hover {
@@ -371,4 +382,10 @@ button[style*="background-color: orange"]:hover {
   -webkit-text-fill-color: white;
   background-clip: border-box;
   transform: scale(1.05);
+}
+
+/* Card button hover: gradient green */
+.btn-red-card:hover,
+.btn-yellow-card:hover {
+  background: linear-gradient(135deg, #00713d, #00934f) !important;
 }

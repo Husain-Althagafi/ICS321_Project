@@ -1,6 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
 
-.guest-home {
+.admin-home {
   display: flex;
   height: 100vh;
   width: 100vw;
@@ -33,7 +33,7 @@
   margin-bottom: 1rem;
 }
 
-.team-list h2 {
+.tournament-list h2 {
   font-size: 2rem;
   color: black;
   text-shadow: none;
@@ -97,13 +97,13 @@
   pointer-events: none;
 }
 
-.team-grid {
+.tournament-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
 }
 
-.team-card {
+.tournament-card {
   background-color: white;
   border-radius: 0.75rem;
   padding: 1em;
@@ -118,34 +118,51 @@
   flex-direction: column;
 }
 
-.team-card .view-team-button {
+.tournament-card .tournament-view-button {
   position: absolute;
-  top: 50%;
+  bottom: 0.75rem;
   right: 0.75rem;
-  transform: translateY(-50%);
   font-size: 0.875rem;
   padding: 0.2em 0.4em;
   border-radius: 0.75rem;
   width: 4rem;
 }
 
-.team-card h3 {
+.tournament-card h3 {
   margin-top: 0.25rem;
 }
 
-.team-card:hover {
-  transform: translateY(-0.25rem);
+.tournament-card:hover {
+  transform: scale(1.01);
+  transform-origin: center;
   box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.15);
   cursor: pointer;
+  background: linear-gradient(135deg, #00713d, #00934f);
+  color: white;
 }
 
-.team-grid.scrollable {
+.tournament-card:hover .tournament-name-gradient {
+  background: linear-gradient(135deg, #ffffff, #cacaca);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.tournament-grid.scrollable {
   max-height: 70vh; /* or whatever max height you like */
   overflow-y: auto;
   padding-right: 8px; /* so the scroll bar doesn’t overlap content */
 }
-.team-name-gradient {
+.tournament-name-gradient {
   background: linear-gradient(135deg, #00713d, #00934f);
   background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.tournament-card p {
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
+}
+
+.tournament-card-header {
+  margin-bottom: 1rem;
 }

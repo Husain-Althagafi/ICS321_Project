@@ -26,6 +26,10 @@ import Tournaments_MatchResults from "./pages/Guest/Tournaments_MatchResults";
 import MatchesResults from "./pages/Guest/MatchesResults";
 import BrowseTeams from "./pages/Guest/BrowseTeams";
 import TeamDetails from "./pages/Guest/TeamDetails";
+import GoalscorersLeaderboard from "./pages/Guest/GoalscorersLeaderboard";
+import Tournaments_GoalscorersLeaderboard from "./pages/Guest/Tournaments_GoalscorersLeaderboard";
+import Tournaments_TournamentsTables from "./pages/Guest/Tournaments_TournamentsTables";
+import TournamentsTables from "./pages/Guest/TournamentsTables";
 
 function App() {
   return (
@@ -75,13 +79,23 @@ function App() {
           path="/guest/match-results/:tournamentId/matches"
           element={<MatchesResults />}
         />
+        <Route path="/guest/browse-teams" element={<BrowseTeams />} />
+        <Route path="/guest/browse-teams/:teamId" element={<TeamDetails />} />
         <Route
-          path="/guest/browse-teams"
-          element={<BrowseTeams />}
+          path="/guest/top-goalscorers"
+          element={<Tournaments_GoalscorersLeaderboard />}
         />
         <Route
-          path="/guest/browse-teams/:teamId"
-          element={<TeamDetails />}
+          path="/guest/top-goalscorers/:tournamentId"
+          element={<GoalscorersLeaderboard />}
+        />
+        <Route
+          path="/guest/view-tournament-table"
+          element={<Tournaments_TournamentsTables />}
+        />
+        <Route
+          path="/guest/view-tournament-table/:tournamentId"
+          element={<TournamentsTables />}
         />
       </Routes>
     </Router>

@@ -68,12 +68,10 @@ const BrowseTeams = () => {
                       </span>
                     </h3>
                   </div>
-                  <p>
-                    <strong>Team ID:</strong> {team.team_id}
-                  </p>
                   <button
                     type="button"
-                    className="edit-button"
+                    className="view-team-button"
+                    // style={{ display: "block", margin: "0.5rem auto 1rem" }}
                     onClick={() =>
                       navigate(`/guest/browse-teams/${team.team_id}`)
                     }

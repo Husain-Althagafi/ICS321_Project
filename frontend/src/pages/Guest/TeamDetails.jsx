@@ -5,6 +5,8 @@ import DeleteTeamButton from "../../components/DeleteTeamButton";
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from "../../assets/images/Illustration 1@4x.png";
 import "../../stylesheets/TeamDetails.css";
+import yellowCardIcon from "../../assets/icons/yellow_card.svg";
+import redCardIcon from "../../assets/icons/red_card.png";
 
 const TeamDetails = () => {
   const navigate = useNavigate();
@@ -37,8 +39,28 @@ const TeamDetails = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [editPlayerModal, setEditPlayerModal] = useState(false);
 
+  // Card modals state
+  const [showYellowModal, setShowYellowModal] = useState(false);
+  const [showRedModal, setShowRedModal] = useState(false);
+  const [yellowCardPlayer, setYellowCardPlayer] = useState(null);
+  const [redCardPlayer, setRedCardPlayer] = useState(null);
+
+  // Match dropdown state for card modals
+  const [teamMatches, setTeamMatches] = useState([]);
+  const [selectedYellowMatch, setSelectedYellowMatch] = useState("");
+  const [selectedRedMatch, setSelectedRedMatch] = useState("");
+
+  // Carded players lists for modals
+  const [yellowCardList, setYellowCardList] = useState([]);
+  const [redCardList, setRedCardList] = useState([]);
+
   useEffect(() => {
     const storedTeams = JSON.parse(localStorage.getItem("teams")) || [];
+    // Pull all matches from every tournament
+    const tournaments = JSON.parse(localStorage.getItem("tournaments")) || [];
+    const allMatches = tournaments.reduce((acc, tour) => {
+      return acc.concat(tour.matches || []);
+    }, []);
     const team = storedTeams.find((t) => String(t.team_id) === teamId);
     if (team) {
       setTeamName(team.team_name);
@@ -46,6 +68,11 @@ const TeamDetails = () => {
       setManagerName(team.manager_name || "");
       setTeams(storedTeams);
       setPlayers(team.players || []);
+      // Find all matches where this team played (as teamA or teamB)
+      const playedMatches = allMatches.filter(
+        (m) => String(m.teamA) === teamId || String(m.teamB) === teamId,
+      );
+      setTeamMatches(playedMatches);
     } else {
       navigate("/guest/teams");
     }
@@ -91,6 +118,18 @@ const TeamDetails = () => {
     navigate("/guest/teams");
   };
 
+  // Helper to format YYYY-MM-DD to DD/MM/YYYY
+  const formatDateBR = (isoDate) => {
+    const [year, month, day] = isoDate.split("-");
+    return `${day}/${month}/${year}`;
+  };
+
+  // Helper to get a team name by ID
+  const getTeamName = (id) => {
+    const t = teams.find((team) => String(team.team_id) === String(id));
+    return t ? t.team_name : id;
+  };
+
   return (
     <div className="guest-home">
       <GuestSidebar initials={initials} formattedName={formattedName} />
@@ -98,7 +137,7 @@ const TeamDetails = () => {
       <main className="main-content">
         <div className="bg-overlay"></div>
         <header className="topbar">
-          <h1>Edit Team</h1>
+          <h1>Teams</h1>
         </header>
 
         <section className="tournament-form">
@@ -122,7 +161,7 @@ const TeamDetails = () => {
                 height: "3rem",
                 width: "fit-content",
                 marginLeft: "0rem",
-                marginBottom: "0rem"
+                marginBottom: "0rem",
               }}
             >
               ← Back to Teams
@@ -191,7 +230,47 @@ const TeamDetails = () => {
                   height: "40vh",
                 }}
               >
-                <label>Players</label>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  <label>Players</label>
+                  <button
+                    type="button"
+                    className="btn-yellow-card"
+                    style={{ marginRight: "0rem" }}
+                    onClick={() => {
+                      setYellowCardPlayer(null);
+                      setShowYellowModal(true);
+                    }}
+                  >
+                    <img
+                      src={yellowCardIcon}
+                      alt="Yellow Card"
+                      style={{ width: "1.5rem", height: "1.5rem" }}
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-red-card"
+                    style={{ marginRight: "0rem", marginLeft: "1rem" }}
+                    onClick={() => {
+                      setRedCardPlayer(null);
+                      setShowRedModal(true);
+                    }}
+                  >
+                    <img
+                      src={redCardIcon}
+                      alt="Red Card"
+                      style={{ width: "1.5rem", height: "1.5rem" }}
+                    />
+                  </button>
+                </div>
+
                 <ul style={{ flexGrow: 1, overflowY: "auto" }}>
                   {players.map((p, idx) => (
                     <li
@@ -554,6 +633,223 @@ const TeamDetails = () => {
             >
               Update
             </button>
+          </div>
+        </div>
+      )}
+      {/* Yellow Card Modal */}
+      {showYellowModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <button
+              className="close-button"
+              type="button"
+              onClick={() => setShowYellowModal(false)}
+            >
+              &times;
+            </button>
+            <h2>Yellow Card</h2>
+            <label htmlFor="yellow-match-select">Select Match:</label>
+            <select
+              id="yellow-match-select"
+              value={selectedYellowMatch}
+              onChange={(e) => {
+                const matchId = e.target.value;
+                setSelectedYellowMatch(matchId);
+                const matchObj = teamMatches.find(
+                  (m) => String(m.id) === matchId,
+                );
+                if (matchObj && matchObj.yellowCards) {
+                  const list = Object.entries(matchObj.yellowCards)
+                    .filter(([pid]) =>
+                      players.some((p) => String(p.id) === String(pid)),
+                    )
+                    .map(([pid, times]) => {
+                      const player = players.find(
+                        (p) => String(p.id) === String(pid),
+                      );
+                      return {
+                        name: player.name,
+                        timings: Array.isArray(times) ? times : [times],
+                      };
+                    });
+                  setYellowCardList(list);
+                } else {
+                  setYellowCardList([]);
+                }
+              }}
+              style={{ margin: "0.5rem 0", width: "100%" }}
+            >
+              <option value="">-- Select a match --</option>
+              {teamMatches.length > 0 ? (
+                teamMatches.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {formatDateBR(m.date)}: {getTeamName(m.teamA)} vs{" "}
+                    {getTeamName(m.teamB)}
+                  </option>
+                ))
+              ) : (
+                <option disabled>No matches available</option>
+              )}
+            </select>
+            {/* Replace match with actual match object if available */}
+            {yellowCardPlayer &&
+              Array.isArray(match?.yellowCards?.[yellowCardPlayer.id]) &&
+              match.yellowCards[yellowCardPlayer.id].length > 0 && (
+                <div style={{ margin: "0.5rem 0", textAlign: "left" }}>
+                  <p>
+                    <strong>Player ID:</strong> {yellowCardPlayer.id}
+                  </p>
+                  <p>
+                    <strong>Player:</strong>{" "}
+                    {yellowCardPlayer.name.split(" ").slice(-1)[0]}
+                  </p>
+                  <p>
+                    <strong>Yellow cards:</strong>{" "}
+                    {match.yellowCards[yellowCardPlayer.id].length}
+                  </p>
+                  <p>
+                    <strong>Timings:</strong>{" "}
+                    {match.yellowCards[yellowCardPlayer.id]
+                      .slice()
+                      .sort((a, b) => a - b)
+                      .map((t) => `${t}'`)
+                      .join(", ")}
+                  </p>
+                </div>
+              )}
+
+            {selectedYellowMatch &&
+              (yellowCardList.length > 0 ? (
+                <div className="carded-players-list">
+                  {yellowCardList.map((entry, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        borderBottom:
+                          idx !== yellowCardList.length - 1
+                            ? "1px solid #ccc"
+                            : "none",
+                        padding: "0.25rem 0",
+                      }}
+                    >
+                      {entry.name}:{" "}
+                      {entry.timings
+                        .sort((a, b) => a - b)
+                        .map((t) => `${t}'`)
+                        .join(", ")}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p>No carded players found!</p>
+              ))}
+          </div>
+        </div>
+      )}
+      {/* Red Card Modal */}
+      {showRedModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <button
+              className="close-button"
+              type="button"
+              onClick={() => setShowRedModal(false)}
+            >
+              &times;
+            </button>
+            <h2>Red Card</h2>
+            <label htmlFor="red-match-select">Select Match:</label>
+            <select
+              id="red-match-select"
+              value={selectedRedMatch}
+              onChange={(e) => {
+                const matchId = e.target.value;
+                setSelectedRedMatch(matchId);
+                const matchObj = teamMatches.find(
+                  (m) => String(m.id) === matchId,
+                );
+                if (matchObj && matchObj.redCards) {
+                  const list = Object.entries(matchObj.redCards)
+                    .filter(([pid]) =>
+                      players.some((p) => String(p.id) === String(pid)),
+                    )
+                    .map(([pid, time]) => {
+                      const player = players.find(
+                        (p) => String(p.id) === String(pid),
+                      );
+                      return {
+                        name: player.name,
+                        timings: [time],
+                      };
+                    });
+                  setRedCardList(list);
+                } else {
+                  setRedCardList([]);
+                }
+              }}
+              style={{ margin: "0.5rem 0", width: "100%" }}
+            >
+              <option value="">-- Select a match --</option>
+              {teamMatches.length > 0 ? (
+                teamMatches.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {formatDateBR(m.date)}: {getTeamName(m.teamA)} vs{" "}
+                    {getTeamName(m.teamB)}
+                  </option>
+                ))
+              ) : (
+                <option disabled>No matches available</option>
+              )}
+            </select>
+            {/* Replace match with actual match object if available */}
+            {redCardPlayer &&
+              Array.isArray(match?.redCards?.[redCardPlayer.id]) &&
+              match.redCards[redCardPlayer.id].length > 0 && (
+                <div style={{ margin: "0.5rem 0", textAlign: "left" }}>
+                  <p>
+                    <strong>Player ID:</strong> {redCardPlayer.id}
+                  </p>
+                  <p>
+                    <strong>Player:</strong>{" "}
+                    {redCardPlayer.name.split(" ").slice(-1)[0]}
+                  </p>
+                  <p>
+                    <strong>Red cards:</strong>{" "}
+                    {match.redCards[redCardPlayer.id].length}
+                  </p>
+                  <p>
+                    <strong>Timings:</strong>{" "}
+                    {match.redCards[redCardPlayer.id]
+                      .slice()
+                      .sort((a, b) => a - b)
+                      .map((t) => `${t}'`)
+                      .join(", ")}
+                  </p>
+                </div>
+              )}
+
+            {selectedRedMatch &&
+              (redCardList.length > 0 ? (
+                <div className="carded-players-list">
+                  {redCardList.map((entry, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        borderBottom:
+                          idx !== redCardList.length - 1
+                            ? "1px solid #ccc"
+                            : "none",
+                        padding: "0.25rem 0",
+                      }}
+                    >
+                      {entry.name}:{" "}
+                      {entry.timings.map((t) => `${t}'`).join(", ")}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p>No carded players found!</p>
+              ))}
           </div>
         </div>
       )}

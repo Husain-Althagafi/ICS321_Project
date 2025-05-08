@@ -31,7 +31,7 @@ const GuestHome = () => {
           <div className="app-grid">
             <div
               className="app-item"
-              onClick={() => navigate("/guest/tournament-table")}
+              onClick={() => navigate("/guest/view-tournament-table")}
             >
               View Tournament Table
             </div>
@@ -49,9 +49,9 @@ const GuestHome = () => {
             </div>
             <div
               className="app-item"
-              onClick={() => navigate("/guest/detailed-match-stats")}
+              onClick={() => navigate("/guest/top-goalscorers")}
             >
-              View Player Stats
+              Top Goalscorers
             </div>
           </div>
         </section>
