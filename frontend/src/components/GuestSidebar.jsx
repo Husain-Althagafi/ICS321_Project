@@ -20,8 +20,12 @@ const GuestSidebar = ({ initials, formattedName }) => {
       <nav>
         <ul>
           <li onClick={() => navigate("/guest/home")}>Home</li>
-          <li onClick={() => navigate("/guest/view-tournament-table")}>Tables</li>
-          <li onClick={() => navigate("/guest/browse-teams")}>Teams</li>
+          <li onClick={() => navigate("/guest/view-tournament-table")}>
+            Tables
+          </li>
+          <li onClick={() => navigate("/guest/match-results/tournaments")}>
+            Matches
+          </li>
           <li onClick={() => navigate("/guest/top-goalscorers")}>
             Top Scorers
           </li>

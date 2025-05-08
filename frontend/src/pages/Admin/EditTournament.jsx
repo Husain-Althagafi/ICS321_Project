@@ -1185,7 +1185,8 @@ const EditTournament = () => {
               )?.team_name || selectedMatch.teamB}
             </p>
             <p>
-              <strong>Date:</strong> {formatDate(selectedMatch.date).replace(/-/g, "/")}
+              <strong>Date:</strong>{" "}
+              {formatDate(selectedMatch.date).replace(/-/g, "/")}
             </p>
             <p>
               <strong>Time:</strong> {selectedMatch.startTime} -{" "}

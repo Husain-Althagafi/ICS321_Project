@@ -17,43 +17,49 @@ const TournamentsTables = () => {
 
   const { tournamentId } = useParams();
   const selectedTournament = tournaments.find(
-    (t) => String(t.id) === String(tournamentId)
+    (t) => String(t.id) === String(tournamentId),
   );
 
   // Compute standings/stats for each team in the selected tournament
-  const standings = selectedTournament?.teamIds.map((teamId) => {
-    let played = 0, won = 0, draw = 0, lost = 0, gf = 0, ga = 0;
-    (selectedTournament.matches || []).forEach((m) => {
-      if (m.teamA === teamId || m.teamB === teamId) {
-        if (m.scoreA != null && m.scoreB != null) {
-          played++;
-          const teamScore = m.teamA === teamId ? m.scoreA : m.scoreB;
-          const oppScore = m.teamA === teamId ? m.scoreB : m.scoreA;
-          gf += teamScore;
-          ga += oppScore;
-          if (teamScore > oppScore) won++;
-          else if (teamScore < oppScore) lost++;
-          else draw++;
+  const standings =
+    selectedTournament?.teamIds.map((teamId) => {
+      let played = 0,
+        won = 0,
+        draw = 0,
+        lost = 0,
+        gf = 0,
+        ga = 0;
+      (selectedTournament.matches || []).forEach((m) => {
+        if (m.teamA === teamId || m.teamB === teamId) {
+          if (m.scoreA != null && m.scoreB != null) {
+            played++;
+            const teamScore = m.teamA === teamId ? m.scoreA : m.scoreB;
+            const oppScore = m.teamA === teamId ? m.scoreB : m.scoreA;
+            gf += teamScore;
+            ga += oppScore;
+            if (teamScore > oppScore) won++;
+            else if (teamScore < oppScore) lost++;
+            else draw++;
+          }
         }
-      }
-    });
-    return {
-      teamId,
-      played,
-      won,
-      draw,
-      lost,
-      gf,
-      ga,
-      gd: gf - ga,
-      pts: won * 3 + draw,
-    };
-  }) || [];
+      });
+      return {
+        teamId,
+        played,
+        won,
+        draw,
+        lost,
+        gf,
+        ga,
+        gd: gf - ga,
+        pts: won * 3 + draw,
+      };
+    }) || [];
   // Sort standings by points then goal difference then goals for
   standings.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
 
   const allMatchesCompleted = selectedTournament?.matches?.every(
-    (m) => m.scoreA != null && m.scoreB != null
+    (m) => m.scoreA != null && m.scoreB != null,
   );
 
   useEffect(() => {
@@ -96,38 +102,39 @@ const TournamentsTables = () => {
           {selectedTournament ? (
             <div style={{ marginBottom: "2rem" }}>
               <h2 style={{ margin: "0 0 1rem 0" }}>
-                Tournament: <span className="tournament-name-gradient">{selectedTournament.name}</span>
+                Tournament:{" "}
+                <span className="tournament-name-gradient">
+                  {selectedTournament.name}
+                </span>
               </h2>
-              <button
-              className="return-button-goalscorers"
-              type="button"
-              onClick={() => navigate("/guest/view-tournament-table")}
-              style={{
-                // background: "linear-gradient(135deg, #00713d, #00934f)",
-                // WebkitBackgroundClip: "text",
-                // WebkitTextFillColor: "transparent",
-                border: "none",
-                padding: "1rem",
-                // marginBottom: "0.5rem",
-                cursor: "pointer",
-                fontSize: "1rem",
-                fontWeight: "bold",
-                display: "flex",
-                alignItems: "center",
-                height: "3rem",
-                width: "fit-content",
-                marginLeft: "0rem",
-                marginBottom: "1rem",
-              }}
-            >
-              ← Back to Tournaments
-            </button>
-              {selectedTournament.teamIds && selectedTournament.teamIds.length > 0 ? (
-                <div className="table-container scrollable" style={{height: "70vh", overflowY: "auto", boxShadow: "0 0 10px rgba(0, 0, 0, 0.3)", borderRadius: "0.75rem"}}>
+              <div className="return-button-wrapper">
+                <button
+                  className="return-button-tables"
+                  type="button"
+                  onClick={() => navigate("/guest/view-tournament-table")}
+                >
+                  ← Back to Tournaments
+                </button>
+              </div>
+              {selectedTournament.teamIds &&
+              selectedTournament.teamIds.length > 0 ? (
+                <div
+                  className="table-container scrollable"
+                  style={{
+                    height: "65vh",
+                    overflowY: "auto",
+                    borderRadius: "0.75rem",
+                    padding: "1rem",
+                  }}
+                >
                   <table
                     className="league-table"
                     cellPadding="16"
-                    style={{ width: "100%", borderCollapse: "collapse" }}
+                    style={{
+                      width: "100%",
+                      borderCollapse: "collapse",
+                      boxShadow: "0 0 10px rgba(0, 0, 0, 0.3)",
+                    }}
                   >
                     <thead>
                       <tr>
@@ -150,28 +157,33 @@ const TournamentsTables = () => {
                         if (allMatchesCompleted) {
                           if (index === 0) {
                             rowStyle = {
-                              background: 'linear-gradient(135deg,rgb(255, 184, 3),rgb(255, 217, 4), #e2a202)',
-                              color: 'white',
-                              fontWeight: 'bold',
-                              textShadow: '0px 0px 2px rgba(0,0,0,0.2)'
+                              background:
+                                "linear-gradient(135deg,rgb(255, 184, 3),rgb(255, 217, 4), #e2a202)",
+                              color: "white",
+                              fontWeight: "bold",
+                              textShadow: "0px 0px 2px rgba(0,0,0,0.2)",
                             };
                           } else if (index === 1) {
                             rowStyle = {
-                              background: 'linear-gradient(135deg,rgb(156, 156, 156),rgb(175, 174, 174), #7d7d7d)',
-                              color: 'white',
-                              fontWeight: 'bold',
-                              textShadow: '0px 0px 2px rgba(0,0,0,0.2)'
+                              background:
+                                "linear-gradient(135deg,rgb(156, 156, 156),rgb(175, 174, 174), #7d7d7d)",
+                              color: "white",
+                              fontWeight: "bold",
+                              textShadow: "0px 0px 2px rgba(0,0,0,0.2)",
                             };
                           } else if (index === 2) {
                             rowStyle = {
-                              background: 'linear-gradient(135deg,rgb(167, 97, 36), #cd7f32,rgb(172, 88, 15))',
-                              color: 'white',
-                              fontWeight: 'bold',
-                              textShadow: '0px 0px 2px rgba(0,0,0,0.2)'
+                              background:
+                                "linear-gradient(135deg,rgb(167, 97, 36), #cd7f32,rgb(172, 88, 15))",
+                              color: "white",
+                              fontWeight: "bold",
+                              textShadow: "0px 0px 2px rgba(0,0,0,0.2)",
                             };
                           }
                         }
-                        const team = teamsList.find((t) => String(t.team_id) === String(row.teamId));
+                        const team = teamsList.find(
+                          (t) => String(t.team_id) === String(row.teamId),
+                        );
                         const name = team?.team_name || row.teamId;
                         return (
                           <tr key={row.teamId} style={rowStyle}>

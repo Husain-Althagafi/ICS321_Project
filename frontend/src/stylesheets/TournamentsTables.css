@@ -202,6 +202,40 @@
 }
 
 .table-container.scrollable table {
-  width: 100%;        /* ensure table spans full container width */
+  width: 100%; /* ensure table spans full container width */
   border-collapse: collapse; /* restore standard table layout */
+}
+
+.return-button-tables {
+  border: none;
+  padding: 1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  height: 3rem;
+  width: fit-content;
+  background: linear-gradient(135deg, #00713d, #00934f);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  transition: transform 0.2s ease;
+}
+
+.return-button-tables:hover {
+  background: linear-gradient(135deg, #00713d, #00934f);
+  color: white;
+  background-clip: border-box;
+  -webkit-background-clip: border-box;
+  transform: scale(1.05);
+}
+
+.return-button-wrapper {
+  display: inline-flex;
+  align-items: center;
+  background: white;
+  border-radius: 1.5rem;
+  margin-left: 1rem;
+  margin-bottom: 1rem;
 }
