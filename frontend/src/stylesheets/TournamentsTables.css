@@ -166,3 +166,76 @@
 .tournament-card-header {
   margin-bottom: 1rem;
 }
+
+.league-table {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+}
+
+/* Optional: ensure header cells have no border-radius clipping issues */
+.league-table thead th:first-child {
+  border-top-left-radius: 0.75rem;
+}
+.league-table thead th:last-child {
+  border-top-right-radius: 0.75rem;
+}
+.league-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 0.75rem;
+}
+.league-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 0.75rem;
+}
+
+.league-table th,
+.league-table td {
+  color: black;
+  text-align: center;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  border-left: none;
+  border-right: none;
+}
+
+.table-container.scrollable table {
+  width: 100%; /* ensure table spans full container width */
+  border-collapse: collapse; /* restore standard table layout */
+}
+
+.return-button-tables {
+  border: none;
+  padding: 1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  height: 3rem;
+  width: fit-content;
+  background: linear-gradient(135deg, #00713d, #00934f);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  transition: transform 0.2s ease;
+}
+
+.return-button-tables:hover {
+  background: linear-gradient(135deg, #00713d, #00934f);
+  color: white;
+  background-clip: border-box;
+  -webkit-background-clip: border-box;
+  transform: scale(1.05);
+}
+
+.return-button-wrapper {
+  display: inline-flex;
+  align-items: center;
+  background: white;
+  border-radius: 1.5rem;
+  margin-left: 1rem;
+  margin-bottom: 1rem;
+}

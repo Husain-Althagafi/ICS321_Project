@@ -680,10 +680,12 @@ const EditTournament = () => {
                   setMatches(generated);
                   setListType("matches");
                   // Persist to localStorage
+                  const selectedTeamIds = players;
                   const updated = tournaments.map((t) =>
                     String(t.id) === tournamentId
                       ? {
                           ...t,
+                          teamIds: selectedTeamIds,
                           matches: generated,
                           lastMatchNumber: generated.length,
                         }
@@ -1183,7 +1185,8 @@ const EditTournament = () => {
               )?.team_name || selectedMatch.teamB}
             </p>
             <p>
-              <strong>Date:</strong> {formatDate(selectedMatch.date).replace(/-/g, "/")}
+              <strong>Date:</strong>{" "}
+              {formatDate(selectedMatch.date).replace(/-/g, "/")}
             </p>
             <p>
               <strong>Time:</strong> {selectedMatch.startTime} -{" "}
