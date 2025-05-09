@@ -99,9 +99,14 @@ const EditTeam = () => {
     );
     if (!confirmDelete) return;
 
-    const updatedTeams = teams.filter((t) => String(t.team_id) !== teamId);
-    localStorage.setItem("teams", JSON.stringify(updatedTeams));
-    navigate("/admin/teams");
+    axios.delete(`http://localhost:5000/admin/teams/${teamId}`)
+    .then((res) => {
+      setTeams(teams.filter((t) => String(t.team_id) !== teamId))
+      navigate("/admin/teams");
+    })
+    .catch(err => console.error(err))
+
+    
   };
 
   return (

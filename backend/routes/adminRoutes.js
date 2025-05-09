@@ -28,5 +28,9 @@ router.post('/:team/:player', adminController.approvePlayerToTeam)
 //delete tournament
 router.delete('/tournaments/:id', adminController.deleteTournament)
 
+//delete team
+router.delete('/teams/:id', adminController.deleteTeam)
+
+
 module.exports = router;
 
