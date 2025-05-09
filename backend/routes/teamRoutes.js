@@ -10,4 +10,9 @@ router.get('/:id/players',teamController.getPlayersByTeamId)
 
 router.get('/matches/:match_no', teamController.getTeamsByMatch)
 
+
+//PUT
+
+router.put('/:id', teamController.updateTeam)
+
 module.exports = router

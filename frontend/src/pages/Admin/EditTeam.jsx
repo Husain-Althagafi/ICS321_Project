@@ -5,7 +5,7 @@ import DeleteTeamButton from "../../components/DeleteTeamButton";
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from "../../assets/images/Illustration 1@4x.png";
 import "../../stylesheets/EditTeam.css";
-
+import axios from 'axios'
 const EditTeam = () => {
   const navigate = useNavigate();
   const { teamId } = useParams();
@@ -39,13 +39,26 @@ const EditTeam = () => {
   const [team, setTeam] = useState({})
 
   useEffect(() => {
-    const storedTeams = JSON.parse(localStorage.getItem("teams")) || [];
-    const team = storedTeams.find((t) => String(t.team_id) === teamId);
+    
+    //get team based on id
+    axios.get(`http://localhost:5000/teams/${teamId}`)
+    .then((res) => {
+      setTeam(res.data.data)
+    })
+    .catch(err => console.error(err))
+
+
+    axios.get(`http://localhost:5000/teams/${teamId}/players`)
+    .then((res) => {
+      setPlayers(res.data.data)
+    })
+    .catch(err => console.error(err))
+
+
     if (team) {
       setTeamName(team.team_name);
       setCoachName(team.coach_name);
       setManagerName(team.manager_name || "");
-      setTeams(storedTeams);
       setPlayers(team.players || []);
     } else {
       navigate("/admin/teams");
@@ -60,19 +73,16 @@ const EditTeam = () => {
       setTimeout(() => alert(msg), 0);
       return;
     }
-    const updatedTeams = teams.map((t) =>
-      String(t.team_id) === teamId
-        ? {
-            ...t,
-            team_name: teamName,
-            coach_name: coachName,
-            manager_name: managerName,
-            players,
-          }
-        : t,
-    );
-    localStorage.setItem("teams", JSON.stringify(updatedTeams));
-    navigate("/admin/teams");
+
+    axios.put(`http://localhost:5000/teams/${teamId}`, {
+      team_name: teamName,
+      coach_name: coachName,
+      manager_name: managerName
+    })
+    .then((res) => {
+      navigate("/admin/teams");
+    })
+    .catch(err => console.error(err))
   };
 
   const handleAddPlayer = () => {
