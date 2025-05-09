@@ -4,7 +4,7 @@ import AdminSidebar from "../../components/AdminSidebar";
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from "../../assets/images/Illustration 1@4x.png";
 import "../../stylesheets/Teams.css";
-
+import axios from 'axios'
 const Teams = () => {
   const navigate = useNavigate();
   const username = "john.doe"; // Replace with actual dynamic source later
@@ -20,10 +20,11 @@ const Teams = () => {
       //get all teams
 
     const loadTeams = () => {
-      const stored = localStorage.getItem("teams");
-      if (stored) {
-        setTeams(JSON.parse(stored));
-      }
+      axios.get(`http://localhost:5000/teams`)
+      .then((res) => {
+        setTeams(res.data.data)
+      })
+      .catch(err => console.error(err))
     };
 
     loadTeams(); // Load initially
@@ -37,9 +38,10 @@ const Teams = () => {
       "Are you sure you want to delete this team?",
     );
     if (!confirmed) return;
-    const updated = teams.filter((t) => String(t.team_id) !== String(teamId));
-    localStorage.setItem("teams", JSON.stringify(updated));
-    setTeams(updated);
+    //send delete by axios
+
+    axios.delete(`http://localhost:5000/teams/${teamId}`)
+    setTeams(teams.filter((t) => String(t.team_id) !== String(teamId)));
   };
 
   return (
@@ -72,6 +74,12 @@ const Teams = () => {
                       </span>
                     </h3>
                   </div>
+                  {/* <p>
+                    <strong>Coach Name:</strong> {team.coach_name}
+                  </p>
+                  <p>
+                    <strong>Manager Name:</strong> {team.manager_name}
+                  </p> */}
                   <p>
                     <strong>Team ID:</strong> {team.team_id}
                   </p>
