@@ -86,6 +86,8 @@ const EditTeam = () => {
   };
 
   const handleAddPlayer = () => {
+    axios.post(`http://localhost:5000/teams/${teamId}/players`, )
+
     if (newPlayer.trim() === "") return;
     setPlayers((prev) => [...prev, newPlayer.trim()]);
     setNewPlayer("");
@@ -180,8 +182,8 @@ const EditTeam = () => {
                       }}
                     >
                       <span>
-                        {p.name} ({p.position})
-                        {p.isSubstitute && (
+                        {p.player_name} ({p.position})
+                        {p.is_substitute && (
                           <span style={{ color: "red", fontWeight: "bold" }}>
                             &nbsp;Sub
                           </span>
@@ -236,9 +238,7 @@ const EditTeam = () => {
                                 "Are you sure you want to delete this player?",
                               )
                             ) {
-                              setPlayers((prev) =>
-                                prev.filter((_, i) => i !== idx),
-                              );
+                              handleDeleteplayer(p.player_id)
                             }
                           }}
                         >
@@ -311,12 +311,12 @@ const EditTeam = () => {
               <input
                 type="text"
                 placeholder="Player ID (e.g. s20xxxxxxx)"
-                value={playerDetails.id}
+                value={playerDetails.player_id}
                 maxLength={10}
                 onChange={(e) => {
                   const value = e.target.value;
                   if (value.length <= 10) {
-                    setPlayerDetails({ ...playerDetails, id: value });
+                    setPlayerDetails({ ...playerDetails, player_id: value });
                   }
                 }}
               />
@@ -327,9 +327,9 @@ const EditTeam = () => {
               <input
                 type="text"
                 placeholder="Player Name"
-                value={playerDetails.name}
+                value={playerDetails.player_name}
                 onChange={(e) =>
-                  setPlayerDetails({ ...playerDetails, name: e.target.value })
+                  setPlayerDetails({ ...playerDetails, player_name: e.target.value })
                 }
               />
             </label>
@@ -340,11 +340,11 @@ const EditTeam = () => {
                 type="number"
                 placeholder="Jersey Number"
                 min="1"
-                value={playerDetails.jerseyNumber}
+                value={playerDetails.jersey_number}
                 onChange={(e) => {
                   const value = e.target.value;
                   if (Number(value) >= 1 || value === "") {
-                    setPlayerDetails({ ...playerDetails, jerseyNumber: value });
+                    setPlayerDetails({ ...playerDetails, jersey_number: value });
                   }
                 }}
               />
@@ -392,11 +392,11 @@ const EditTeam = () => {
               <input
                 type="checkbox"
                 style={{ width: "1rem", margin: "0rem" }}
-                checked={playerDetails.isSubstitute}
+                checked={playerDetails.is_substitute}
                 onChange={(e) =>
                   setPlayerDetails({
                     ...playerDetails,
-                    isSubstitute: e.target.checked,
+                    is_substitute: e.target.checked,
                   })
                 }
               />
@@ -406,31 +406,45 @@ const EditTeam = () => {
               <button
                 type="button"
                 onClick={() => {
-                  if (!/^s20.{7}$/.test(playerDetails.id)) {
+                  if (!/^s20.{7}$/.test(playerDetails.player_id)) {
                     setPlayerError(
                       'Player ID must start with "s20" and be 10 characters long',
                     );
                     return;
                   }
                   if (
-                    !playerDetails.id.trim() ||
-                    !playerDetails.name.trim() ||
-                    !playerDetails.jerseyNumber ||
+                    !playerDetails.player_id.trim() ||
+                    !playerDetails.player_name.trim() ||
+                    !playerDetails.jersey_number ||
                     !playerDetails.position.trim()
                   ) {
                     setPlayerError("All fields are required");
                     return;
                   }
-                  setPlayers((prev) => [...prev, playerDetails]);
-                  setPlayerDetails({
-                    id: "",
-                    name: "",
-                    jerseyNumber: "",
-                    position: "",
-                    isSubstitute: false,
-                  });
-                  setPlayerError("");
-                  setShowPlayerModal(false);
+
+                  playerDetails.team_id = teamId
+
+
+                  //add player to team with axios
+                  
+
+                  axios.post(`http://localhost:5000/teams/${teamId}/players`, playerDetails)
+                  .then((res) => {
+                    setPlayerDetails({
+                      id: "",
+                      name: "",
+                      jerseyNumber: "",
+                      position: "",
+                      isSubstitute: false,
+                      team_id: teamId
+                    });
+                    setPlayers((prev) => [...prev, playerDetails]);
+
+                    setPlayerError("");
+                    setShowPlayerModal(false);
+                  })
+                  .catch(err => console.error(err))
+                  
                 }}
               >
                 Add
@@ -456,20 +470,20 @@ const EditTeam = () => {
             </button>
             <h2>Player Details</h2>
             <p>
-              <strong>ID:</strong> {selectedPlayer.id}
+              <strong>ID:</strong> {selectedPlayer.player_id}
             </p>
             <p>
-              <strong>Name:</strong> {selectedPlayer.name}
+              <strong>Name:</strong> {selectedPlayer.player_name}
             </p>
             <p>
-              <strong>Jersey Number:</strong> {selectedPlayer.jerseyNumber}
+              <strong>Jersey Number:</strong> {selectedPlayer.jersey_number}
             </p>
             <p>
               <strong>Position:</strong> {selectedPlayer.position}
             </p>
             <p>
               <strong>Substitute:</strong>{" "}
-              {selectedPlayer.isSubstitute ? "Yes" : "No"}
+              {selectedPlayer.is_substitute ? "Yes" : "No"}
             </p>
           </div>
         </div>
@@ -493,13 +507,13 @@ const EditTeam = () => {
             {/* Replace "Add" button with "Update" */}
             <label>
               Player ID
-              <input type="text" value={playerDetails.id} disabled />
+              <input type="text" value={playerDetails.player_id} disabled />
             </label>
             <label>
               Player Name
               <input
                 type="text"
-                value={playerDetails.name}
+                value={playerDetails.player_name}
                 onChange={(e) =>
                   setPlayerDetails({ ...playerDetails, name: e.target.value })
                 }
@@ -509,7 +523,7 @@ const EditTeam = () => {
               Jersey Number
               <input
                 type="number"
-                value={playerDetails.jerseyNumber}
+                value={playerDetails.jersey_number}
                 onChange={(e) =>
                   setPlayerDetails({
                     ...playerDetails,
@@ -559,7 +573,7 @@ const EditTeam = () => {
               <input
                 type="checkbox"
                 style={{ width: "1rem", margin: "0rem" }}
-                checked={playerDetails.isSubstitute}
+                checked={playerDetails.is_substitute}
                 onChange={(e) =>
                   setPlayerDetails({
                     ...playerDetails,
@@ -573,7 +587,7 @@ const EditTeam = () => {
               onClick={() => {
                 setPlayers((prev) =>
                   prev.map((p) =>
-                    p.id === playerDetails.id ? playerDetails : p,
+                    p.id === playerDetails.player_id ? playerDetails : p,
                   ),
                 );
                 setEditPlayerModal(false);

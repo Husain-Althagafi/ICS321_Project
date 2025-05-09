@@ -8,6 +8,8 @@ exports.getAllTeams = asyncHandler(async (req, res) => {
         SELECT 
           *
         FROM teams
+        ORDER BY team_id ASC
+
       `);
   
       if (!teams || teams.length === 0) {
@@ -60,7 +62,7 @@ exports.getPlayersByTeamId = asyncHandler(async (req, res) => {
 
   const result = await db.query(`
     SELECT 
-      team_id
+      team_id,
       player_id,
       player_name,
       jersey_number,
@@ -143,5 +145,68 @@ exports.updateTeam = asyncHandler(async (req, res) => {
 
   } catch (error) {
     return res.status(400).json({error: 'Error updating team'})
+  }
+});
+
+
+exports.addPlayer = asyncHandler(async (req, res) => {
+  const {player_id, player_name, jersey_number, position, is_substitute = false, team_id} = req.body
+    
+
+  if (!player_id || !player_name || !jersey_number || !position || !team_id) {
+    return res.status(400).json({
+      success: false,
+      error: "Missing required fields",
+      fields: {player_id, player_name, jersey_number, position, is_substitute, team_id}
+    });
+  }
+
+  try {
+    const jerseyCheck = await db.query(
+      `SELECT * FROM players 
+       WHERE team_id = $1 AND jersey_number = $2`,
+      [team_id, jersey_number]
+    );
+
+    if (jerseyCheck.rows.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Jersey number already exists for this team"
+      });
+    }
+
+    const result = await db.query(
+      `INSERT INTO players (
+        player_id,
+        player_name,
+        jersey_number,
+        position,
+        is_substitute,
+        team_id
+      ) VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *`,
+      [player_id, player_name, jersey_number, position, is_substitute, team_id]
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Player added successfully",
+      data: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Error adding player:', error);
+    
+    if (error.code === '23505') {
+      return res.status(400).json({
+        success: false,
+        error: "Player already exists"
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      error: "Server error while adding player"
+    });
   }
 });
