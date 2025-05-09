@@ -9,6 +9,7 @@ const guestRoutes = require('./routes/guestRoutes')
 const tournamentRoutes = require('./routes/tournamentRoutes')
 const teamRoutes = require('./routes/teamRoutes')
 const matchRoutes = require('./routes/matchRoutes')
+const venueRoutes = require('./routes/venueRoutes')
 
 
 //App
@@ -26,6 +27,7 @@ app.use('/guest', guestRoutes);
 app.use('/tournaments', tournamentRoutes)
 app.use('/teams', teamRoutes)
 app.use('/matches', matchRoutes)
+app.use('/venues', venueRoutes)
 
 
 

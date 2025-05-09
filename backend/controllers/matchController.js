@@ -92,3 +92,17 @@ WHERE
     res.status(500).json({ message: 'Server error. Please try again later.' +err });
   }
 });
+
+
+exports.getAllMatches = asyncHandler(async(req, res) => {
+  const result = await db.query(
+    `
+    SELECT * from matches
+    
+    `
+  )
+
+  return res.status(200).json({
+    data: result.rows
+  })
+})

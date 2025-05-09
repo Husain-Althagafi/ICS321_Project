@@ -18,12 +18,13 @@ const Venues = () => {
   const [showVenueModal, setShowVenueModal] = useState(false);
   const [newVenue, setNewVenue] = useState({
     name: "",
-    status: "Available",
+    // status: "Available",
     capacity: "",
   });
   const [venueError, setVenueError] = useState("");
   const [hoveredVenueId, setHoveredVenueId] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [matches, setMatches] = useState([])
 
   const [lastVenueNumber, setLastVenueNumber] = useState(() => {
     const storedNum = parseInt(localStorage.getItem("lastVenueId"), 10);
@@ -36,19 +37,18 @@ const Venues = () => {
 
   useEffect(() => {
     const loadVenues = () => {
-      const stored = localStorage.getItem("venues");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setVenues(parsed);
+        //get all venues
 
-        // Only update lastVenueId if current is lower than max
-        const maxId = parsed.reduce((max, v) => Math.max(max, Number(v.id)), 0);
-        const currentLast = lastVenueNumber;
-        if (maxId > currentLast) {
-          localStorage.setItem("lastVenueId", String(maxId));
-          setLastVenueNumber(maxId);
-        }
-      }
+        axios.get(`http://localhost:5000/venues`)
+        .then((res) => {
+          //transform data to fit frontend naming
+          setVenues(res.data.data.map(v => ({
+            id: v.venue_id,
+            name: v.venue_name,
+            capacity: v.venue_capacity
+          })));
+        })
+        .catch(err => console.error(err))
     };
 
     loadVenues();
@@ -57,8 +57,15 @@ const Venues = () => {
     return () => window.removeEventListener("focus", loadVenues);
   }, []);
 
-  const tournaments = JSON.parse(localStorage.getItem("tournaments")) || [];
-  const allMatches = tournaments.flatMap((t) => t.matches || []);
+  
+  //get all matches
+
+  axios.get(`http://localhost:5000/matches`)
+  .then((res) => {
+    setMatches(res.data.data)
+  })
+  .catch(err => console.error(err))
+
 
   useEffect(() => {
     const updatedVenues = venues.map((v) => {
@@ -84,21 +91,14 @@ const Venues = () => {
   };
 
   const handleDeleteVenue = (venueId) => {
-    const storedTournaments =
-      JSON.parse(localStorage.getItem("tournaments")) || [];
-    const updatedTournaments = storedTournaments.map((t) => ({
-      ...t,
-      matches: (t.matches || []).map((m) =>
-        String(m.venueId) === String(venueId) ? { ...m, venueId: null } : m,
-      ),
-    }));
-    localStorage.setItem("tournaments", JSON.stringify(updatedTournaments));
-
-    const updatedVenues = venues.filter(
-      (v) => String(v.id) !== String(venueId),
-    );
-    localStorage.setItem("venues", JSON.stringify(updatedVenues));
-    setVenues(updatedVenues);
+    //delete by request
+    axios.delete(`http:/localhost:5000/venues/${venueId}`)
+    .then((res) => {
+      setVenues(venues.filter(
+        (v) => String(v.venue_id) !== String(venueId),
+      ));
+    })
+    .catch(err => console)
   };
 
   return (
