@@ -16,15 +16,16 @@ const scheduleRoundRobin = (teamIds, dateOptions, tournamentId) => {
       // Cycle through dates
       const date = dateOptions[slotIndex % dateOptions.length];
       matches.push({
-        id: `${tournamentId}_${slotIndex + 1}`,
-        teamA: teamIds[i],
-        teamB: teamIds[j],
-        date,
-        startTime: "",
-        endTime: "",
-        venueId: "",
-        captainA: "",
-        captainB: "",
+        match_id: `${tournamentId}_${slotIndex + 1}`,
+        teama_id: teamIds[i],
+        teamb_id: teamIds[j],
+        match_date,
+        start_time: "",
+        end_time: "",
+        venue_id: "",
+        captaina_id: "",
+        captainb_id: "",
+        tournament_id: tournamentId
       });
       slotIndex++;
     }
@@ -156,6 +157,10 @@ const EditTournament = () => {
       setStartDate(tournament.start_date);
       setEndDate(tournament.end_date);
       setNumTeams(tournament.num_teams || "");
+
+      if (matches.length >= tournament.num_matches) {
+        setIsConfirmed(true)
+      }
       
     } else {
       navigate("/admin/tournaments");
@@ -621,29 +626,35 @@ const EditTournament = () => {
                       type="button"
                       className="btn-create-matches"
                       disabled={
-                        players.length < Number(numTeams) || isConfirmed
+                        teams.length < tournament.num_teams || isConfirmed
                       }
                       onClick={() => {
                         setMatchDetails({
-                          id: "",
-                          teamA: "",
-                          teamB: "",
-                          date: "",
-                          startTime: "",
-                          endTime: "",
-                          captainA: "",
-                          captainB: "",
+                          match_id: "",
+                          teama_id: "",
+                          teamb_id: "",
+                          match_date: "",
+                          start_time: "",
+                          end_time: "",
+                          captaina_id: "",
+                          captainb_id: "",
+                          motm_id : "",
+                          scorea: '',
+                          scoreb: '',
+                          winner_team_id: '',
+                          match_completed: '',
                           venueId: "",
+                          tournament_id: tournamentId
                         });
                         setShowConfirmModal(true);
                       }}
                       style={{
                         opacity:
-                          players.length < Number(numTeams) || isConfirmed
+                          teams.length < tournament.num_teams || isConfirmed
                             ? 0.5
                             : 1,
                         cursor:
-                          players.length < Number(numTeams) || isConfirmed
+                          teams.length < tournament.num_teams || isConfirmed
                             ? "not-allowed"
                             : "pointer",
                       }}
@@ -713,19 +724,19 @@ const EditTournament = () => {
                   setMatches(generated);
                   setListType("matches");
                   // Persist to localStorage
-                  const selectedTeamIds = players;
-                  const updated = tournaments.map((t) =>
-                    String(t.id) === tournamentId
-                      ? {
-                          ...t,
-                          teamIds: selectedTeamIds,
-                          matches: generated,
-                          lastMatchNumber: generated.length,
-                        }
-                      : t,
-                  );
-                  setTournaments(updated);
-                  localStorage.setItem("tournaments", JSON.stringify(updated));
+                  // const selectedTeamIds = teams;
+                  // const updated = tournaments.map((t) =>
+                  //   String(t.id) === tournamentId
+                  //     ? {
+                  //         ...t,
+                  //         teamIds: selectedTeamIds,
+                  //         matches: generated,
+                  //         lastMatchNumber: generated.length,
+                  //       }
+                  //     : t,
+                  // );
+                  // setTournaments(updated);
+                  // localStorage.setItem("tournaments", JSON.stringify(updated));
                   // Open match modal only if manual editing is desired, else skip
                   setShowMatchModal(false);
                 }}
