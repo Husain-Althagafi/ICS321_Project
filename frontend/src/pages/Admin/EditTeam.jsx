@@ -26,11 +26,11 @@ const EditTeam = () => {
   const [newPlayer, setNewPlayer] = useState("");
   const [showPlayerModal, setShowPlayerModal] = useState(false);
   const [playerDetails, setPlayerDetails] = useState({
-    id: "",
-    name: "",
-    jerseyNumber: "",
+    player_id: "",
+    player_name: "",
+    jersey_number: "",
     position: "",
-    isSubstitute: false,
+    is_substitute: false,
   });
   const [playerError, setPlayerError] = useState("");
   const [viewPlayerModal, setViewPlayerModal] = useState(false);
@@ -85,13 +85,13 @@ const EditTeam = () => {
     .catch(err => console.error(err))
   };
 
-  const handleAddPlayer = () => {
-    axios.post(`http://localhost:5000/teams/${teamId}/players`, )
+  // const handleAddPlayer = () => {
+  //   axios.post(`http://localhost:5000/teams/${teamId}/players`, )
 
-    if (newPlayer.trim() === "") return;
-    setPlayers((prev) => [...prev, newPlayer.trim()]);
-    setNewPlayer("");
-  };
+  //   if (newPlayer.trim() === "") return;
+  //   setPlayers((prev) => [...prev, newPlayer.trim()]);
+  //   setNewPlayer("");
+  // };
 
   const handleDeleteTeam = () => {
     const confirmDelete = window.confirm(
@@ -238,7 +238,12 @@ const EditTeam = () => {
                                 "Are you sure you want to delete this player?",
                               )
                             ) {
-                              handleDeleteplayer(p.player_id)
+                              //delete player
+                              axios.delete(`http://localhost:5000/teams/${teamId}/${selectedPlayer.player_id}`)
+                              .then((res) => {
+                                setPlayers(players.filter(p => p.player_id !== selectedPlayer.player_id))
+                              })
+                              .catch(err => console.error(err))
                             }
                           }}
                         >
@@ -515,7 +520,7 @@ const EditTeam = () => {
                 type="text"
                 value={playerDetails.player_name}
                 onChange={(e) =>
-                  setPlayerDetails({ ...playerDetails, name: e.target.value })
+                  setPlayerDetails({ ...playerDetails, player_name: e.target.value })
                 }
               />
             </label>
@@ -527,7 +532,7 @@ const EditTeam = () => {
                 onChange={(e) =>
                   setPlayerDetails({
                     ...playerDetails,
-                    jerseyNumber: e.target.value,
+                    jersey_number: e.target.value,
                   })
                 }
               />
@@ -577,7 +582,7 @@ const EditTeam = () => {
                 onChange={(e) =>
                   setPlayerDetails({
                     ...playerDetails,
-                    isSubstitute: e.target.checked,
+                    is_substitute: e.target.checked,
                   })
                 }
               />
@@ -585,12 +590,20 @@ const EditTeam = () => {
             <button
               type="button"
               onClick={() => {
-                setPlayers((prev) =>
-                  prev.map((p) =>
-                    p.id === playerDetails.player_id ? playerDetails : p,
-                  ),
-                );
-                setEditPlayerModal(false);
+
+                const updatedPlayer = {
+                  ...playerDetails,
+                  team_id: teamId
+                };
+                axios.patch(`http://localhost:5000/teams/${teamId}/${updatedPlayer.player_id}`, updatedPlayer)
+                .then((res) => {
+                  const updatedPlayer = res.data.data
+                  setPlayers(players.map(p =>
+                    p.player_id === updatedPlayer.player_id ? updatedPlayer : p
+                  ))
+                  setEditPlayerModal(false);
+                })
+                .catch(err => console.error(err))
               }}
             >
               Update

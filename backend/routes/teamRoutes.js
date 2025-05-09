@@ -22,4 +22,15 @@ router.put('/:id', teamController.updateTeam)
 //add player
 router.post('/:id/players', teamController.addPlayer)
 
+//PATCH
+
+//edit player
+router.patch('/:id/:player_id', teamController.updatePlayer)
+
+//DELETE
+
+//delete player
+router.delete('/:id/:player_id', teamController.deletePlayer)
+
+
 module.exports = router

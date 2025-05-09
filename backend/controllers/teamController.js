@@ -210,3 +210,85 @@ exports.addPlayer = asyncHandler(async (req, res) => {
     });
   }
 });
+
+
+exports.updatePlayer = asyncHandler(async (req, res) => {
+  const player_id = req.params.player_id;
+  const { player_name, jersey_number, position, is_substitute = false } = req.body;
+
+  // Validate required fields
+  if (!player_name || !jersey_number || !position) {
+    return res.status(400).json({
+      success: false,
+      error: "Missing required fields (player_name, jersey_number, position)"
+    });
+  }
+
+  try {
+    // Check if player exists
+    const playerExists = await db.query(
+      `SELECT 1 FROM players WHERE player_id = $1`,
+      [player_id]
+    );
+    
+    if (playerExists.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "Player not found"
+      });
+    }
+
+    // Check if jersey number is already taken by another player on the same team
+    const jerseyCheck = await db.query(
+      `SELECT 1 FROM players 
+       WHERE jersey_number = $1 
+       AND team_id = (SELECT team_id FROM players WHERE player_id = $2)
+       AND player_id != $2`,
+      [jersey_number, player_id]
+    );
+
+    if (jerseyCheck.rows.length > 0) {
+      return res.status(409).json({
+        success: false,
+        error: "Jersey number already exists for another player on this team"
+      });
+    }
+
+    // Corrected SQL query
+    const query = `
+      UPDATE players
+      SET 
+        player_name = $1,
+        jersey_number = $2,
+        position = $3,
+        is_substitute = $4
+      WHERE player_id = $5
+      RETURNING *
+    `;
+
+    const result = await db.query(query, [
+      player_name, 
+      jersey_number, 
+      position, 
+      is_substitute, 
+      player_id
+    ]);
+
+    res.status(200).json({
+      success: true,
+      message: "Player updated successfully",
+      data: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error("Update player error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update player"
+    });
+  }
+});
+
+exports.deletePlayer = asyncHandler(async(req, res) => {
+  
+})
