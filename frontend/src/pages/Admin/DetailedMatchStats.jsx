@@ -142,7 +142,6 @@ const endMinutes = match?.end_time
   // Goal handler using native prompt
 
   useEffect(() => {
-
     //get goal details from match
     axios.get(`http://localhost:5000/matches/${matchId}/goals`)
     .then((res) => {
