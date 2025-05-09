@@ -239,9 +239,9 @@ const EditTeam = () => {
                               )
                             ) {
                               //delete player
-                              axios.delete(`http://localhost:5000/teams/${teamId}/${selectedPlayer.player_id}`)
+                              axios.delete(`http://localhost:5000/teams/${teamId}/${p.player_id}`)
                               .then((res) => {
-                                setPlayers(players.filter(p => p.player_id !== selectedPlayer.player_id))
+                                setPlayers(players.filter(p => p.player_id !== res.data.data[0].player_id))
                               })
                               .catch(err => console.error(err))
                             }

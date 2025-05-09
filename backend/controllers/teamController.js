@@ -289,6 +289,33 @@ exports.updatePlayer = asyncHandler(async (req, res) => {
   }
 });
 
-exports.deletePlayer = asyncHandler(async(req, res) => {
-  
-})
+exports.deletePlayer = asyncHandler(async (req, res) => {
+  const player_id = req.params.player_id;
+
+  if (!player_id) {
+    return res.status(400).json({
+      success: false,
+      error: "Player ID is required"
+    });
+  }
+
+  try {
+    const result = await db.query(
+      `DELETE FROM players WHERE player_id = $1 RETURNING *`,
+      [player_id]
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Player deleted successfully",
+      data: result.rows
+    });
+
+  } catch (error) {
+    console.error("Error deleting player:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to delete player"
+    });
+  }
+});
