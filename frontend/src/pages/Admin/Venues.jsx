@@ -18,7 +18,6 @@ const Venues = () => {
   const [showVenueModal, setShowVenueModal] = useState(false);
   const [newVenue, setNewVenue] = useState({
     name: "",
-    status: "Available",
     capacity: "",
   });
   const [venueError, setVenueError] = useState("");
@@ -299,7 +298,7 @@ const Venues = () => {
                 Venue ID
                 <input
                   type="text"
-                  value={isEditing ? newVenue.id : nextVenueId}
+                  value={isEditing ? newVenue.id : ''}
                   disabled
                   style={{
                     backgroundColor: "#e0e0e0",
@@ -344,12 +343,12 @@ const Venues = () => {
                       alert(msg);
                       return;
                     }
-                    if (!newVenue.status.trim()) {
-                      const msg = "Please select a venue status.";
-                      setVenueError(msg);
-                      alert(msg);
-                      return;
-                    }
+                    // if (!newVenue.status.trim()) {
+                    //   const msg = "Please select a venue status.";
+                    //   setVenueError(msg);
+                    //   alert(msg);
+                    //   return;
+                    // }
                     if (!newVenue.capacity || Number(newVenue.capacity) < 1) {
                       const msg = "Capacity must be a number greater than 0.";
                       setVenueError(msg);
@@ -357,16 +356,44 @@ const Venues = () => {
                       return;
                     }
                     const newEntry = {
-                      id: isEditing ? newVenue.id : nextVenueId,
+                      id: isEditing ? newVenue.id : '',
                       ...newVenue,
                     };
 
                     let updated;
                     //logic for editing venue
                     if (isEditing) {
-                      updated = venues.map((v) =>
-                        v.id === newVenue.id ? newEntry : v,
-                      );
+                      //axios edit call
+                      axios.patch(`http://localhost:5000/venues/${newEntry.id}`, {
+                        venue_name: newEntry.name,
+                        venue_capacity: Number(newEntry.capacity) 
+                      })
+                      .then((res) => {
+                        // Update the specific venue in state
+                        setVenues(prevVenues => 
+                          prevVenues.map(venue => 
+                            venue.id === res.data.data[0].id
+                              ? {
+                                  id: res.data.data[0].venue_id,
+                                  name: res.data.data.venue_name,
+                                  capacity: res.data.data.venue_capacity
+                                }
+                              : venue
+                          )
+                        );
+                        // Reset form and close modal
+                        setNewVenue({
+                          name: "",
+                          status: "Available",
+                          capacity: "",
+                        });
+                        setShowVenueModal(false);
+                        setIsEditing(false);
+                        
+                        alert("Venue updated successfully!");
+                      })
+                      .catch((err) => console.error(err));
+                      
                     } else {
                       //logic for adding new venue
                       updated = [...venues, newEntry];

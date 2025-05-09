@@ -14,6 +14,12 @@ router.get('/', venueController.getAllVenues)
 router.post('/', venueController.addNewVenue)
 
 
+//PATCH
+
+//update venue
+router.patch('/:venue_id', venueController.editVenue)
+
+
 //DELETE
 
 //delete a venue
