@@ -79,6 +79,9 @@ const EditTournament = () => {
   const [teams, setTeams] = useState([])
   const [tournament, setTournament] = useState({})
   const [captains, setCaptains] = useState([])
+  const [availableTeams, setAvailableTeams] = useState([])
+
+
 
   const [matchDetails, setMatchDetails] = useState({
     id: "",
@@ -95,14 +98,14 @@ const EditTournament = () => {
   const [listType, setListType] = useState("matches");
   const [isConfirmed, setIsConfirmed] = useState(false);
   // Helper to retrieve a team's player roster
-  // const getTeamPlayers = (teamId) => {
+  const getTeamPlayers = (teamId) => {
 
-  //   axios.get(`http://localhost:5000/teams/${teamId}/players`)
-  //   .then((res) => {
-  //     setPlayers(res.data.data)
-  //   })
-  //   .catch(err=> console.error(err))
-  // };
+    axios.get(`http://localhost:5000/teams/${teamId}/players`)
+    .then((res) => {
+      setPlayers(res.data.data)
+    })
+    .catch(err=> console.error(err))
+  };
 
 
 
@@ -124,7 +127,7 @@ const EditTournament = () => {
     //get all teams
     axios.get(`http://localhost:5000/teams`)
     .then((res) => {
-      setTeams(res.data.data)
+      setAvailableTeams(res.data.data)
     })
 
     //get tournement
@@ -483,7 +486,7 @@ const EditTournament = () => {
                           </li>
                         );
                       })
-                    : teams.map((team) => (
+                    : availableTeams.map((team) => (
                         <li
                           key={team.team_id}
                           style={{
@@ -501,16 +504,21 @@ const EditTournament = () => {
                               className="btn-add-team"
                               onClick={() => {
                                 if (
-                                  players.length < Number(numTeams) &&
-                                  !players.includes(team.team_id) &&
+                                  teams.length < tournament.num_teams &&
+                                  !teams.includes(team.team_id) &&
                                   !isConfirmed
                                 ) {
-                                  setPlayers((prev) => [...prev, team.team_id]);
+                                  //send axios request to add this team to the tournament
+                                  axios.patch(`http://localhost:5000/admin/tournaments/${tournamentId}/teams/${team.team_id}`)
+                                  .then((res) => {
+                                    setTeams((teams) => [...teams, team]);
+                                  })
+                                  .catch(err => console.error(err))
                                 }
                               }}
                               disabled={
-                                players.length >= Number(numTeams) ||
-                                players.includes(team.team_id) ||
+                                teams.length >= tournament.num_teams ||
+                                teams.some(t => t.team_id === team.team_id) ||
                                 isConfirmed
                               }
                               style={{
@@ -524,14 +532,14 @@ const EditTournament = () => {
                                 fontSize: "0.875rem",
                                 textAlign: "center",
                                 opacity:
-                                  players.length >= Number(numTeams) ||
-                                  players.includes(team.team_id) ||
+                                  teams.length >= tournament.num_teams ||
+                                  teams.some(t => t.team_id === team.team_id) ||
                                   isConfirmed
                                     ? 0.5
                                     : 1,
                                 cursor:
-                                  players.length >= Number(numTeams) ||
-                                  players.includes(team.team_id) ||
+                                  teams.length >= tournament.num_teams ||
+                                  teams.includes(team.team_id) ||
                                   isConfirmed
                                     ? "not-allowed"
                                     : "pointer",
@@ -544,13 +552,21 @@ const EditTournament = () => {
                               className="btn-remove-team"
                               onClick={() => {
                                 if (!isConfirmed) {
-                                  setPlayers((prev) =>
-                                    prev.filter((id) => id !== team.team_id),
-                                  );
+
+                                  //axios request to remove team from tournament
+                                  axios.patch(`http://localhost:5000/admin/tournaments/${tournamentId}/teams/${team.team_id}/remove`)
+                                  .then((res) => {
+                                    setTeams((prev) =>
+                                      prev.filter((t) => t.team_id !== team.team_id),
+                                    );
+                                  })
+                                  .catch(err => console.error(err))
+                                  
                                 }
                               }}
                               disabled={
-                                !players.includes(team.team_id) || isConfirmed
+                                !teams.some(t => t.team_id === team.team_id)
+                                || isConfirmed
                               }
                               style={{
                                 whiteSpace: "nowrap",
@@ -563,11 +579,11 @@ const EditTournament = () => {
                                 fontSize: "0.75rem",
                                 textAlign: "center",
                                 opacity:
-                                  !players.includes(team.team_id) || isConfirmed
+                                  !teams.some(t => t.team_id === team.team_id) || isConfirmed
                                     ? 0.5
                                     : 1,
                                 cursor:
-                                  !players.includes(team.team_id) || isConfirmed
+                                  !teams.some(t => t.team_id === team.team_id) || isConfirmed
                                     ? "not-allowed"
                                     : "pointer",
                               }}

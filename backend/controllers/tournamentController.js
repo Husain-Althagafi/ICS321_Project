@@ -144,7 +144,7 @@ exports.getTeamsByTournamentId = asyncHandler(async (req, res) => {
             success: true,
             count: result.rows.length,
             data: {
-                teams: result.rows[0],
+                teams: result.rows,
             }
         });
 

@@ -13,7 +13,6 @@ router.post('/tournaments', adminController.addTournament)
 router.post('/teams', adminController.addTeam)
 
 //add team to tournament
-router.post('/teams/:id', adminController.addTeamToTournament)
     
 //select captain
 router.post('/:tournament/:match/:team/captain', adminController.selectCaptain)
@@ -31,6 +30,14 @@ router.delete('/tournaments/:id', adminController.deleteTournament)
 //delete team
 router.delete('/teams/:id', adminController.deleteTeam)
 
+
+//PATCH
+
+//add team to tournament
+router.patch('/tournaments/:tournament_id/teams/:team_id', adminController.addTeamToTournament)
+
+//remove team from tournament
+router.patch('/tournaments/:tournament_id/teams/:team_id/remove', adminController.removeTeamFromTournament)
 
 module.exports = router;
 

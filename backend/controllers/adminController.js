@@ -76,14 +76,16 @@ exports.addTeam = asyncHandler(async(req, res) => {
 
 
 exports.addTeamToTournament = asyncHandler( async (req, res) => {
-    const {team_id, tournament_id} = req.body
+    const team_id = req.params.team_id
+    const tournament_id = req.params.tournament_id
+
 
     if (!team_id || !tournament_id) {
         return res.status(400).json({error: 'Team info missing'})
     }
 
     query = `
-    INSERT INTO tournament_teams (team_id, tournament_id,)
+    INSERT INTO tournament_teams (team_id, tournament_id)
     VALUES ($1, $2) RETURNING *;
     `
 
@@ -211,3 +213,38 @@ exports.deleteTeam = asyncHandler(async(req, res) => {
     
 })
 
+exports.removeTeamFromTournament = asyncHandler(async (req, res) => {
+    const { tournament_id, team_id } = req.params;
+
+    if (!tournament_id || !team_id) {
+        return res.status(400).json({
+            success: false,
+            error: "Tournament ID and Team ID are required"
+        });
+    }
+
+    try {
+        const result = await db.query(
+            `DELETE FROM tournament_teams 
+             WHERE tournament_id = $1 AND team_id = $2
+             RETURNING *`,
+            [tournament_id, team_id]
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "Team successfully removed from tournament",
+            data: {
+                tournament_id,
+                team_id,
+            }
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: "Failed to remove team from tournament",
+            details: error.message
+        });
+    }
+});
