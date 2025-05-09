@@ -45,7 +45,7 @@ const Tournaments = () => {
     .then((res) => {
       if (res.status === 200){ 
         const updated = tournaments.filter(
-          (t) => String(t.tr_id) !== String(tournamentId),
+          (t) => String(t.tournament_id) !== String(tournamentId),
         );
         setTournaments(updated);
       }
@@ -67,7 +67,7 @@ const Tournaments = () => {
           <div className="tournament-grid scrollable">
             {tournaments.length > 0 ? (
               tournaments.map((tournament) => (
-                <div key={tournament.tr_id} className="tournament-card">
+                <div key={tournament.tournament_id} className="tournament-card">
                   <div
                     className="tournament-card-header"
                     style={{
@@ -79,12 +79,12 @@ const Tournaments = () => {
                     <h3 style={{ margin: 0 }}>
                       Tournament Name:{" "}
                       <span className="tournament-name-gradient">
-                        {tournament.tr_name}
+                        {tournament.name}
                       </span>
                     </h3>
                   </div>
                   <p>
-                    <strong>Tournament ID:</strong> {tournament.tr_id}
+                    <strong>Tournament ID:</strong> {tournament.tournament_id}
                   </p>
                   <p>
                     <strong>Start Date:</strong>{" "}
@@ -95,13 +95,13 @@ const Tournaments = () => {
                     {new Date(tournament.end_date).toLocaleDateString("en-GB")}
                   </p>
                   <p>
-                    <strong>Number of Teams:</strong> {tournament.numTeams}
+                    <strong>Number of Teams:</strong> {tournament.num_teams}
                   </p>
                   <button
                     type="button"
                     className="edit-button"
                     onClick={() =>
-                      navigate(`/admin/tournaments/${tournament.tr_id}/edit`)
+                      navigate(`/admin/tournaments/${tournament.tournament_id}/edit`)
                     }
                   >
                     Edit
