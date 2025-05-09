@@ -5,7 +5,7 @@ import DeleteTournamentButton from "../../components/DeleteTournamentButton";
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from "../../assets/images/Illustration 1@4x.png";
 import "../../stylesheets/EditTournament.css";
-
+import axios from 'axios'
 // Generate round-robin schedule: assign only IDs, teams, and dates; leave captains & venue/time blank
 const scheduleRoundRobin = (teamIds, dateOptions, tournamentId) => {
   const matches = [];
@@ -96,27 +96,18 @@ const EditTournament = () => {
   const [listType, setListType] = useState("matches");
   const [isConfirmed, setIsConfirmed] = useState(false);
   // Helper to retrieve a team's player roster
-  const getTeamPlayers = (teamId) => {
+  // const getTeamPlayers = (teamId) => {
 
-    axios.get(`http://localhost:5000/teams/${teamId}/players`)
-    .then((res) => {
-      setPlayers(res.data.data)
-    })
-    .catch(err=> console.error(err))
-
-    // const team = availableTeams.find(
-    //   (t) => String(t.team_id) === String(teamId),
-    // );
-    // return team?.players || [];
-  };
+  //   axios.get(`http://localhost:5000/teams/${teamId}/players`)
+  //   .then((res) => {
+  //     setPlayers(res.data.data)
+  //   })
+  //   .catch(err=> console.error(err))
+  // };
 
 
 
   useEffect(() => {
-    // const storedTournaments =
-    //   JSON.parse(localStorage.getItem("tournaments")) || [];
-    // const allTeams = JSON.parse(localStorage.getItem("teams")) || [];
-
     //get all matches in tournaments
     axios.get(`http://localhost:5000/tournaments/${tournamentId}/matches`)
     .then((res) => {
@@ -130,9 +121,6 @@ const EditTournament = () => {
       setTeams(res.data.data.teams)
     })
     .catch(err => console.error(err))
-
-    // setAvailableTeams(allTeams);
-
 
     //get tournement
     axios.get(`http://localhost:5000/tournaments/${tournamentId}`)

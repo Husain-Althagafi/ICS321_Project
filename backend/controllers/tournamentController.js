@@ -17,65 +17,36 @@ exports.getTournamentById = asyncHandler(async(req, res) => {
 })
 
 
-
-
 exports.getPlayersByTournamentId = asyncHandler(async (req, res) => {
     const result = await db.query(`
         SELECT 
             p.player_id,
-            per.name,
-            per.date_of_birth,
-            p.jersey_no,
-            p.position_to_play,
-            pos.position_desc,
-            tp.team_id,
+            p.player_name,
+            p.jersey_number,
+            p.position,
+            p.is_substitute,
+            p.team_id,
             t.team_name,
-            tp.tr_id
-        FROM player p
-        JOIN person per ON p.player_id = per.kfupm_id
-        JOIN team_player tp ON p.player_id = tp.player_id
-        JOIN team t ON tp.team_id = t.team_id
-        JOIN playing_position pos ON p.position_to_play = pos.position_id
-        WHERE tp.tr_id = $1
-        `, [req.params.id])
-        return res.status(200).json({data: result.rows})
-})
+            t.coach_name,
+            t.manager_name
+        FROM players p
+        JOIN teams t ON p.team_id = t.team_id
+        JOIN tournament_teams tt ON t.team_id = tt.team_id
+        WHERE tt.tournament_id = $1
+        ORDER BY t.team_name, p.jersey_number
+    `, [req.params.id]);
+    
+    return res.status(200).json({ data: result.rows });
+});
 
 exports.getMatchesByTournamentId = asyncHandler(async (req, res) => {
     const tournamentId = req.params.id; // Assuming the ID comes from route params
     
     const result = await db.query(`
-        SELECT 
-            mp.match_no,
-            mp.play_date,
-            mp.start_time,
-            mp.end_time,
-            t1.team_name AS team1,
-            t2.team_name AS team2,
-            mp.goal_score,
-            mp.results,
-            v.venue_name,
-            tr.tr_name AS tournament_name,
-            mp.completed
-        FROM 
-            match_played mp
-        JOIN 
-            team t1 ON mp.team_id1 = t1.team_id
-        JOIN 
-            team t2 ON mp.team_id2 = t2.team_id
-        JOIN 
-            venue v ON mp.venue_id = v.venue_id
-        JOIN 
-            tournament_team tt1 ON t1.team_id = tt1.team_id
-        JOIN 
-            tournament_team tt2 ON t2.team_id = tt2.team_id
-        JOIN 
-            tournament tr ON tt1.tr_id = tr.tr_id
-        WHERE 
-            tt1.tr_id = $1
-            AND tt2.tr_id = $1
-        ORDER BY 
-            mp.play_date;
+        SELECT * 
+        FROM matches
+        WHERE tournament_id = $1
+        
     `, [tournamentId]);
 
     res.status(200).json({
@@ -152,50 +123,28 @@ exports.getTeamsByTournamentId = asyncHandler(async (req, res) => {
         // Query to get all teams for the tournament with their group and stats
         const result = await db.query(`
             SELECT 
-                t.team_id,
-                t.team_name,
-                tt.team_group,
-                tt.match_played,
-                tt.won,
-                tt.draw,
-                tt.lost,
-                tt.goal_for,
-                tt.goal_against,
-                tt.goal_diff,
-                tt.points,
-                tt.group_position
+                *
             FROM 
-                tournament_team tt
+                tournament_teams tt
             JOIN 
-                team t ON tt.team_id = t.team_id
+                teams t ON tt.team_id = t.team_id
             WHERE 
-                tt.tr_id = $1
-            ORDER BY 
-                tt.team_group, tt.group_position
+                tt.tournament_id = $1
         `, [tournamentId]);
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: `No teams found for tournament with ID ${tournamentId}`
-            });
-        }
-
-        // Group teams by their group for better organization
-        const teamsByGroup = result.rows.reduce((acc, team) => {
-            if (!acc[team.team_group]) {
-                acc[team.team_group] = [];
-            }
-            acc[team.team_group].push(team);
-            return acc;
-        }, {});
+        // if (result.rows.length === 0) {
+        //     return res.status(200).json({
+        //         success: false,
+        //         message: `No teams found for tournament with ID ${tournamentId}`,
+        //         data: {}
+        //     });
+        // }
 
         res.status(200).json({
             success: true,
             count: result.rows.length,
             data: {
-                teams: result.rows,
-                grouped: teamsByGroup
+                teams: result.rows[0],
             }
         });
 
