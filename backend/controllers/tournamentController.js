@@ -3,7 +3,7 @@ const db = require('../config/db')
 
 
 exports.getTournaments = asyncHandler(async (req, res) => {
-    const result = await db.query('SELECT * FROM tournament')
+    const result = await db.query('SELECT * FROM tournaments')
     console.log(result)
     res.status(200).json({ success: true, data: result.rows });
 
@@ -11,7 +11,7 @@ exports.getTournaments = asyncHandler(async (req, res) => {
 
 exports.getTournamentById = asyncHandler(async(req, res) => {
     const result = await db.query(`
-            SELECT * FROM tournament WHERE tr_id = $1
+            SELECT * FROM tournaments WHERE tournament_id = $1
         `, [req.params.id])
     return res.status(200).json({data: result.rows})
 })

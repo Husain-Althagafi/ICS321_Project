@@ -43,10 +43,7 @@ const DeleteTournaments = () => {
 
     axios.delete(`http://localhost:5000/admin/tournaments/${tournamentId}`)
     .then((res) => {
-      if (res.data.data.length === 0) {
-        throw new Error('Nothing was deleted')
-      }
-      setTournaments(updated);
+      setTournaments(tournaments.filter(t => t.tournament_id !== tournamentId));
     })
     .catch(err => console.error(err))
 
@@ -67,7 +64,7 @@ const DeleteTournaments = () => {
           <div className="tournament-grid scrollable">
             {tournaments.length > 0 ? (
               tournaments.map((tournament) => (
-                <div key={tournament.tr_id} className="tournament-card">
+                <div key={tournament.tournament_id} className="tournament-card">
                   <div
                     className="tournament-card-header"
                     style={{
@@ -79,12 +76,12 @@ const DeleteTournaments = () => {
                     <h3 style={{ margin: 0 }}>
                       Tournament Name:{" "}
                       <span className="tournament-name-gradient">
-                        {tournament.tr_name}
+                        {tournament.name}
                       </span>
                     </h3>
                   </div>
                   <p>
-                    <strong>Tournament ID:</strong> {tournament.tr_id}
+                    <strong>Tournament ID:</strong> {tournament.tournament_id}
                   </p>
                   <p>
                     <strong>Start Date:</strong>{" "}
@@ -97,12 +94,12 @@ const DeleteTournaments = () => {
                   <div className="delete-button-wrapper">
                     <DeleteTournamentButton
                       className="delete-tournament-button"
-                      tournamentId={tournament.tr_id}
+                      tournamentId={tournament.tournament_id}
                       onClick={() => {
                         const confirmed = window.confirm(
                           "Are you sure you want to delete this tournament?",
                         );
-                        if (confirmed) handleDeleteTournament(tournament.tr_id);
+                        if (confirmed) handleDeleteTournament(tournament.tournament_id);
                       }}
                     >
                       <img

@@ -48,7 +48,7 @@ const AddTournament = () => {
     }
 
     const newTournament = {
-      tr_name: name,
+      name: name,
       start_date: startDate,
       end_date: endDate,
       num_teams: parseInt(numTeams, 10),
