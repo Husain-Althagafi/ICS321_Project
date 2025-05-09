@@ -12,14 +12,14 @@ router.post('/tournaments', adminController.addTournament)
 //add team 
 router.post('/teams', adminController.addTeam)
 
-//add team to tournament
+//add matches to tournament
+router.post('/tournaments/:tournament_id/matches', adminController.addMatchesToTournament)
     
 //select captain
 router.post('/:tournament/:match/:team/captain', adminController.selectCaptain)
 
 //add player to team
 router.post('/:team/:player', adminController.approvePlayerToTeam)
-
 
 
 //DELETE

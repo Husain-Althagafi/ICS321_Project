@@ -248,3 +248,69 @@ exports.removeTeamFromTournament = asyncHandler(async (req, res) => {
         });
     }
 });
+
+
+exports.addMatchesToTournament = asyncHandler(async(req, res) => {
+    const {matches} = req.body
+    const {tournament_id} = req.params
+
+    if (!matches) {
+        return res.status(400).json({error: 'Matches objects needed'})
+    }
+
+    const insertedMatches = []
+
+    try {
+        for (const match of matches) {
+        if (!tournament_id ||!match.match_id || !match.teama_id || !match.teamb_id || !match.match_date) {
+            throw new Error(`Missing required fields in match: ${JSON.stringify(match)}`);
+        }
+
+        const result = await db.query(
+            `INSERT INTO matches (
+                match_id,
+                tournament_id,
+                teama_id,
+                teamb_id,
+                match_date,
+                start_time,
+                end_time,
+                venue_id,
+                match_completed
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            RETURNING *`,
+            [
+                match.match_id,
+                tournament_id,
+                match.teama_id,
+                match.teamb_id,
+                match.match_date,
+                match.start_time || null,
+                match.end_time || null,
+                match.venue_id || null,
+                match.match_completed || false
+            ]
+        );
+
+        insertedMatches.push(result.rows[0]);
+    }
+
+    await db.query('COMMIT')
+
+    return res.status(200).json({
+        success: true,
+        message: 'successfully made matches for tournament',
+        data: insertedMatches
+    })
+}
+
+    catch (err) {
+        return res.status(500).json({
+            error: 'error making matches'+ err,
+            generated: matches
+        })
+    }
+
+
+
+})

@@ -7,8 +7,14 @@ import bgImage from "../../assets/images/Illustration 1@4x.png";
 import "../../stylesheets/EditTournament.css";
 import axios from 'axios'
 // Generate round-robin schedule: assign only IDs, teams, and dates; leave captains & venue/time blank
-const scheduleRoundRobin = (teamIds, dateOptions, tournamentId) => {
+const scheduleRoundRobin = (teams, dateOptions, tournamentId) => {
   const matches = [];
+  const teamIds = []
+
+  teams.forEach(team => {
+    teamIds.push(team.team_id);
+  });
+
   let slotIndex = 0;
   // For each unique pair
   for (let i = 0; i < teamIds.length; i++) {
@@ -19,13 +25,13 @@ const scheduleRoundRobin = (teamIds, dateOptions, tournamentId) => {
         match_id: `${tournamentId}_${slotIndex + 1}`,
         teama_id: teamIds[i],
         teamb_id: teamIds[j],
-        match_date,
+        match_date: '2025/12/12',   //should be date
         start_time: "",
         end_time: "",
         venue_id: "",
         captaina_id: "",
         captainb_id: "",
-        tournament_id: tournamentId
+        tournament_id: tournamentId,
       });
       slotIndex++;
     }
@@ -717,12 +723,27 @@ const EditTournament = () => {
                   setIsConfirmed(true);
                   // Auto-generate matches
                   const generated = scheduleRoundRobin(
-                    players,
+                    teams,
                     dateOptions,
                     tournamentId,
                   );
-                  setMatches(generated);
-                  setListType("matches");
+
+                  //send request with generated matches to add to db
+
+                
+                  axios.post(`http://localhost:5000/admin/tournaments/${tournamentId}/matches`, {
+                    matches: generated
+                  })
+                  .then((res) => {
+                    setMatches(generated);
+                    setListType("matches");
+                  })
+                  .catch(err => {
+                    console.error(err)
+                  });
+
+
+                  
                   // Persist to localStorage
                   // const selectedTeamIds = teams;
                   // const updated = tournaments.map((t) =>
