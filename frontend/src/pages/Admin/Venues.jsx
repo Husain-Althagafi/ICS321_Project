@@ -24,6 +24,7 @@ const Venues = () => {
   const [hoveredVenueId, setHoveredVenueId] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [allMatches, setAllMatches] = useState([])
+  const [reservedVenues, setReservedVenues] = useState([])
 
   const [lastVenueNumber, setLastVenueNumber] = useState(() => {
     const storedNum = parseInt(localStorage.getItem("lastVenueId"), 10);
@@ -37,7 +38,6 @@ const Venues = () => {
   useEffect(() => {
     const loadVenues = () => {
         //get all venues
-
         axios.get(`http://localhost:5000/venues`)
         .then((res) => {
           //transform data to fit frontend naming
@@ -63,8 +63,32 @@ const Venues = () => {
     return () => window.removeEventListener("focus", loadVenues);
   }, []);
 
+  //function for finding the reserved venues
+  const getReservedVenues = () => {
+    // Find all venue_ids that are being used in matches
+    const reservedVenueIds = allMatches
+      .map(match => match.venue_id)
+      .filter(venueId => venueId !== null);
+    
+    // Get unique venue IDs to avoid duplicates
+    const uniqueReservedVenueIds = [...new Set(reservedVenueIds)];
+    
+    // Get full venue info for reserved venues
+    const reservedVenues = venues.filter(venue => 
+      uniqueReservedVenueIds.includes(venue.venue_id)
+    );
+    
+    // Add match info to each reserved venue
+    return reservedVenues.map(venue => ({
+      ...venue,
+      allMatches: allMatches.filter(match => match.venue_id === venue.id)
+    }));
+  };
 
   useEffect(() => {
+    //set reserved venues
+    setReservedVenues(getReservedVenues())
+
     const updatedVenues = venues.map((v) => {
       const matched = allMatches.filter(
         (m) => String(m.venue_id) === String(v.id),
