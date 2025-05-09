@@ -1,31 +1,44 @@
 const asyncHandler = require('../middleware/asyncHandler')
 const db = require('../config/db')
 
-exports.addTournament = asyncHandler( async (req, res) => {
-    const {tr_id, tr_name, start_date, end_date} = req.body
+// POST /admin/tournaments
+exports.addTournament = asyncHandler(async (req, res) => {
+  const { name, start_date, num_teams } = req.body;
+  if (!name || !start_date || typeof num_teams !== 'number') {
+    return res.status(400).json({ error: 'Missing tournament name, start_date, or num_teams' });
+  }
+  // Calculate end_date: N even → N−1 days, odd → N days
+  const rounds = num_teams % 2 === 0 ? num_teams - 1 : num_teams;
+  const { rows: [{ end_date }] } = await db.query(
+    `SELECT ($1::date + ($2 - 1) * INTERVAL '1 day')::date AS end_date`,
+    [start_date, rounds]
+  );
+  const { rows } = await db.query(
+    `INSERT INTO tournaments (name, start_date, end_date, num_teams)
+     VALUES ($1, $2, $3, $4)
+     RETURNING *`,
+    [name, start_date, end_date, num_teams]
+  );
+  res.status(201).json({ data: rows[0], message: 'Tournament created' });
+});
 
-    if (!tr_id || !tr_name || !start_date || !end_date) {
-        return res.status(400).json({error: 'Tournament info missing'})
-    }
-
-    const query = `
-    INSERT INTO tournament (tr_id, tr_name, start_date, end_date)
-    VALUES ($1, $2, $3, $4)
-    RETURNING *;
-    `
-    try {
-        const result = await db.query(query, [tr_id, tr_name, start_date, end_date])
-        return res.status(200).json({
-            data: result.rows[0],
-            message: 'Successfully added tournament'
-        })
-    }
-    
-    catch (err) {
-        return res.status(500).json({error: 'Error adding tournament:'+ err})
-    }
-
-})
+// DELETE /admin/tournaments/:id
+exports.deleteTournament = asyncHandler(async (req, res) => {
+  const tournamentId = parseInt(req.params.id, 10);
+  await db.query(
+    `DELETE FROM tournament_teams WHERE tournament_id = $1`,
+    [tournamentId]
+  );
+  await db.query(
+    `DELETE FROM matches WHERE tournament_id = $1`,
+    [tournamentId]
+  );
+  await db.query(
+    `DELETE FROM tournaments WHERE tournament_id = $1`,
+    [tournamentId]
+  );
+  res.sendStatus(204);
+});
 
 
 exports.addTeamToTournament = asyncHandler( async (req, res) => {
@@ -139,3 +152,18 @@ exports.approvePlayerToTeam = asyncHandler (async (req, res) => {
         data: result.rows[0]
     })
 })
+// GET /admin/tournaments
+exports.getTournaments = asyncHandler(async (req, res) => {
+  const { rows } = await db.query(`
+    SELECT
+      tournament_id AS id,
+      name,
+      TO_CHAR(start_date, 'DD/MM/YYYY') AS startDate,
+      TO_CHAR(end_date,   'DD/MM/YYYY') AS endDate,
+      num_teams  AS numTeams,
+      last_match_no AS lastMatchNumber
+    FROM tournaments
+    ORDER BY tournament_id
+  `);
+  res.json(rows);
+});

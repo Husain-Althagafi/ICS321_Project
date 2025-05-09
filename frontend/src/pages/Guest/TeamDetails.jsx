@@ -161,7 +161,7 @@ const TeamDetails = () => {
                 height: "3rem",
                 width: "fit-content",
                 marginLeft: "0rem",
-                marginBottom: "0rem",
+                marginBottom: "0rem"
               }}
             >
               ← Back to Teams

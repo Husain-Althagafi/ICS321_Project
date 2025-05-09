@@ -1,18 +1,27 @@
 const express = require('express')
-const adminController = require('../controllers/adminController')
+const {
+  addTournament,
+  deleteTournament,
+  getTournaments
+} = require('../controllers/adminController');
 const router = express.Router()
 const auth = require('../middleware/auth')
 
 
-router.post('/tournaments', auth, adminController.addTournament)
+router.post('/tournaments', addTournament)
 
-router.post('/teams', adminController.addTeamToTournament)
+// List all tournaments
+router.get('/tournaments', getTournaments);
 
-router.post('/:tournament/:match/:team/captain', adminController.selectCaptain)
+// Delete a specific tournament
+router.delete('/tournaments/:id', deleteTournament);
 
-router.post('/:team/:player', adminController.approvePlayerToTeam)
+// router.post('/teams', adminController.addTeamToTournament)
+
+// router.post('/:tournament/:match/:team/captain', adminController.selectCaptain)
+
+// router.post('/:team/:player', adminController.approvePlayerToTeam)
 
 // router.delete('/tournament', adminController.deleteTournament)
 
 module.exports = router;
-
