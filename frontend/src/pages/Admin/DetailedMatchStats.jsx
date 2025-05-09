@@ -1427,7 +1427,13 @@ const DetailedMatchStats = () => {
           <div className="match-complete-container">
             <button
               className="match-complete-button"
-              onClick={() => setShowCompleteModal(true)}
+              onClick={() => {
+                if (motmPlayerId === null) {
+                  window.alert("Select a Man of the Match before completing the match");
+                } else {
+                  setShowCompleteModal(true);
+                }
+              }}
             >
               Match Complete
             </button>

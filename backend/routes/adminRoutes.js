@@ -5,7 +5,7 @@ const {
   getTournaments
 } = require('../controllers/adminController');
 const router = express.Router()
-const auth = require('../middleware/auth')
+// const auth = require('../middleware/auth')
 
 
 router.post('/tournaments', addTournament)

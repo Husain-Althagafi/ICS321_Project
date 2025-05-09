@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from 'axios';
 import AdminSidebar from "../../components/AdminSidebar";
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from "../../assets/images/Illustration 1@4x.png";
@@ -16,16 +15,17 @@ const Tournaments = () => {
   const [tournaments, setTournaments] = useState([]);
 
   useEffect(() => {
-    const fetchTournaments = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/tournaments');
-        // console.log('Tournaments payload:', response.data);
-        setTournaments(response.data);
-      } catch (error) {
-        console.error('Error fetching tournaments:', error);
+    const loadTournaments = () => {
+      const stored = localStorage.getItem("tournaments");
+      if (stored) {
+        setTournaments(JSON.parse(stored));
       }
     };
-    fetchTournaments();
+
+    loadTournaments();
+
+    window.addEventListener("focus", loadTournaments);
+    return () => window.removeEventListener("focus", loadTournaments);
   }, []);
 
   // const handleDeleteTournament = (tournamentId) => {
