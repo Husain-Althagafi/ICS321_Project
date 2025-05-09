@@ -46,9 +46,6 @@ const DeleteTournaments = () => {
       if (res.data.data.length === 0) {
         throw new Error('Nothing was deleted')
       }
-      const updated = tournaments.filter(
-        (t) => String(t.id) !== String(tournamentId),
-      );
       setTournaments(updated);
     })
     .catch(err => console.error(err))
