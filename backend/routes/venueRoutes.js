@@ -13,4 +13,10 @@ router.get('/', venueController.getAllVenues)
 //add new venue
 router.post('/', venueController.addNewVenue)
 
+
+//DELETE
+
+//delete a venue
+router.delete('/:venue_id', venueController.deleteVenue)
+
 module.exports = router

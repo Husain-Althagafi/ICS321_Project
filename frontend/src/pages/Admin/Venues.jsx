@@ -18,13 +18,13 @@ const Venues = () => {
   const [showVenueModal, setShowVenueModal] = useState(false);
   const [newVenue, setNewVenue] = useState({
     name: "",
-    // status: "Available",
+    status: "Available",
     capacity: "",
   });
   const [venueError, setVenueError] = useState("");
   const [hoveredVenueId, setHoveredVenueId] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [matches, setMatches] = useState([])
+  const [allMatches, setAllMatches] = useState([])
 
   const [lastVenueNumber, setLastVenueNumber] = useState(() => {
     const storedNum = parseInt(localStorage.getItem("lastVenueId"), 10);
@@ -49,6 +49,13 @@ const Venues = () => {
           })));
         })
         .catch(err => console.error(err))
+
+        //get all matches
+        axios.get(`http://localhost:5000/matches`)
+        .then((res) => {
+          setAllMatches(res.data.data)
+        })
+        .catch(err => console.error(err))
     };
 
     loadVenues();
@@ -57,20 +64,11 @@ const Venues = () => {
     return () => window.removeEventListener("focus", loadVenues);
   }, []);
 
-  
-  //get all matches
-
-  axios.get(`http://localhost:5000/matches`)
-  .then((res) => {
-    setMatches(res.data.data)
-  })
-  .catch(err => console.error(err))
-
 
   useEffect(() => {
     const updatedVenues = venues.map((v) => {
       const matched = allMatches.filter(
-        (m) => String(m.venueId) === String(v.id),
+        (m) => String(m.venue_id) === String(v.id),
       );
       if (v.status === "Reserved" && matched.length === 0) {
         return { ...v, status: "Available" };
@@ -92,13 +90,13 @@ const Venues = () => {
 
   const handleDeleteVenue = (venueId) => {
     //delete by request
-    axios.delete(`http:/localhost:5000/venues/${venueId}`)
+    axios.delete(`http://localhost:5000/venues/${venueId}`)
     .then((res) => {
       setVenues(venues.filter(
-        (v) => String(v.venue_id) !== String(venueId),
+        (v) => v.id !== res.data.data[0].venue_id,
       ));
     })
-    .catch(err => console)
+    .catch(err => console.error(err))
   };
 
   return (
@@ -364,26 +362,43 @@ const Venues = () => {
                     };
 
                     let updated;
+                    //logic for editing venue
                     if (isEditing) {
                       updated = venues.map((v) =>
                         v.id === newVenue.id ? newEntry : v,
                       );
                     } else {
+                      //logic for adding new venue
                       updated = [...venues, newEntry];
-                      setLastVenueNumber(nextVenueId);
-                      localStorage.setItem("lastVenueId", String(nextVenueId));
+
+                      //add new venue
+                      axios.post(`http://localhost:5000/venues`, {
+                        venue_name: newEntry.name,
+                        venue_capacity: Number(newEntry.capacity)
+                      })
+                      .then((res) => {
+                        setVenues(prevVenues => [
+                          ...prevVenues, 
+                          {
+                            id: res.data.data[0].venue_id,
+                            name: res.data.data[0].venue_name,
+                            capacity: res.data.data[0].venue_capacity,
+                            status: "Available" // Default status
+                          }
+                        ]);
+                        setNewVenue({
+                          name: "",
+                          status: "Available",
+                          capacity: "",
+                        });
+                        setVenueError("");
+                        setShowVenueModal(false);
+                        setIsEditing(false);                      
+                      })
+                      .catch(err => console.error(err))
                     }
 
-                    localStorage.setItem("venues", JSON.stringify(updated));
-                    setVenues(updated);
-                    setNewVenue({
-                      name: "",
-                      status: "Available",
-                      capacity: "",
-                    });
-                    setVenueError("");
-                    setShowVenueModal(false);
-                    setIsEditing(false);
+                    
                   }}
                 >
                   {isEditing ? "Save Changes" : "Add"}
