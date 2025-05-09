@@ -37,7 +37,7 @@ const Tournaments_DetailedMatchStats = () => {
     );
     if (!confirmed) return;
     const updated = tournaments.filter(
-      (t) => String(t.id) !== String(tournamentId),
+      (t) => String(t.tournament_id) !== String(tournamentId),
     );
     localStorage.setItem("tournaments", JSON.stringify(updated));
     setTournaments(updated);
@@ -57,7 +57,7 @@ const Tournaments_DetailedMatchStats = () => {
           <div className="tournament-grid scrollable">
             {tournaments.length > 0 ? (
               tournaments.map((tournament) => (
-                <div key={tournament.tr_id} className="tournament-card">
+                <div key={tournament.tournament_id} className="tournament-card">
                   <div
                     className="tournament-card-header"
                     style={{
@@ -69,12 +69,12 @@ const Tournaments_DetailedMatchStats = () => {
                     <h3 style={{ margin: 0 }}>
                       Tournament Name:{" "}
                       <span className="tournament-name-gradient">
-                        {tournament.tr_name}
+                        {tournament.name}
                       </span>
                     </h3>
                   </div>
                   <p>
-                    <strong>Tournament ID:</strong> {tournament.tr_id}
+                    <strong>Tournament ID:</strong> {tournament.tournament_id}
                   </p>
                   <p>
                     <strong>Start Date:</strong>{" "}
@@ -89,7 +89,7 @@ const Tournaments_DetailedMatchStats = () => {
                     className="edit-button"
                     onClick={() =>
                       navigate(
-                        `/admin/detailed-match-stats/${tournament.tr_id}/matches`,
+                        `/admin/detailed-match-stats/${tournament.tournament_id}/matches`,
                       )
                     }
                   >

@@ -2,7 +2,7 @@ const asyncHandler = require('../middleware/asyncHandler')
 const db = require('../config/db')
 
 exports.addTournament = asyncHandler( async (req, res) => {
-    const {name, start_date, end_date, num_teams, last_match_no} = req.body
+    const {name, start_date, end_date, num_teams} = req.body
 
     if (!name || !start_date || !end_date || !num_teams) {
         return res.status(400).json({error: 'Tournament info missing'})
@@ -76,19 +76,19 @@ exports.addTeam = asyncHandler(async(req, res) => {
 
 
 exports.addTeamToTournament = asyncHandler( async (req, res) => {
-    const {team_id, tr_id, team_group} = req.body
+    const {team_id, tournament_id} = req.body
 
-    if (!team_id || !tr_id || !team_group) {
+    if (!team_id || !tournament_id) {
         return res.status(400).json({error: 'Team info missing'})
     }
 
     query = `
-    INSERT INTO TOURNAMENT_TEAM (team_id, tr_id, team_group, match_played, won, draw, lost, goal_for, goal_against, goal_diff, points, group_position)
-    VALUES ($1, $2, $3, 0, 0, 0, 0, 0, 0, 0, 0, 0) RETURNING *;
+    INSERT INTO tournament_teams (team_id, tournament_id,)
+    VALUES ($1, $2) RETURNING *;
     `
 
     try {
-        const result = await db.query(query, [team_id, tr_id, team_group])
+        const result = await db.query(query, [team_id, tournament_id])
         return res.status(200).json({
             message: 'Successfully added team to tournament',
             data: result.rows[0]})
@@ -186,5 +186,6 @@ exports.approvePlayerToTeam = asyncHandler (async (req, res) => {
         data: result.rows[0]
     })
 })
+
 
 
