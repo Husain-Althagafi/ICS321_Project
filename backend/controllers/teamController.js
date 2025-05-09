@@ -6,15 +6,8 @@ exports.getAllTeams = asyncHandler(async (req, res) => {
       // Query to get all teams with their basic information
       const teams = await db.query(`
         SELECT 
-          t.team_id,
-          t.team_name,
-          COUNT(tp.player_id) AS player_count,
-          COUNT(ts.support_id) AS staff_count
-        FROM team t
-        LEFT JOIN TEAM_PLAYER tp ON t.team_id = tp.team_id
-        LEFT JOIN TEAM_SUPPORT ts ON t.team_id = ts.team_id
-        GROUP BY t.team_id, t.team_name
-        ORDER BY t.team_name
+          *
+        FROM teams
       `);
   
       if (!teams || teams.length === 0) {
@@ -27,7 +20,7 @@ exports.getAllTeams = asyncHandler(async (req, res) => {
   
       res.status(200).json({
         success: true,
-        data: teams
+        data: teams.rows
       });
   
     } catch (error) {

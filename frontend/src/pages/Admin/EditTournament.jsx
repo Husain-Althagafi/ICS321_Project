@@ -92,7 +92,6 @@ const EditTournament = () => {
     venueId: "",
   });
   const isEditing = Boolean(matchDetails.id);
-  const [availableTeams, setAvailableTeams] = useState([]);
   const [listType, setListType] = useState("matches");
   const [isConfirmed, setIsConfirmed] = useState(false);
   // Helper to retrieve a team's player roster
@@ -122,6 +121,12 @@ const EditTournament = () => {
     })
     .catch(err => console.error(err))
 
+    //get all teams
+    axios.get(`http://localhost:5000/teams`)
+    .then((res) => {
+      setTeams(res.data.data)
+    })
+
     //get tournement
     axios.get(`http://localhost:5000/tournaments/${tournamentId}`)
     .then((res) => {
@@ -130,12 +135,12 @@ const EditTournament = () => {
     .catch(err => console.error(err))
 
 
-    // get tournaments
-    axios.get(`http://localhost:5000/tournaments`)
-    .then((res) => {
-      setTournaments(res.data.data)
-    })
-    .catch(err => console.error(err))
+    // // get tournaments
+    // axios.get(`http://localhost:5000/tournaments`)
+    // .then((res) => {
+    //   setTournaments(res.data.data)
+    // })
+    // .catch(err => console.error(err))
 
     axios.get(`http://localhost:5000/tournaments/${tournamentId}/players`)
     .then((res) => {
@@ -145,30 +150,10 @@ const EditTournament = () => {
     
     if (tournament) {
       setTournamentName(tournament.name);
-      setStartDate(tournament.startDate);
-      setEndDate(tournament.endDate);
-      setNumTeams(tournament.numTeams || "");
-      setTournaments(storedTournaments);
-      setPlayers(tournament.players || []);
-      setMatches(tournament.matches || []);
-      // Initialize persistent match counter if missing
-      // if (tournament.lastMatchNumber == null) {
-      //   const existing = matches || [];
-      //   const maxSuffix = existing.reduce((max, m) => {
-      //     const parts = m.id.split("_");
-      //     const num = parseInt(parts[1], 10);
-      //     return Math.max(max, isNaN(num) ? 0 : num);
-      //   }, 0);
-      //   tournament.lastMatchNumber = maxSuffix;
-      //   // Update tournaments array and persist
-      //   const updatedAll = storedTournaments.map((t) =>
-      //     String(t.id) === tournamentId
-      //       ? { ...t, lastMatchNumber: maxSuffix }
-      //       : t,
-      //   );
-      //   localStorage.setItem("tournaments", JSON.stringify(updatedAll));
-      //   setTournaments(updatedAll);
-      // }
+      setStartDate(tournament.start_date);
+      setEndDate(tournament.end_date);
+      setNumTeams(tournament.num_teams || "");
+      
     } else {
       navigate("/admin/tournaments");
     }
@@ -207,7 +192,7 @@ const EditTournament = () => {
       return;
     }
     const updatedTournaments = tournaments.map((t) =>
-      String(t.id) === tournamentId
+      String(t.tournament_id) === tournamentId
         ? {
             ...t,
             name: tournamentName,
@@ -218,7 +203,6 @@ const EditTournament = () => {
           }
         : t,
     );
-    localStorage.setItem("tournaments", JSON.stringify(updatedTournaments));
     navigate("/admin/tournaments");
   };
 
@@ -233,7 +217,6 @@ const EditTournament = () => {
       "Are you sure you want to delete this tournament?",
     );
     if (!confirmDelete) return;
-
 
     axios.delete(`http://localhost:5000/tournaments/${tournamentId}`)
     .then((res) => {
@@ -360,7 +343,7 @@ const EditTournament = () => {
                   Tournament ID:
                   <input
                     type="text"
-                    value={tournament.tr_id}
+                    value={tournament.tournament_id}
                     disabled
                     style={{
                       backgroundColor: "#f0f0f0",
@@ -373,7 +356,7 @@ const EditTournament = () => {
                   Tournament Name:
                   <input
                     type="text"
-                    value={tournament.tr_name}
+                    value={tournament.name}
                     onChange={(e) => setTournamentName(e.target.value)}
                     required
                   />
@@ -394,7 +377,7 @@ const EditTournament = () => {
                 <label>
                   Number of Teams:
                   <select
-                    value={numTeams}
+                    value={tournament.num_teams}
                     onChange={(e) => setNumTeams(e.target.value)}
                     required
                     disabled
@@ -436,11 +419,11 @@ const EditTournament = () => {
                   {listType === "matches"
                     ? matches.map((m, idx) => {
                         const teamAName =
-                          availableTeams.find(
+                          teams.find(
                             (t) => String(t.team_id) === String(m.teamA),
                           )?.team_name || m.teamA;
                         const teamBName =
-                          availableTeams.find(
+                          teams.find(
                             (t) => String(t.team_id) === String(m.teamB),
                           )?.team_name || m.teamB;
                         return (
@@ -500,7 +483,7 @@ const EditTournament = () => {
                           </li>
                         );
                       })
-                    : availableTeams.map((team) => (
+                    : teams.map((team) => (
                         <li
                           key={team.team_id}
                           style={{
@@ -817,7 +800,7 @@ const EditTournament = () => {
                 disabled={isEditing}
               >
                 <option value="">Select Team A</option>
-                {availableTeams
+                {teams
                   .filter((team) => team.team_id !== matchDetails.teamB)
                   .map((team) => (
                     <option key={team.team_id} value={team.team_id}>
@@ -853,7 +836,7 @@ const EditTournament = () => {
                 disabled={isEditing}
               >
                 <option value="">Select Team B</option>
-                {availableTeams
+                {teams
                   .filter((team) => team.team_id !== matchDetails.teamA)
                   .map((team) => (
                     <option key={team.team_id} value={team.team_id}>
@@ -1208,13 +1191,13 @@ const EditTournament = () => {
             </p>
             <p>
               <strong>Team A:</strong>{" "}
-              {availableTeams.find(
+              {teams.find(
                 (t) => String(t.team_id) === String(selectedMatch.teamA),
               )?.team_name || selectedMatch.teamA}
             </p>
             <p>
               <strong>Team B:</strong>{" "}
-              {availableTeams.find(
+              {teams.find(
                 (t) => String(t.team_id) === String(selectedMatch.teamB),
               )?.team_name || selectedMatch.teamB}
             </p>
@@ -1237,7 +1220,7 @@ const EditTournament = () => {
             </p>
             <p>
               <strong>Captain A:</strong>{" "}
-              {availableTeams
+              {teams
                 .find((t) => String(t.team_id) === String(selectedMatch.teamA))
                 ?.players?.find(
                   (p) => String(p.id) === String(selectedMatch.captainA),
@@ -1245,7 +1228,7 @@ const EditTournament = () => {
             </p>
             <p>
               <strong>Captain B:</strong>{" "}
-              {availableTeams
+              {teams
                 .find((t) => String(t.team_id) === String(selectedMatch.teamB))
                 ?.players?.find(
                   (p) => String(p.id) === String(selectedMatch.captainB),
