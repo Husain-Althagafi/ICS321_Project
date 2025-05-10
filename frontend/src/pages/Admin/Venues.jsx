@@ -138,7 +138,7 @@ const Venues = () => {
               onClick={() => {
                 setShowVenueModal(true);
                 setIsEditing(false);
-                setNewVenue({ name: "", status: "Available", capacity: "" });
+                setNewVenue({ name: "", status: "", capacity: "" });
               }}
               style={{
                 padding: "0.5rem 1rem",
@@ -156,7 +156,7 @@ const Venues = () => {
             {venues.length > 0 ? (
               venues.map((venue) => {
                 const reservedMatchesForVenue = allMatches.filter(
-                  (m) => String(m.venueId) === String(venue.id),
+                  (m) => m.venue_id === venue.id,
                 );
                 return (
                   <div key={venue.id} className="venue-card">
@@ -183,9 +183,9 @@ const Venues = () => {
                       onMouseLeave={() => setHoveredVenueId(null)}
                       style={{ position: "relative" }}
                     >
-                      <strong>Venue Status:</strong> {venue.status}
+                      <strong>Venue Status:</strong> {venue.status || 'Free'}
                       {hoveredVenueId === venue.id &&
-                        venue.status === "Reserved" &&
+                        reservedVenues.some(reservedVenue => reservedVenue.id === venue.id) &&
                         reservedMatchesForVenue.length > 0 && (
                           <div
                             style={{
