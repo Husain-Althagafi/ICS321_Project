@@ -3,27 +3,34 @@ const express = require('express')
 const cors = require('cors')
 
 //Routes
-// const authRoutes = require('./routes/authRoutes')
+const authRoutes = require('./routes/authRoutes')
 const adminRoutes = require('./routes/adminRoutes')
 const guestRoutes = require('./routes/guestRoutes')
+const tournamentRoutes = require('./routes/tournamentRoutes')
+const teamRoutes = require('./routes/teamRoutes')
+const matchRoutes = require('./routes/matchRoutes')
 
 
 //App
 const app = express()
 const PORT = 5000
 
-// const corsOptions ={
-//     credentials:true,            //access-control-allow-credentials:true
-// }
-
 //Middleware
-app.use(cors())
+app.use(cors(
+  {
+    origin: 'http://localhost:5174'
+  }
+))
 app.use(express.json())
 
 //Routes
-// app.use('/auth', authRoutes);
+app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 app.use('/guest', guestRoutes);
+app.use('/tournaments', tournamentRoutes)
+app.use('/teams', teamRoutes)
+app.use('/matches', matchRoutes)
+
 
 
 //Server
