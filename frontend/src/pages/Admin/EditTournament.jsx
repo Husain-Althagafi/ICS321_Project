@@ -25,7 +25,7 @@ const scheduleRoundRobin = (teams, dateOptions, tournamentId) => {
         match_id: `${tournamentId}_${slotIndex + 1}`,
         teama_id: teamIds[i],
         teamb_id: teamIds[j],
-        match_date: '2025/12/12',   //should be date
+        match_date: '2025-12-12',   //should be date
         start_time: "",
         end_time: "",
         venue_id: "",
@@ -101,7 +101,7 @@ const EditTournament = () => {
     captainB: "",
     venueId: "",
   });
-  const isEditing = Boolean(matchDetails.id);
+  const isEditing = Boolean(matchDetails.match_id);
   const [listType, setListType] = useState("matches");
   const [isConfirmed, setIsConfirmed] = useState(false);
   // Helper to retrieve a team's player roster
@@ -118,11 +118,16 @@ const EditTournament = () => {
 
   useEffect(() => {
     //get all matches in tournaments
-    axios.get(`http://localhost:5000/tournaments/${tournamentId}/matches`)
-    .then((res) => {
-      setMatches(res.data.data)
+    // When receiving match data from API
+    axios.get('http://localhost:5000/matches')
+    .then(res => {
+      setMatches(res.data.data.map(match => ({
+        ...match,
+        // Convert ISO string to Date object
+        match_date: match.match_date.split("T")[0],
+      })));
     })
-    .catch(err => console.error(err))
+    .catch(err => console.error(err));
 
     //get all teams in tournament
     axios.get(`http://localhost:5000/tournaments/${tournamentId}/teams`)
@@ -232,7 +237,7 @@ const EditTournament = () => {
     );
     if (!confirmDelete) return;
 
-    axios.delete(`http://localhost:5000/tournaments/${tournamentId}`)
+    axios.delete(`http://localhost:5000/admin/tournaments/${tournamentId}`)
     .then((res) => {
       navigate("/admin/tournaments");
     })
@@ -300,15 +305,15 @@ const EditTournament = () => {
       // For reserved venues, check if there's any conflict with existing matches
       const venueMatches = allMatches.filter(
         (m) =>
-          String(m.venueId) === String(venue.id) &&
+          String(m.venueId) === String(venue.match_id) &&
           // Skip the match we're currently editing
-          !(isEditing && m.id === editingId),
+          !(isEditing && m.match_id === editingId),
       );
 
       // Check each match for this venue for conflicts
       return !venueMatches.some((match) => {
         // If not on the same date, no conflict
-        if (match.date !== newDateFormatted) return false;
+        if (match.match_date !== newDateFormatted) return false;
 
         // Convert match times to minutes for comparison
         const matchStartMins = timeToMinutes(match.startTime);
@@ -333,7 +338,7 @@ const EditTournament = () => {
     // For each date, filter venues that are Available
     const avail = allVenues.filter((v) => v.status === "Available");
     venuesByDate[date] = avail.map((v) => ({
-      id: v.id,
+      id: v.match_id,
       availableTimes: ["09:00", "11:00", "13:00", "15:00"], // example fixed slots
     }));
   });
@@ -434,12 +439,12 @@ const EditTournament = () => {
                     ? matches.map((m, idx) => {
                         const teamAName =
                           teams.find(
-                            (t) => String(t.team_id) === String(m.teamA),
-                          )?.team_name || m.teamA;
+                            (t) => String(t.team_id) === String(m.teama_id),
+                          )?.team_name || m.teama_id;
                         const teamBName =
                           teams.find(
-                            (t) => String(t.team_id) === String(m.teamB),
-                          )?.team_name || m.teamB;
+                            (t) => String(t.team_id) === String(m.teamb_id),
+                          )?.team_name || m.teamb_id;
                         return (
                           <li
                             key={idx}
@@ -452,7 +457,7 @@ const EditTournament = () => {
                             <span>
                               <strong>{teamAName}</strong> vs{" "}
                               <strong>{teamBName}</strong> ({m.startTime} -{" "}
-                              {m.endTime}, {m.date.replace(/-/g, "/")})
+                              {m.endTime}, {m.match_date.replace(/-/g, "/")})
                             </span>
                             <div style={{ display: "flex", gap: "0.25rem" }}>
                               <button
@@ -481,10 +486,10 @@ const EditTournament = () => {
                                   color: "white",
                                 }}
                                 onClick={() => {
-                                  // Pre-fill match details, use m.date as is (already in dd-mm-yyyy format)
+                                  // Pre-fill match details, use m.match_date as is (already in dd-mm-yyyy format)
                                   setMatchDetails({
                                     ...m,
-                                    date: m.date,
+                                    date: m.match_date,
                                     captainA: m.captainA || "",
                                     captainB: m.captainB || "",
                                   });
@@ -612,7 +617,7 @@ const EditTournament = () => {
                       className="btn-save-match-details"
                       onClick={() => {
                         const updatedTournaments = tournaments.map((t) =>
-                          String(t.id) === tournamentId ? { ...t, matches } : t,
+                          String(t.match_id) === tournamentId ? { ...t, matches } : t,
                         );
                         setTournaments(updatedTournaments);
                         localStorage.setItem(
@@ -747,7 +752,7 @@ const EditTournament = () => {
                   // Persist to localStorage
                   // const selectedTeamIds = teams;
                   // const updated = tournaments.map((t) =>
-                  //   String(t.id) === tournamentId
+                  //   String(t.match_id) === tournamentId
                   //     ? {
                   //         ...t,
                   //         teamIds: selectedTeamIds,
@@ -804,10 +809,10 @@ const EditTournament = () => {
                 type="text"
                 value={
                   isEditing
-                    ? matchDetails.id
+                    ? matchDetails.match_id
                     : (() => {
                         const current = tournaments.find(
-                          (t) => String(t.id) === tournamentId,
+                          (t) => String(t.match_id) === tournamentId,
                         );
                         const nextNum = (current?.lastMatchNumber || 0) + 1;
                         return `${tournamentId}_${nextNum}`;
@@ -841,7 +846,7 @@ const EditTournament = () => {
                   border: "1px solid #ccc",
                   fontFamily: "Poppins, sans-serif",
                 }}
-                value={matchDetails.teamA}
+                value={matchDetails.teama_id}
                 onChange={(e) =>
                   setMatchDetails({ ...matchDetails, teamA: e.target.value })
                 }
@@ -849,7 +854,7 @@ const EditTournament = () => {
               >
                 <option value="">Select Team A</option>
                 {teams
-                  .filter((team) => team.team_id !== matchDetails.teamB)
+                  .filter((team) => team.team_id !== matchDetails.teamb_id)
                   .map((team) => (
                     <option key={team.team_id} value={team.team_id}>
                       {team.team_name}
@@ -877,7 +882,7 @@ const EditTournament = () => {
                   border: "1px solid #ccc",
                   fontFamily: "Poppins, sans-serif",
                 }}
-                value={matchDetails.teamB}
+                value={matchDetails.teamb_id}
                 onChange={(e) =>
                   setMatchDetails({ ...matchDetails, teamB: e.target.value })
                 }
@@ -885,7 +890,7 @@ const EditTournament = () => {
               >
                 <option value="">Select Team B</option>
                 {teams
-                  .filter((team) => team.team_id !== matchDetails.teamA)
+                  .filter((team) => team.team_id !== matchDetails.teama_id)
                   .map((team) => (
                     <option key={team.team_id} value={team.team_id}>
                       {team.team_name}
@@ -917,11 +922,11 @@ const EditTournament = () => {
                 onChange={(e) =>
                   setMatchDetails({ ...matchDetails, captainA: e.target.value })
                 }
-                disabled={!matchDetails.teamA}
+                disabled={!matchDetails.teama_id}
               >
                 <option value="">Select Captain</option>
-                {getTeamPlayers(matchDetails.teamA).map((p) => (
-                  <option key={p.id} value={p.id}>
+                {getTeamPlayers(matchDetails.teama_id).map((p) => (
+                  <option key={p.match_id} value={p.match_id}>
                     {p.name}
                   </option>
                 ))}
@@ -951,11 +956,11 @@ const EditTournament = () => {
                 onChange={(e) =>
                   setMatchDetails({ ...matchDetails, captainB: e.target.value })
                 }
-                disabled={!matchDetails.teamB}
+                disabled={!matchDetails.teamb_id}
               >
                 <option value="">Select Captain</option>
-                {getTeamPlayers(matchDetails.teamB).map((p) => (
-                  <option key={p.id} value={p.id}>
+                {getTeamPlayers(matchDetails.teamb_id).map((p) => (
+                  <option key={p.match_id} value={p.match_id}>
                     {p.name}
                   </option>
                 ))}
@@ -982,7 +987,7 @@ const EditTournament = () => {
                   fontFamily: "Poppins, sans-serif",
                   cursor: "not-allowed",
                 }}
-                value={matchDetails.date}
+                value={matchDetails.match_date}
                 disabled
               >
                 <option value="">Select a Date</option>
@@ -1066,7 +1071,7 @@ const EditTournament = () => {
                   setMatchDetails({ ...matchDetails, venueId: e.target.value })
                 }
                 disabled={
-                  !matchDetails.date ||
+                  !matchDetails.match_date ||
                   !matchDetails.startTime ||
                   !matchDetails.endTime ||
                   matchDetails.startTime >= matchDetails.endTime
@@ -1074,8 +1079,8 @@ const EditTournament = () => {
               >
                 <option value="">Select a Venue</option>
                 {getAvailableVenues().map((venue) => (
-                  <option key={venue.id} value={venue.id}>
-                    {venue.id} ({venue.name})
+                  <option key={venue.match_id} value={venue.match_id}>
+                    {venue.match_id} ({venue.name})
                   </option>
                 ))}
               </select>
@@ -1085,9 +1090,9 @@ const EditTournament = () => {
                 type="button"
                 onClick={() => {
                   if (
-                    !matchDetails.teamA ||
-                    !matchDetails.teamB ||
-                    !matchDetails.date ||
+                    !matchDetails.teama_id ||
+                    !matchDetails.teamb_id ||
+                    !matchDetails.match_date ||
                     !matchDetails.startTime ||
                     !matchDetails.endTime ||
                     !matchDetails.venueId
@@ -1095,7 +1100,7 @@ const EditTournament = () => {
                     alert("All fields are required for the match");
                     return;
                   }
-                  if (matchDetails.teamA === matchDetails.teamB) {
+                  if (matchDetails.teama_id === matchDetails.teamb_id) {
                     alert("Team A and Team B must be different");
                     return;
                   }
@@ -1104,7 +1109,7 @@ const EditTournament = () => {
                     return;
                   }
                   // If date is today, ensure start time is after now
-                  const [day, month, year] = matchDetails.date.split("-");
+                  const [day, month, year] = matchDetails.match_date.split("-");
                   const selectedDate = new Date(`${year}-${month}-${day}`);
                   const today = new Date();
                   const isToday =
@@ -1134,17 +1139,17 @@ const EditTournament = () => {
                   // --- End captain validations ---
                   const isNew = !isEditing;
                   const currentTournament = tournaments.find(
-                    (t) => String(t.id) === tournamentId,
+                    (t) => String(t.match_id) === tournamentId,
                   );
-                  let newNum = matchDetails.id;
+                  let newNum = matchDetails.match_id;
                   if (isNew) {
                     newNum = (currentTournament?.lastMatchNumber || 0) + 1;
                   }
                   const matchId = isEditing
-                    ? matchDetails.id
+                    ? matchDetails.match_id
                     : `${tournamentId}_${newNum}`;
                   // Convert dd-mm-yyyy back to yyyy-mm-dd
-                  const [d, m, y] = matchDetails.date.split("-");
+                  const [d, m, y] = matchDetails.match_date.split("-");
                   const formattedDate = `${y}-${m}-${d}`;
                   const newMatch = {
                     ...matchDetails,
@@ -1155,12 +1160,12 @@ const EditTournament = () => {
                   // Prevent duplicate match (same teams, date, and time)
                   const duplicateMatch = matches.some(
                     (m) =>
-                      m.teamA === newMatch.teamA &&
-                      m.teamB === newMatch.teamB &&
-                      m.date === newMatch.date &&
+                      m.teama_id === newMatch.teama_id &&
+                      m.teamb_id === newMatch.teamb_id &&
+                      m.match_date === newMatch.match_date &&
                       m.startTime === newMatch.startTime &&
                       m.endTime === newMatch.endTime &&
-                      (!isEditing || m.id !== matchId), // Skip the current match when editing
+                      (!isEditing || m.match_id !== matchId), // Skip the current match when editing
                   );
                   if (duplicateMatch) {
                     alert(
@@ -1172,16 +1177,16 @@ const EditTournament = () => {
                   const venues =
                     JSON.parse(localStorage.getItem("venues")) || [];
                   const updatedVenues = venues.map((v) =>
-                    String(v.id) === String(matchDetails.venueId) &&
+                    String(v.match_id) === String(matchDetails.venueId) &&
                     v.status === "Available"
                       ? { ...v, status: "Reserved" }
                       : v,
                   );
                   localStorage.setItem("venues", JSON.stringify(updatedVenues));
                   const updatedTournaments = tournaments.map((t) => {
-                    if (String(t.id) !== tournamentId) return t;
+                    if (String(t.match_id) !== tournamentId) return t;
                     const updatedMatches = isEditing
-                      ? t.matches.map((m) => (m.id === matchId ? newMatch : m))
+                      ? t.matches.map((m) => (m.match_id === matchId ? newMatch : m))
                       : [...(t.matches || []), newMatch];
                     return {
                       ...t,
@@ -1194,11 +1199,11 @@ const EditTournament = () => {
                     JSON.stringify(updatedTournaments),
                   );
                   setTournaments(updatedTournaments);
-                  setMatches(
-                    updatedTournaments.find(
-                      (t) => String(t.id) === tournamentId,
-                    ).matches,
-                  );
+                  // setMatches(
+                  //   updatedTournaments.find(
+                  //     (t) => String(t.match_id) === tournamentId,
+                  //   ).matches,
+                  // );
                   setShowMatchModal(false);
                   setMatchDetails({
                     id: "",
@@ -1235,23 +1240,23 @@ const EditTournament = () => {
             </button>
             <h2>Match Details</h2>
             <p>
-              <strong>Match No:</strong> {selectedMatch.id}
+              <strong>Match No:</strong> {selectedMatch.match_id}
             </p>
             <p>
               <strong>Team A:</strong>{" "}
               {teams.find(
-                (t) => String(t.team_id) === String(selectedMatch.teamA),
-              )?.team_name || selectedMatch.teamA}
+                (t) => String(t.team_id) === String(selectedMatch.teama_id),
+              )?.team_name || selectedMatch.teama_id}
             </p>
             <p>
               <strong>Team B:</strong>{" "}
               {teams.find(
-                (t) => String(t.team_id) === String(selectedMatch.teamB),
-              )?.team_name || selectedMatch.teamB}
+                (t) => String(t.team_id) === String(selectedMatch.teamb_id),
+              )?.team_name || selectedMatch.teamb_id}
             </p>
             <p>
               <strong>Date:</strong>{" "}
-              {formatDate(selectedMatch.date).replace(/-/g, "/")}
+              {formatDate(selectedMatch.match_date).replace(/-/g, "/")}
             </p>
             <p>
               <strong>Time:</strong> {selectedMatch.startTime} -{" "}
@@ -1262,24 +1267,24 @@ const EditTournament = () => {
               {(() => {
                 const venue = (
                   JSON.parse(localStorage.getItem("venues")) || []
-                ).find((v) => String(v.id) === String(selectedMatch.venueId));
+                ).find((v) => String(v.match_id) === String(selectedMatch.venueId));
                 return venue ? venue.name : "—";
               })()}
             </p>
             <p>
               <strong>Captain A:</strong>{" "}
               {teams
-                .find((t) => String(t.team_id) === String(selectedMatch.teamA))
+                .find((t) => String(t.team_id) === String(selectedMatch.teama_id))
                 ?.players?.find(
-                  (p) => String(p.id) === String(selectedMatch.captainA),
+                  (p) => String(p.match_id) === String(selectedMatch.captainA),
                 )?.name || "—"}
             </p>
             <p>
               <strong>Captain B:</strong>{" "}
               {teams
-                .find((t) => String(t.team_id) === String(selectedMatch.teamB))
+                .find((t) => String(t.team_id) === String(selectedMatch.teamb_id))
                 ?.players?.find(
-                  (p) => String(p.id) === String(selectedMatch.captainB),
+                  (p) => String(p.match_id) === String(selectedMatch.captainB),
                 )?.name || "—"}
             </p>
           </div>
