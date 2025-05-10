@@ -41,5 +41,8 @@ router.patch('/tournaments/:tournament_id/teams/:team_id', adminController.addTe
 //remove team from tournament
 router.patch('/tournaments/:tournament_id/teams/:team_id/remove', adminController.removeTeamFromTournament)
 
+//update match info
+router.patch('/matches/:match_id', adminController.updateMatch)
+
 module.exports = router;
 

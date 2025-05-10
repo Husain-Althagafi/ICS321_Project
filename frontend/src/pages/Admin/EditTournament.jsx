@@ -634,15 +634,17 @@ const EditTournament = () => {
                       type="button"
                       className="btn-save-match-details"
                       onClick={() => {
-                        const updatedTournaments = tournaments.map((t) =>
-                          String(t.match_id) === tournamentId ? { ...t, matches } : t,
-                        );
-                        setTournaments(updatedTournaments);
-                        // localStorage.setItem(
-                        //   "tournaments",
-                        //   JSON.stringify(updatedTournaments),
-                        //);
-                        alert("Match details saved.");
+                        // //send request to update match details
+                        // axios.patch(`http://localhost:5000/admin/matches/${matchDetails.match_id}`, matchDetails)
+                        // .then((res) => {
+                        //   const updatedMatches = matches.map((m) =>
+                        //     String(m.match_id) === res.data.data.match_id ? res.data.data : m,
+                        //   );
+                        //   setTournaments(updatedMatches);
+                        //   alert("Match details saved.");
+                        // })
+                        // .catch(err => console.error(err))
+
                       }}
                       style={{
                         cursor: "pointer",
@@ -1207,14 +1209,19 @@ const EditTournament = () => {
                     );
                     return;
                   }
-                  // Set venue status to Reserved if it was Available
+
+                  matchDetails.tournament_id = tournamentId
+                  //send request to update match details
+                        axios.patch(`http://localhost:5000/admin/matches/${matchDetails.match_id}`, matchDetails)
+                        .then((res) => {
+                          const updatedMatches = matches.map((m) =>
+                            String(m.match_id) === res.data.data.match_id ? res.data.data : m,
+                          );
+                          setMatches(updatedMatches);
+                          alert("Match details updated.");
+                        })
+                        .catch(err => console.error(err))
                   
-                  const updatedVenues = venues.map((v) =>
-                    String(v.match_id) === String(matchDetails.venue_id) &&
-                    v.status === "Available"
-                      ? { ...v, status: "Reserved" }
-                      : v,
-                  );
                   const updatedTournaments = tournaments.map((t) => {
                     if (String(t.match_id) !== tournamentId) return t;
                     const updatedMatches = isEditing

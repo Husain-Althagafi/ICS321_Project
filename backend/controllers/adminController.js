@@ -314,3 +314,48 @@ exports.addMatchesToTournament = asyncHandler(async(req, res) => {
 
 
 })
+
+
+exports.updateMatch = asyncHandler(async (req, res) => {
+    const match_id = req.params.match_id;
+    const {teama_id, teamb_id , match_date, start_time, end_time, captaina_id, captainb_id, venue_id, tournament_id} = req.body;
+
+    // Validate required fields
+    if (!teama_id|| !teamb_id || !match_date|| !start_time || !end_time || !captaina_id || !captainb_id || !venue_id) {
+        return res.status(400).json({
+            success: false,
+            message: 'Please provide all required fields'
+        });
+    }
+
+    try {
+        const result = await db.query(
+            `UPDATE matches 
+             SET teama_id = $1, teamb_id = $2, match_date = $3, start_time = $4, end_time = $5, captaina_id = $6, captainb_id = $7, venue_id = $8
+             WHERE match_id = $9
+             RETURNING *`,
+            [teama_id, teamb_id , match_date, start_time, end_time, captaina_id, captainb_id, venue_id, tournament_id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: `Match with ID ${match_id} not found`
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Match updated successfully',
+            data: result.rows
+        });
+
+    } catch (error) {
+        console.error('Error updating match:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while updating match',
+            error: error.message
+        });
+    }
+});
