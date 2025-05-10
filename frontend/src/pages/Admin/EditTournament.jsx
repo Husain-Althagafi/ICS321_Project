@@ -7,7 +7,7 @@ import bgImage from "../../assets/images/Illustration 1@4x.png";
 import "../../stylesheets/EditTournament.css";
 import axios from 'axios'
 // Generate round-robin schedule: assign only IDs, teams, and dates; leave captains & venue/time blank
-const scheduleRoundRobin = (teams, dateOptions, tournamentId) => {
+const scheduleRoundRobin = (teams, getDateOptions, tournamentId) => {
   const matches = [];
   const teamIds = []
 
@@ -20,12 +20,12 @@ const scheduleRoundRobin = (teams, dateOptions, tournamentId) => {
   for (let i = 0; i < teamIds.length; i++) {
     for (let j = i + 1; j < teamIds.length; j++) {
       // Cycle through dates
-      const date = dateOptions[slotIndex % dateOptions.length];
+      const date = getDateOptions[slotIndex % getDateOptions.length];
       matches.push({
         match_id: `${tournamentId}_${slotIndex + 1}`,
         teama_id: teamIds[i],
         teamb_id: teamIds[j],
-        match_date: '2025-12-12',   //should be date
+        match_date: date,   //should be date
         start_time: "",
         end_time: "",
         venue_id: "",
@@ -119,11 +119,11 @@ const EditTournament = () => {
     //get all venues
     axios.get(`http://localhost:5000/venues`)
     .then((res) => {
-      setVenues(res.data.data)
+      setAllVenues(res.data.data)
     })
     .catch(err => console.error(err))
     
-    //get all matches in specific tournament
+    //get all matches
     axios.get('http://localhost:5000/matches')
     .then(res => {
       setAllMatches(res.data.data.map(match => ({
@@ -270,7 +270,7 @@ const EditTournament = () => {
     .catch(err => console.error(err))
     
   };
-
+  
   // Utility function to get date options between start and end
   const getDateOptions = (start, end) => {
     const dates = [];
@@ -284,6 +284,7 @@ const EditTournament = () => {
       dates.push(`${day}-${month}-${year}`);
       current.setDate(current.getDate() + 1);
     }
+    console.log(dates)
     return dates;
   };
 
@@ -313,24 +314,17 @@ const EditTournament = () => {
     }
 
     // Convert new match details to comparable formats
-    const newDateFormatted = reverseFormatDate(newDateStr); // Convert dd-mm-yyyy to yyyy-mm-dd
-    const newStartMins = timeToMinutes(newStart);
-    const newEndMins = timeToMinutes(newEnd);
-
-    // Get all matches from all tournaments
-    // const allTournaments =
-    //   JSON.parse(localStorage.getItem("tournaments")) || [];
-    // const allMatches = allTournaments.flatMap((t) => t.matches || []);
+    // const newDateFormatted = reverseFormatDate(newDateStr); // Convert dd-mm-yyyy to yyyy-mm-dd
+    // const newStartMins = timeToMinutes(newStart);
+    // const newEndMins = timeToMinutes(newEnd);
 
     // Filter venues to exclude those with time conflicts
     return allVenues.filter((venue) => {
-      // Always include available venues
-      if (venue.status === "Available") return true;
 
       // For reserved venues, check if there's any conflict with existing matches
       const venueMatches = allMatches.filter(
         (m) =>
-          String(m.venueId) === String(venue.match_id) &&
+          String(m.venue_id) === String(venue.match_id) &&
           // Skip the match we're currently editing
           !(isEditing && m.match_id === editingId),
       );
@@ -341,13 +335,13 @@ const EditTournament = () => {
         if (match.match_date !== newDateFormatted) return false;
 
         // Convert match times to minutes for comparison
-        const matchStartMins = timeToMinutes(match.startTime);
-        const matchEndMins = timeToMinutes(match.endTime);
+        const matchStartMins = timeToMinutes(match.start_time);
+        const matchEndMins = timeToMinutes(match.end_time);
 
         // Check for time overlap
         return hasTimeOverlap(
-          newStartMins,
-          newEndMins,
+          newStart,
+          newEnd,
           matchStartMins,
           matchEndMins,
         );
@@ -361,7 +355,7 @@ const EditTournament = () => {
   dateOptions.forEach((date) => {
     // For each date, filter venues that are Available
     const avail = allVenues.filter((v) => v.status === "Available");
-    venuesByDate[date] = avail.map((v) => ({
+    venuesByDate[date] = allVenues.map((v) => ({
       id: v.match_id,
       availableTimes: ["09:00", "11:00", "13:00", "15:00"], // example fixed slots
     }));
@@ -480,8 +474,8 @@ const EditTournament = () => {
                           >
                             <span>
                               <strong>{teamAName}</strong> vs{" "}
-                              <strong>{teamBName}</strong> ({m.startTime} -{" "}
-                              {m.endTime}, {m.match_date.replace(/-/g, "/")})
+                              <strong>{teamBName}</strong> ({m.start_time} -{" "}
+                              {m.end_time}, {m.match_date.replace(/-/g, "/")})
                             </span>
                             <div style={{ display: "flex", gap: "0.25rem" }}>
                               <button
@@ -753,7 +747,7 @@ const EditTournament = () => {
                   // Auto-generate matches
                   const generated = scheduleRoundRobin(
                     teams,
-                    dateOptions,
+                    getDateOptions(tournament.start_date, tournament.end_date),
                     tournamentId,
                   );
 
@@ -950,7 +944,7 @@ const EditTournament = () => {
               >
                 <option value="">Select Captain</option>
                 {getTeamPlayers(matchDetails.teama_id)?.map((p) => (
-                  <option key={p.match_id} value={p.match_id}>
+                  <option key={p.player_id} value={p.player_id}>
                     {p.player_name}
                   </option>
                 ))}
@@ -984,7 +978,7 @@ const EditTournament = () => {
               >
                 <option value="">Select Captain</option>
                 {getTeamPlayers(matchDetails.teamb_id)?.map((p) => (
-                  <option key={p.match_id} value={p.match_id}>
+                  <option key={p.player_id} value={p.player_id}>
                     {p.player_name}
                   </option>
                 ))}
@@ -1000,22 +994,38 @@ const EditTournament = () => {
             >
               Date:
               <select
-                style={{
-                  flex: 1,
-                  backgroundColor: "#f0f0f0",
-                  color: "#666",
-                  borderRadius: "0.5rem",
-                  padding: "0.5rem 0.25rem",
-                  height: "2.5rem",
-                  border: "1px solid #ccc",
-                  fontFamily: "Poppins, sans-serif",
-                  cursor: "not-allowed",
-                }}
+              style={{
+                flex: 1,
+                backgroundColor: "white",
+                color: "black",
+                borderRadius: "0.5rem",
+                padding: "0.5rem 0.25rem",
+                height: "2.5rem",
+                border: "1px solid #ccc",
+                fontFamily: "Poppins, sans-serif",
+              }}
+
+                // style={{
+                //   flex: 1,
+                //   backgroundColor: "#f0f0f0",
+                //   color: "#666",
+                //   borderRadius: "0.5rem",
+                //   padding: "0.5rem 0.25rem",
+                //   height: "2.5rem",
+                //   border: "1px solid #ccc",
+                //   fontFamily: "Poppins, sans-serif",
+                //   // cursor: "not-allowed",
+                // }}
+                
                 value={matchDetails.match_date}
+                onChange={(e) => {
+                  setMatchDetails({ ...matchDetails, match_date: e.target.value })
+                }
+                }
                 // disabled
               >
                 <option value="">Select a Date</option>
-                {getDateOptions(startDate, endDate).map((date) => (
+                {getDateOptions(tournament.start_date, tournament.end_date).map((date) => (
                   <option key={date} value={date}>
                     {date}
                   </option>
