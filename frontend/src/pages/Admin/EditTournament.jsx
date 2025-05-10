@@ -301,17 +301,11 @@ const EditTournament = () => {
   };
 
   // returns only the venues that are free for the new match's date & time
-  const getAvailableVenues = () => {
-    const {
-      match_date: newDateStr,
-      start_time: newStart,
-      end_time: newEnd,
-      match_id: editingId,
-    } = matchDetails;
+  const getAvailableVenues = (newDateStr, newStart, newEnd, editingId) => {
 
     // If date, start time, or end time is not selected yet, don't perform filtering
     if (!newDateStr || !newStart || !newEnd) {
-      return allVenues.filter((v) => v.status === "Available");
+      return []
     }
 
     // Convert new match details to comparable formats
@@ -320,35 +314,71 @@ const EditTournament = () => {
     // const newEndMins = timeToMinutes(newEnd);
 
     // Filter venues to exclude those with time conflicts
-    return allVenues.filter((venue) => {
 
-      // For reserved venues, check if there's any conflict with existing matches
-      const venueMatches = allMatches.filter(
-        (m) =>
-          String(m.venue_id) === String(venue.match_id) &&
-          // Skip the match we're currently editing
-          !(isEditing && m.match_id === editingId),
-      );
 
-      // Check each match for this venue for conflicts
-      return !venueMatches.some((match) => {
-        // If not on the same date, no conflict
-        if (match.match_date !== newDateFormatted) return false;
-
-        // Convert match times to minutes for comparison
-        const matchStartMins = timeToMinutes(match.start_time);
-        const matchEndMins = timeToMinutes(match.end_time);
-
-        // Check for time overlap
-        return hasTimeOverlap(
-          newStart,
-          newEnd,
-          matchStartMins,
-          matchEndMins,
-        );
-      });
+    const conflictingMatches = allMatches.filter(match => {
+      // Skip the current match we're checking
+      if (match.match_id === editingId) return false;
+      
+      // If dates don't match, no conflict
+      if (match.match_date !== newDateStr) return false;
+      
+      // If either match is missing time info, assume no conflict
+      if (!match.start_time || !match.end_time || !newStart || !newEnd) return false;
+      
+      // Convert times to minutes for comparison
+      const matchStart = timeToMinutes(match.start_time);
+      const matchEnd = timeToMinutes(match.end_time);
+      const newStart = timeToMinutes(newStart);
+      const newEnd = timeToMinutes(newEnd);
+      
+      // Check for time overlap
+      return (newStart < matchEnd && newEnd > matchStart);
     });
-  };
+
+    const bookedVenueIds = conflictingMatches
+    .map(match => match.venue_id)
+    .filter(venueId => venueId !== null);
+
+  // 3. Return venues that aren't booked
+  return allVenues.filter(venue => 
+    !bookedVenueIds.includes(venue.venue_id)
+  );
+}
+
+
+
+
+    //////////
+  //   return allVenues.filter((venue) => {
+
+  //     // For reserved venues, check if there's any conflict with existing matches
+  //     const venueMatches = allMatches.filter(
+  //       (m) =>
+  //         String(m.venue_id) === String(venue.match_id) &&
+  //         // Skip the match we're currently editing
+  //         !(isEditing && m.match_id === editingId),
+  //     );
+
+  //     // Check each match for this venue for conflicts
+  //     return !venueMatches.some((match) => {
+  //       // If not on the same date, no conflict
+  //       if (match.match_date !== newDateStr) return false;
+
+  //       // Convert match times to minutes for comparison
+  //       const matchStartMins = timeToMinutes(match.start_time);
+  //       const matchEndMins = timeToMinutes(match.end_time);
+
+  //       // Check for time overlap
+  //       return hasTimeOverlap(
+  //         newStart,
+  //         newEnd,
+  //         matchStartMins,
+  //         matchEndMins,
+  //       );
+  //     });
+  //   });
+  // };
 
   // Prepare venues available times per date
   const dateOptions = getDateOptions(startDate, endDate);
@@ -1115,7 +1145,7 @@ const EditTournament = () => {
                 }
               >
                 <option value="">Select a Venue</option>
-                {getAvailableVenues().map((venue) => (
+                {getAvailableVenues(matchDetails.match_date, matchDetails.start_time, matchDetails.end_time, matchDetails.match_id).map((venue) => (
                   <option key={venue.venue_id} value={venue.venue_id}>
                     {venue.venue_id} ({venue.venue_name})
                   </option>
