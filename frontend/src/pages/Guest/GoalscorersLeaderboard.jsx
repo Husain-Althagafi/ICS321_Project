@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import GuestSidebar from "../../components/GuestSidebar";
 import "../../stylesheets/GoalscorersLeaderboard.css";
@@ -14,7 +15,6 @@ const GoalscorersLeaderboard = () => {
 
   const [matches, setMatches] = useState([]);
   const [availableTeams, setAvailableTeams] = useState([]);
-  const [venues, setVenues] = useState([]);
   const [scorers, setScorers] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
 
@@ -22,11 +22,76 @@ const GoalscorersLeaderboard = () => {
   const [isAscending, setIsAscending] = useState(false);
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("tournaments")) || [];
-    setAvailableTeams(JSON.parse(localStorage.getItem("teams")) || []);
-    setVenues(JSON.parse(localStorage.getItem("venues")) || []);
-    const tour = stored.find((t) => String(t.id) === tournamentId);
-    setMatches(tour?.matches || []);
+    const loadData = async () => {
+      try {
+        const [
+          tournRes,
+          matchesRes,
+          matchGoalsRes,
+          goalEventsRes,
+          playersRes,
+          teamsRes
+        ] = await Promise.all([
+          axios.get("http://localhost:5000/guest/tournaments"),
+          axios.get("http://localhost:5000/guest/matches"),
+          axios.get("http://localhost:5000/guest/match-goals"),
+          axios.get("http://localhost:5000/guest/goal-events"),
+          axios.get("http://localhost:5000/guest/players"),
+          axios.get("http://localhost:5000/guest/teams"),
+        ]);
+        const tournaments = tournRes.data.success ? tournRes.data.data : [];
+        const allMatches = matchesRes.data.success ? matchesRes.data.data : [];
+        const matchGoals = matchGoalsRes.data.success ? matchGoalsRes.data.data : [];
+        const goalEvents = goalEventsRes.data.success ? goalEventsRes.data.data : [];
+        const playersData = playersRes.data.success ? playersRes.data.data : [];
+        const teamsData = teamsRes.data.success ? teamsRes.data.data : [];
+
+        // Build available teams with players
+        const teamsWithPlayers = teamsData.map(team => ({
+          ...team,
+          players: playersData.filter(p => p.team_id === team.team_id)
+            .map(p => ({
+              id: p.player_id,
+              name: p.player_name,
+              jerseyNumber: p.jersey_number,
+              position: p.position,
+              isSubstitute: p.is_substitute,
+              team_id: p.team_id,
+            }))
+        }));
+        setAvailableTeams(teamsWithPlayers);
+
+        // Build lookup maps for goals
+        const goalTimesByMatch = goalEvents.reduce((acc, ev) => {
+          acc[ev.match_id] = acc[ev.match_id] || {};
+          acc[ev.match_id][ev.player_id] = acc[ev.match_id][ev.player_id] || [];
+          acc[ev.match_id][ev.player_id].push(ev.event_time);
+          return acc;
+        }, {});
+        const goalCountByMatch = matchGoals.reduce((acc, mg) => {
+          acc[mg.match_id] = acc[mg.match_id] || {};
+          acc[mg.match_id][mg.player_id] = mg.goal_count;
+          return acc;
+        }, {});
+
+        // Filter matches for this tournament
+        const tour = tournaments.find(t => String(t.tournament_id) === tournamentId);
+        const tournamentMatches = tour
+          ? allMatches.filter(m => String(m.tournament_id) === tournamentId)
+          : [];
+        const matchesWithEvents = tournamentMatches.map(m => ({
+          ...m,
+          goals: goalCountByMatch[m.match_id] || {},
+          goalTimes: goalTimesByMatch[m.match_id] || {},
+          teamA_name: m.teamA_name,
+          teamB_name: m.teamB_name,
+        }));
+        setMatches(matchesWithEvents);
+      } catch (err) {
+        console.error("Error loading leaderboard data:", err);
+      }
+    };
+    loadData();
   }, [tournamentId]);
 
   useEffect(() => {
@@ -91,24 +156,11 @@ const GoalscorersLeaderboard = () => {
               <button
                 className="return-button-goalscorers"
                 type="button"
-                onClick={() => navigate("/guest/view-tournament-table")}
+                onClick={() => navigate("/guest/top-goalscorers")}
               >
                 ← Back to Tournaments
               </button>
             </div>
-            {/* <button
-              className="sort-button"
-              style={{
-                marginBottom: "1rem",
-                width: "fit-content",
-              }}
-              onClick={() => setIsAscending(!isAscending)}
-            >
-              Sort by Goals: {" "}
-              <span className="winner-gradient">
-                {isAscending ? "Ascending" : "Descending"}
-              </span>
-            </button> */}
           </div>
 
           <div className="top-goalscorers-grid scrollable">
@@ -215,10 +267,10 @@ const GoalscorersLeaderboard = () => {
                           )
                           .map((match, index) => {
                             const teamA = availableTeams.find(
-                              (t) => String(t.team_id) === String(match.teamA),
+                              (t) => String(t.team_id) === String(match.teama_id),
                             );
                             const teamB = availableTeams.find(
-                              (t) => String(t.team_id) === String(match.teamB),
+                              (t) => String(t.team_id) === String(match.teamb_id),
                             );
                             const playerTeam =
                               teamA &&
@@ -233,7 +285,7 @@ const GoalscorersLeaderboard = () => {
                                   ? teamB.team_name
                                   : "Unknown Team";
 
-                            const matchTitle = `${teamA?.team_name || match.teamA} vs ${teamB?.team_name || match.teamB}`;
+                            const matchTitle = `${match.teamA_name || teamA?.team_name || ""} vs ${match.teamB_name || teamB?.team_name || ""}`;
                             const goalCount = match.goals[player.id];
                             const goalTimes =
                               match.goalTimes && match.goalTimes[player.id]
@@ -246,7 +298,7 @@ const GoalscorersLeaderboard = () => {
                               <li key={index} className="goal-match-entry">
                                 <div>
                                   <strong>Match:</strong> {matchTitle} (
-                                  {new Date(match.date).toLocaleDateString(
+                                  {new Date(match.match_date).toLocaleDateString(
                                     "en-GB",
                                   )}
                                   )

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
-// import sealImage from '../../assets/icons/KFUPM Seal White.png';
-import bgImage from "../../assets/images/Illustration 1@4x.png";
 import "../../stylesheets/Tournaments_MatchResults.css";
 import GuestSidebar from "../../components/GuestSidebar";
 
@@ -15,30 +14,21 @@ const Tournaments_MatchResults = () => {
   const [tournaments, setTournaments] = useState([]);
 
   useEffect(() => {
-    const loadTournaments = () => {
-      const stored = localStorage.getItem("tournaments");
-      if (stored) {
-        setTournaments(JSON.parse(stored));
+    const loadTournaments = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/guest/tournaments");
+        const data = response.data;
+        if (data.success) {
+          setTournaments(data.data);
+        } else {
+          console.error("Failed to load tournaments:", data.error);
+        }
+      } catch (err) {
+        console.error("Error fetching tournaments:", err);
       }
     };
-
     loadTournaments();
-
-    window.addEventListener("focus", loadTournaments);
-    return () => window.removeEventListener("focus", loadTournaments);
   }, []);
-
-  // const handleDeleteTournament = (tournamentId) => {
-  //   const confirmed = window.confirm(
-  //     "Are you sure you want to delete this tournament?",
-  //   );
-  //   if (!confirmed) return;
-  //   const updated = tournaments.filter(
-  //     (t) => String(t.id) !== String(tournamentId),
-  //   );
-  //   localStorage.setItem("tournaments", JSON.stringify(updated));
-  //   setTournaments(updated);
-  // };
 
   return (
     <div className="guest-home">
@@ -54,7 +44,7 @@ const Tournaments_MatchResults = () => {
           <div className="tournament-grid scrollable">
             {tournaments.length > 0 ? (
               tournaments.map((tournament) => (
-                <div key={tournament.id} className="tournament-card">
+                <div key={tournament.tournament_id} className="tournament-card">
                   <div
                     className="tournament-card-header"
                     style={{
@@ -72,17 +62,17 @@ const Tournaments_MatchResults = () => {
                   </div>
                   <p>
                     <strong>Start Date:</strong>{" "}
-                    {new Date(tournament.startDate).toLocaleDateString("en-GB")}
+                    {new Date(tournament.start_date).toLocaleDateString("en-GB")}
                   </p>
                   <p>
                     <strong>End Date:</strong>{" "}
-                    {new Date(tournament.endDate).toLocaleDateString("en-GB")}
+                    {new Date(tournament.end_date).toLocaleDateString("en-GB")}
                   </p>
                   <button
                     type="button"
                     className="edit-button"
                     onClick={() =>
-                      navigate(`/guest/match-results/${tournament.id}/matches`)
+                      navigate(`/guest/match-results/${tournament.tournament_id}/matches`)
                     }
                   >
                     View

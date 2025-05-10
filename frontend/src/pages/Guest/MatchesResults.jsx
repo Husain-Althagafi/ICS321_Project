@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import GuestSidebar from "../../components/GuestSidebar";
 import "../../stylesheets/MatchesResults.css";
 import downIcon from "../../assets/icons/down.png";
+import axios from "axios";
 
 const MatchesResults = () => {
   // Helper to format yyyy-mm-dd to dd-mm-yyyy
@@ -33,23 +34,100 @@ const MatchesResults = () => {
   const [isAscending, setIsAscending] = useState(false);
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("tournaments")) || [];
-    setAvailableTeams(JSON.parse(localStorage.getItem("teams")) || []);
-    setVenues(JSON.parse(localStorage.getItem("venues")) || []);
-    const tour = stored.find((t) => String(t.id) === tournamentId);
-    setMatches(tour?.matches || []);
-  }, [tournamentId]);
+    const loadData = async () => {
+      try {
+        const [
+          matchesRes,
+          teamsRes,
+          venuesRes,
+          playersRes,
+          yellowRes,
+          redRes,
+          goalEventsRes,
+          matchGoalsRes,
+        ] = await Promise.all([
+          axios.get("http://localhost:5000/guest/matches"),
+          axios.get("http://localhost:5000/guest/teams"),
+          axios.get("http://localhost:5000/guest/venues"),
+          axios.get("http://localhost:5000/guest/players"),
+          axios.get("http://localhost:5000/guest/cards/yellow"),
+          axios.get("http://localhost:5000/guest/cards/red"),
+          axios.get("http://localhost:5000/guest/goal-events"),
+          axios.get("http://localhost:5000/guest/match-goals"),
+        ]);
+
+        const matchesData = matchesRes.data.success ? matchesRes.data.data : [];
+        const teamsData = teamsRes.data.success ? teamsRes.data.data : [];
+        const venuesData = venuesRes.data.success ? venuesRes.data.data : [];
+        const playersData = playersRes.data.success ? playersRes.data.data : [];
+        const yellowEvents = yellowRes.data.success ? yellowRes.data.data : [];
+        const redEvents = redRes.data.success ? redRes.data.data : [];
+        const goalEvents = goalEventsRes.data.success ? goalEventsRes.data.data : [];
+        const matchGoals = matchGoalsRes.data.success ? matchGoalsRes.data.data : [];
+
+        // Build teams with nested players
+        const teamsWithPlayers = teamsData.map((team) => ({
+          ...team,
+          players: playersData.filter((p) => p.team_id === team.team_id),
+        }));
+
+        setAvailableTeams(teamsWithPlayers);
+        setVenues(venuesData);
+
+        // Build goalTimesByMatch: { [match_id]: { [player_id]: [event_time, ...] } }
+        const goalTimesByMatch = goalEvents.reduce((acc, ev) => {
+          acc[ev.match_id] = acc[ev.match_id] || {};
+          acc[ev.match_id][ev.player_id] = acc[ev.match_id][ev.player_id] || [];
+          acc[ev.match_id][ev.player_id].push(ev.event_time);
+          return acc;
+        }, {});
+        // Build goalCountByMatch: { [match_id]: { [player_id]: goal_count } }
+        const goalCountByMatch = matchGoals.reduce((acc, mg) => {
+          acc[mg.match_id] = acc[mg.match_id] || {};
+          acc[mg.match_id][mg.player_id] = mg.goal_count;
+          return acc;
+        }, {});
+
+        // Filter matches for this tournament
+        const tournamentMatches = matchesData.filter(
+          (m) => String(m.tournament_id) === tournamentId
+        );
+        // Attach card events and goalTimes/goals to each match object
+        const matchesWithEvents = tournamentMatches.map((m) => {
+          const yellowCards = yellowEvents
+            .filter((ev) => ev.match_id === m.match_id)
+            .map((ev) => ev.event_time);
+          const redCards = redEvents
+            .filter((ev) => ev.match_id === m.match_id)
+            .map((ev) => ev.event_time);
+          return {
+            ...m,
+            yellowCards,
+            redCards,
+            goalTimes: goalTimesByMatch[m.match_id] || {},
+            goals: goalCountByMatch[m.match_id] || {},
+          };
+        });
+        setMatches(matchesWithEvents);
+
+      } catch (err) {
+        console.error("Error loading data:", err);
+        navigate("/guest/match-results/tournaments");
+      }
+    };
+    loadData();
+  }, [tournamentId, navigate]);
 
   // Sort matches by date, then time; equal entries retain original order
   const sortedMatches = [...matches].sort((a, b) => {
-    // Primary: date
+    // Primary: match_date
     const dateDiff = isAscending
-      ? a.date.localeCompare(b.date)
-      : b.date.localeCompare(a.date);
+      ? (a.match_date || "").localeCompare(b.match_date || "")
+      : (b.match_date || "").localeCompare(a.match_date || "");
     if (dateDiff !== 0) return dateDiff;
-    // Secondary: startTime
-    const timeA = a.startTime || "";
-    const timeB = b.startTime || "";
+    // Secondary: start_time
+    const timeA = a.start_time || "";
+    const timeB = b.start_time || "";
     const timeDiff = isAscending
       ? timeA.localeCompare(timeB)
       : timeB.localeCompare(timeA);
@@ -58,7 +136,7 @@ const MatchesResults = () => {
     return 0;
   });
   const completedMatches = sortedMatches.filter(
-    (m) => m.scoreA != null && m.scoreB != null,
+    (m) => m.scorea != null && m.scoreb != null
   );
 
   return (
@@ -102,28 +180,31 @@ const MatchesResults = () => {
             {completedMatches.length > 0 ? (
               completedMatches.map((m) => {
                 const venueName =
-                  venues.find((v) => String(v.id) === String(m.venueId))
-                    ?.name || "Unknown";
+                  venues.find((v) => String(v.venue_id) === String(m.venue_id))
+                    ?.venue_name || "Unknown";
                 let computedWinner;
-                if (m.scoreA == null || m.scoreB == null) {
+                if (m.scorea == null || m.scoreb == null) {
                   computedWinner = "Match not completed";
                 } else {
                   computedWinner =
-                    m.winner ||
-                    (m.scoreA > m.scoreB
+                    m.winner_team_id
                       ? availableTeams.find(
-                          (t) => String(t.team_id) === String(m.teamA),
-                        )?.team_name || m.teamA
-                      : m.scoreB > m.scoreA
-                        ? availableTeams.find(
-                            (t) => String(t.team_id) === String(m.teamB),
-                          )?.team_name || m.teamB
-                        : "Draw");
+                          (t) => String(t.team_id) === String(m.winner_team_id)
+                        )?.team_name || m.winner_team_id
+                      : (m.scorea > m.scoreb
+                          ? availableTeams.find(
+                              (t) => String(t.team_id) === String(m.teama_id),
+                            )?.team_name || m.teama_id
+                          : m.scoreb > m.scorea
+                            ? availableTeams.find(
+                                (t) => String(t.team_id) === String(m.teamb_id),
+                              )?.team_name || m.teamb_id
+                            : "Draw");
                 }
                 const motmName =
                   availableTeams
                     .flatMap((t) => t.players || [])
-                    .find((p) => p.id === m.motmPlayerId)?.name || "N/A";
+                    .find((p) => p.id === m.motm_player_id)?.name || "N/A";
                 // Compute yellow card details and count
                 let yellowDetails;
                 let yellowCount;
@@ -168,13 +249,13 @@ const MatchesResults = () => {
                 // Get player IDs for each team
                 const teamAPlayerIds = (
                   availableTeams.find(
-                    (t) => String(t.team_id) === String(m.teamA),
+                    (t) => String(t.team_id) === String(m.teama_id),
                   )?.players || []
                 ).map((p) => p.id);
 
                 const teamBPlayerIds = (
                   availableTeams.find(
-                    (t) => String(t.team_id) === String(m.teamB),
+                    (t) => String(t.team_id) === String(m.teamb_id),
                   )?.players || []
                 ).map((p) => p.id);
                 // Filter for player IDs with goals for each team
@@ -189,7 +270,7 @@ const MatchesResults = () => {
                   )
                   .map(([pid]) => pid);
                 return (
-                  <div key={m.id} className="match-results-card">
+                  <div key={m.match_id} className="match-results-card">
                     <div
                       className="match-results-card-header"
                       style={{
@@ -204,14 +285,14 @@ const MatchesResults = () => {
                       >
                         <span className="team-left-gradient">
                           {availableTeams.find(
-                            (t) => String(t.team_id) === String(m.teamA),
-                          )?.team_name || m.teamA}
+                            (t) => String(t.team_id) === String(m.teama_id),
+                          )?.team_name || m.teama_id}
                         </span>{" "}
                         vs{" "}
                         <span className="team-right-gradient">
                           {availableTeams.find(
-                            (t) => String(t.team_id) === String(m.teamB),
-                          )?.team_name || m.teamB}
+                            (t) => String(t.team_id) === String(m.teamb_id),
+                          )?.team_name || m.teamb_id}
                         </span>{" "}
                         {computedWinner === "Match not completed" ? (
                           <> (Match Not Completed) </>
@@ -244,7 +325,7 @@ const MatchesResults = () => {
                           className="match-date"
                           style={{ marginRight: "0.5rem", fontWeight: "bold" }}
                         >
-                          {formatDate(m.date)}
+                          {formatDate(m.match_date)}
                         </span>
                         <button
                           type="button"
@@ -260,17 +341,17 @@ const MatchesResults = () => {
                             justifyContent: "center",
                           }}
                           onClick={() =>
-                            setExpandedId(expandedId === m.id ? null : m.id)
+                            setExpandedId(expandedId === m.match_id ? null : m.match_id)
                           }
                         >
                           <img
                             src={downIcon}
-                            alt={expandedId === m.id ? "Collapse" : "Expand"}
+                            alt={expandedId === m.match_id ? "Collapse" : "Expand"}
                             style={{
                               width: "1.5rem",
                               height: "1.5rem",
                               transform:
-                                expandedId === m.id
+                                expandedId === m.match_id
                                   ? "rotate(180deg)"
                                   : "rotate(0deg)",
                               transition: "transform 0.3s ease",
@@ -282,8 +363,8 @@ const MatchesResults = () => {
                     <div
                       className="match-details-expanded"
                       style={{
-                        padding: expandedId === m.id ? "0.5rem 1rem" : "0 1rem",
-                        maxHeight: expandedId === m.id ? "20rem" : "0",
+                        padding: expandedId === m.match_id ? "0.5rem 1rem" : "0 1rem",
+                        maxHeight: expandedId === m.match_id ? "20rem" : "0",
                         overflow: "hidden",
                         transition: "max-height 0.5s ease, padding 0.5s ease",
                         color: "black",
@@ -294,7 +375,7 @@ const MatchesResults = () => {
                           <strong>Venue:</strong> {venueName}
                         </p>
                         <p>
-                          <strong>Time:</strong> {m.startTime} - {m.endTime}
+                          <strong>Time:</strong> {m.start_time} - {m.end_time}
                         </p>
                         <p>
                           <strong>Score:</strong> {/* Team A score */}
@@ -305,20 +386,20 @@ const MatchesResults = () => {
                               marginRight: "0.25rem",
                             }}
                             onMouseEnter={() =>
-                              m.scoreA > 0 && setHoveredScoreAId(m.id)
+                              m.scorea > 0 && setHoveredScoreAId(m.match_id)
                             }
                             onMouseLeave={() => setHoveredScoreAId(null)}
                           >
                             <span
                               style={{
                                 textDecoration:
-                                  m.scoreA > 0 ? "underline" : "none",
-                                cursor: m.scoreA > 0 ? "help" : "default",
+                                  m.scorea > 0 ? "underline" : "none",
+                                cursor: m.scorea > 0 ? "help" : "default",
                               }}
                             >
-                              {m.scoreA}
+                              {m.scorea}
                             </span>
-                            {hoveredScoreAId === m.id && (
+                            {hoveredScoreAId === m.match_id && (
                               <div
                                 style={{
                                   position: "absolute",
@@ -366,20 +447,20 @@ const MatchesResults = () => {
                               marginLeft: "0.25rem",
                             }}
                             onMouseEnter={() =>
-                              m.scoreB > 0 && setHoveredScoreBId(m.id)
+                              m.scoreb > 0 && setHoveredScoreBId(m.match_id)
                             }
                             onMouseLeave={() => setHoveredScoreBId(null)}
                           >
                             <span
                               style={{
                                 textDecoration:
-                                  m.scoreB > 0 ? "underline" : "none",
-                                cursor: m.scoreB > 0 ? "help" : "default",
+                                  m.scoreb > 0 ? "underline" : "none",
+                                cursor: m.scoreb > 0 ? "help" : "default",
                               }}
                             >
-                              {m.scoreB}
+                              {m.scoreb}
                             </span>
-                            {hoveredScoreBId === m.id && (
+                            {hoveredScoreBId === m.match_id && (
                               <div
                                 style={{
                                   position: "absolute",
@@ -430,7 +511,7 @@ const MatchesResults = () => {
                               position: "relative",
                             }}
                             onMouseEnter={() =>
-                              hasYellow && setHoveredYellowId(m.id)
+                              hasYellow && setHoveredYellowId(m.match_id)
                             }
                             onMouseLeave={() =>
                               hasYellow && setHoveredYellowId(null)
@@ -446,7 +527,7 @@ const MatchesResults = () => {
                             >
                               {yellowCount}
                             </span>
-                            {hasYellow && hoveredYellowId === m.id && (
+                            {hasYellow && hoveredYellowId === m.match_id && (
                               <div
                                 style={{
                                   position: "absolute",
@@ -487,7 +568,7 @@ const MatchesResults = () => {
                               display: "inline-block",
                               position: "relative",
                             }}
-                            onMouseEnter={() => hasRed && setHoveredRedId(m.id)}
+                            onMouseEnter={() => hasRed && setHoveredRedId(m.match_id)}
                             onMouseLeave={() => hasRed && setHoveredRedId(null)}
                           >
                             <span
@@ -498,7 +579,7 @@ const MatchesResults = () => {
                             >
                               {redCount}
                             </span>
-                            {hasRed && hoveredRedId === m.id && (
+                            {hasRed && hoveredRedId === m.match_id && (
                               <div
                                 style={{
                                   position: "absolute",

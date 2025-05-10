@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-// import sealImage from '../../assets/icons/KFUPM Seal White.png';
-import bgImage from "../../assets/images/Illustration 1@4x.png";
 import "../../stylesheets/TournamentsTables.css";
 import GuestSidebar from "../../components/GuestSidebar";
+import axios from "axios";
 
 const TournamentsTables = () => {
   const navigate = useNavigate();
@@ -13,12 +12,9 @@ const TournamentsTables = () => {
   const formattedName = `${first.charAt(0).toUpperCase() + first.slice(1)} ${last.charAt(0).toUpperCase() + last.slice(1)}`;
 
   const [tournaments, setTournaments] = useState([]);
-  const [teamsList, setTeamsList] = useState([]);
 
   const { tournamentId } = useParams();
-  const selectedTournament = tournaments.find(
-    (t) => String(t.id) === String(tournamentId),
-  );
+  const selectedTournament = tournaments[0];
 
   // Compute standings/stats for each team in the selected tournament
   const standings =
@@ -30,11 +26,11 @@ const TournamentsTables = () => {
         gf = 0,
         ga = 0;
       (selectedTournament.matches || []).forEach((m) => {
-        if (m.teamA === teamId || m.teamB === teamId) {
-          if (m.scoreA != null && m.scoreB != null) {
+        if (m.teama_id === teamId || m.teamb_id === teamId) {
+          if (m.scorea != null && m.scoreb != null) {
             played++;
-            const teamScore = m.teamA === teamId ? m.scoreA : m.scoreB;
-            const oppScore = m.teamA === teamId ? m.scoreB : m.scoreA;
+            const teamScore = m.teama_id === teamId ? m.scorea : m.scoreb;
+            const oppScore = m.teama_id === teamId ? m.scoreb : m.scorea;
             gf += teamScore;
             ga += oppScore;
             if (teamScore > oppScore) won++;
@@ -59,36 +55,47 @@ const TournamentsTables = () => {
   standings.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
 
   const allMatchesCompleted = selectedTournament?.matches?.every(
-    (m) => m.scoreA != null && m.scoreB != null,
+    (m) => m.scorea != null && m.scoreb != null,
   );
 
   useEffect(() => {
-    const loadTournaments = () => {
-      const stored = localStorage.getItem("tournaments");
-      if (stored) {
-        setTournaments(JSON.parse(stored));
+    const loadData = async () => {
+      try {
+        const [tournRes, tournTeamsRes, matchesRes] = await Promise.all([
+          axios.get("http://localhost:5000/guest/tournaments"),
+          axios.get("http://localhost:5000/guest/tournament-teams"),
+          axios.get("http://localhost:5000/guest/matches"),
+        ]);
+        const tournData = tournRes.data.success ? tournRes.data.data : [];
+        const tournTeamsData = tournTeamsRes.data.success ? tournTeamsRes.data.data : [];
+        const matchesData = matchesRes.data.success ? matchesRes.data.data : [];
+        setTournaments(tournData);
+        // Filter tournament teams for this tournament
+        const tournamentTeams = tournTeamsData.filter(
+          (tt) => String(tt.tournament_id) === String(tournamentId)
+        );
+        const teamIds = tournamentTeams.map((tt) => tt.team_id);
+        const teamNameMap = Object.fromEntries(
+          tournamentTeams.map((tt) => [String(tt.team_id), tt.team_name])
+        );
+        // Filter matches for this tournament
+        const tournamentMatches = matchesData.filter(
+          (m) => String(m.tournament_id) === tournamentId
+        );
+        // Attach matches, teamIds and teamNameMap to selectedTournament-like object
+        const tour = tournData.find(
+          (t) => String(t.tournament_id) === String(tournamentId)
+        ) || {};
+        tour.matches = tournamentMatches;
+        tour.teamIds = teamIds;
+        tour.teamNameMap = teamNameMap;
+        setTournaments([tour]); // so selectedTournament is from state
+      } catch (err) {
+        console.error("Error loading tournaments data:", err);
       }
-      setTeamsList(JSON.parse(localStorage.getItem("teams")) || []);
     };
-
-    loadTournaments();
-
-    window.addEventListener("focus", loadTournaments);
-    return () => window.removeEventListener("focus", loadTournaments);
-  }, []);
-
-  // const handleDeleteTournament = (tournamentId) => {
-  //   const confirmed = window.confirm(
-  //     "Are you sure you want to delete this tournament?",
-  //   );
-  //   if (!confirmed) return;
-  //   const updated = tournaments.filter(
-  //     (t) => String(t.id) !== String(tournamentId),
-  //   );
-  //   localStorage.setItem("tournaments", JSON.stringify(updated));
-  //   setTournaments(updated);
-  // };
-
+    loadData();
+  }, [tournamentId]);
   return (
     <div className="guest-home">
       <GuestSidebar initials={initials} formattedName={formattedName} />
@@ -181,10 +188,7 @@ const TournamentsTables = () => {
                             };
                           }
                         }
-                        const team = teamsList.find(
-                          (t) => String(t.team_id) === String(row.teamId),
-                        );
-                        const name = team?.team_name || row.teamId;
+                        const name = selectedTournament.teamNameMap[String(row.teamId)] || row.teamId;
                         return (
                           <tr key={row.teamId} style={rowStyle}>
                             <td>{index + 1}</td>
@@ -211,11 +215,6 @@ const TournamentsTables = () => {
             <p style={{ color: "black" }}>Tournament not found.</p>
           )}
         </section>
-        {/* <img 
-          src={sealImage} 
-          alt="KFUPM Seal" 
-          className="vertical-seal" 
-        /> */}
       </main>
     </div>
   );

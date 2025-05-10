@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import GuestSidebar from "../../components/GuestSidebar";
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from "../../assets/images/Illustration 1@4x.png";
@@ -15,28 +16,21 @@ const BrowseTeams = () => {
   const [teams, setTeams] = useState([]);
 
   useEffect(() => {
-    const loadTeams = () => {
-      const stored = localStorage.getItem("teams");
-      if (stored) {
-        setTeams(JSON.parse(stored));
+    const loadTeams = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/guest/teams");
+        const json = response.data;
+        if (json.success) {
+          setTeams(json.data);
+        } else {
+          console.error("Failed to load teams:", json.error);
+        }
+      } catch (err) {
+        console.error("Error fetching teams:", err);
       }
     };
-
-    loadTeams(); // Load initially
-
-    window.addEventListener("focus", loadTeams);
-    return () => window.removeEventListener("focus", loadTeams);
+    loadTeams();
   }, []);
-
-  const handleDeleteTeam = (teamId) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this team?",
-    );
-    if (!confirmed) return;
-    const updated = teams.filter((t) => String(t.team_id) !== String(teamId));
-    localStorage.setItem("teams", JSON.stringify(updated));
-    setTeams(updated);
-  };
 
   return (
     <div className="guest-home">

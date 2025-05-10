@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from "../../assets/images/Illustration 1@4x.png";
 import "../../stylesheets/Tournaments_GoalscorersLeaderboard.css";
@@ -15,17 +16,19 @@ const Tournaments_GoalscorersLeaderboard = () => {
   const [tournaments, setTournaments] = useState([]);
 
   useEffect(() => {
-    const loadTournaments = () => {
-      const stored = localStorage.getItem("tournaments");
-      if (stored) {
-        setTournaments(JSON.parse(stored));
+    const loadTournaments = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/guest/tournaments");
+        if (response.data.success) {
+          setTournaments(response.data.data);
+        } else {
+          console.error("Failed to load tournaments:", response.data.error);
+        }
+      } catch (err) {
+        console.error("Error fetching tournaments:", err);
       }
     };
-
     loadTournaments();
-
-    window.addEventListener("focus", loadTournaments);
-    return () => window.removeEventListener("focus", loadTournaments);
   }, []);
 
   // const handleDeleteTournament = (tournamentId) => {
@@ -54,7 +57,7 @@ const Tournaments_GoalscorersLeaderboard = () => {
           <div className="tournament-grid scrollable">
             {tournaments.length > 0 ? (
               tournaments.map((tournament) => (
-                <div key={tournament.id} className="tournament-card">
+                <div key={tournament.tournament_id} className="tournament-card">
                   <div
                     className="tournament-card-header"
                     style={{
@@ -72,17 +75,17 @@ const Tournaments_GoalscorersLeaderboard = () => {
                   </div>
                   <p>
                     <strong>Start Date:</strong>{" "}
-                    {new Date(tournament.startDate).toLocaleDateString("en-GB")}
+                    {new Date(tournament.start_date).toLocaleDateString("en-GB")}
                   </p>
                   <p>
                     <strong>End Date:</strong>{" "}
-                    {new Date(tournament.endDate).toLocaleDateString("en-GB")}
+                    {new Date(tournament.end_date).toLocaleDateString("en-GB")}
                   </p>
                   <button
                     type="button"
                     className="tournament-view-button"
                     onClick={() =>
-                      navigate(`/guest/top-goalscorers/${tournament.id}`)
+                      navigate(`/guest/top-goalscorers/${tournament.tournament_id}`)
                     }
                   >
                     View

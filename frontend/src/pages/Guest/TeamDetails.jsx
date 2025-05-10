@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import GuestSidebar from "../../components/GuestSidebar";
-import DeleteTeamButton from "../../components/DeleteTeamButton";
-// import sealImage from '../../assets/icons/KFUPM Seal White.png';
-import bgImage from "../../assets/images/Illustration 1@4x.png";
 import "../../stylesheets/TeamDetails.css";
 import yellowCardIcon from "../../assets/icons/yellow_card.svg";
 import redCardIcon from "../../assets/icons/red_card.png";
@@ -16,16 +14,11 @@ const TeamDetails = () => {
   const initials = `${first[0]}${last[0]}`.toUpperCase();
   const formattedName = `${first.charAt(0).toUpperCase() + first.slice(1)} ${last.charAt(0).toUpperCase() + last.slice(1)}`;
 
-  const [teams, setTeams] = useState(() => {
-    const stored = localStorage.getItem("teams");
-    return stored ? JSON.parse(stored) : [];
-  });
+  const [teams, setTeams] = useState([]);
   const [teamName, setTeamName] = useState("");
   const [coachName, setCoachName] = useState("");
   const [managerName, setManagerName] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
   const [players, setPlayers] = useState([]);
-  const [newPlayer, setNewPlayer] = useState("");
   const [showPlayerModal, setShowPlayerModal] = useState(false);
   const [playerDetails, setPlayerDetails] = useState({
     id: "",
@@ -51,72 +44,81 @@ const TeamDetails = () => {
   const [selectedRedMatch, setSelectedRedMatch] = useState("");
 
   // Carded players lists for modals
-  const [yellowCardList, setYellowCardList] = useState([]);
-  const [redCardList, setRedCardList] = useState([]);
+  const [yellowCardList, setYellowCardList] = useState({});
+  const [redCardList, setRedCardList] = useState({});
 
   useEffect(() => {
-    const storedTeams = JSON.parse(localStorage.getItem("teams")) || [];
-    // Pull all matches from every tournament
-    const tournaments = JSON.parse(localStorage.getItem("tournaments")) || [];
-    const allMatches = tournaments.reduce((acc, tour) => {
-      return acc.concat(tour.matches || []);
-    }, []);
-    const team = storedTeams.find((t) => String(t.team_id) === teamId);
-    if (team) {
-      setTeamName(team.team_name);
-      setCoachName(team.coach_name);
-      setManagerName(team.manager_name || "");
-      setTeams(storedTeams);
-      setPlayers(team.players || []);
-      // Find all matches where this team played (as teamA or teamB)
-      const playedMatches = allMatches.filter(
-        (m) => String(m.teamA) === teamId || String(m.teamB) === teamId,
-      );
-      setTeamMatches(playedMatches);
-    } else {
-      navigate("/guest/teams");
-    }
+    const loadData = async () => {
+      try {
+        const [teamsRes, toursRes, playersRes, yellowRes, redRes] =
+          await Promise.all([
+            axios.get("http://localhost:5000/guest/teams"),
+            axios.get("http://localhost:5000/guest/tournaments"),
+            axios.get("http://localhost:5000/guest/players"),
+            axios.get("http://localhost:5000/guest/cards/yellow"),
+            axios.get("http://localhost:5000/guest/cards/red"),
+          ]);
+        const teamsData = teamsRes.data.success ? teamsRes.data.data : [];
+        const tournaments = toursRes.data.success ? toursRes.data.data : [];
+        // Normalize player field names
+        const rawPlayers = playersRes.data.success ? playersRes.data.data : [];
+        const playersData = rawPlayers.map(p => ({
+          id: p.player_id,
+          name: p.player_name,
+          jerseyNumber: p.jersey_number,
+          position: p.position,
+          isSubstitute: p.is_substitute,
+          team_id: p.team_id,
+        }));
+        const yellowEvents = yellowRes.data.success ? yellowRes.data.data : [];
+        const redEvents = redRes.data.success ? redRes.data.data : [];
+
+        setTeams(teamsData);
+        setPlayers(playersData.filter((p) => String(p.team_id) === teamId));
+
+        // Build matches across tournaments
+        const allMatches = tournaments.reduce((acc, tour) => {
+          return acc.concat(tour.matches || []);
+        }, []);
+        setTeamMatches(allMatches.filter(
+          (m) => String(m.teama_id) === teamId || String(m.teamb_id) === teamId
+        ));
+
+        // Team info
+        const team = teamsData.find((t) => String(t.team_id) === teamId);
+        if (team) {
+          setTeamName(team.team_name);
+          setCoachName(team.coach_name);
+          setManagerName(team.manager_name || "");
+        } else {
+          navigate("/guest/teams");
+        }
+
+        // Store card events by match for modals
+        const yellowByMatch = yellowEvents.reduce((acc, ev) => {
+          if (String(ev.team_id) !== teamId) return acc;
+          acc[ev.match_id] = acc[ev.match_id] || {};
+          acc[ev.match_id][ev.player_id] = acc[ev.match_id][ev.player_id] || [];
+          acc[ev.match_id][ev.player_id].push(ev.event_time);
+          return acc;
+        }, {});
+        setYellowCardList(yellowByMatch);
+
+        const redByMatch = redEvents.reduce((acc, ev) => {
+          if (String(ev.team_id) !== teamId) return acc;
+          acc[ev.match_id] = acc[ev.match_id] || {};
+          acc[ev.match_id][ev.player_id] = acc[ev.match_id][ev.player_id] || [];
+          acc[ev.match_id][ev.player_id].push(ev.event_time);
+          return acc;
+        }, {});
+        setRedCardList(redByMatch);
+      } catch (err) {
+        console.error("Error loading team details:", err);
+        navigate("/guest/teams");
+      }
+    };
+    loadData();
   }, [teamId, navigate]);
-
-  const handleUpdateTeam = (e) => {
-    e.preventDefault();
-    if (!teamName || !coachName || !managerName) {
-      const msg = "All fields are required.";
-      setErrorMsg(msg);
-      setTimeout(() => alert(msg), 0);
-      return;
-    }
-    const updatedTeams = teams.map((t) =>
-      String(t.team_id) === teamId
-        ? {
-            ...t,
-            team_name: teamName,
-            coach_name: coachName,
-            manager_name: managerName,
-            players,
-          }
-        : t,
-    );
-    localStorage.setItem("teams", JSON.stringify(updatedTeams));
-    navigate("/guest/teams");
-  };
-
-  const handleAddPlayer = () => {
-    if (newPlayer.trim() === "") return;
-    setPlayers((prev) => [...prev, newPlayer.trim()]);
-    setNewPlayer("");
-  };
-
-  const handleDeleteTeam = () => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this team?",
-    );
-    if (!confirmDelete) return;
-
-    const updatedTeams = teams.filter((t) => String(t.team_id) !== teamId);
-    localStorage.setItem("teams", JSON.stringify(updatedTeams));
-    navigate("/guest/teams");
-  };
 
   // Helper to format YYYY-MM-DD to DD/MM/YYYY
   const formatDateBR = (isoDate) => {
@@ -168,7 +170,7 @@ const TeamDetails = () => {
             </button>
             <h2>Team Details</h2>
             <div className="edit-team-content">
-              <form onSubmit={handleUpdateTeam} className="form-grid">
+              <form className="form-grid">
                 <label>
                   Team ID:
                   <input
@@ -313,11 +315,6 @@ const TeamDetails = () => {
             </div>
           </div>
         </section>
-        {/* <img 
-          src={sealImage} 
-          alt="KFUPM Seal" 
-          className="vertical-seal" 
-        /> */}
       </main>
       {showPlayerModal && (
         <div className="security-modal">
@@ -682,9 +679,9 @@ const TeamDetails = () => {
               <option value="">-- Select a match --</option>
               {teamMatches.length > 0 ? (
                 teamMatches.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {formatDateBR(m.date)}: {getTeamName(m.teamA)} vs{" "}
-                    {getTeamName(m.teamB)}
+                  <option key={m.match_id} value={m.match_id}>
+                    {formatDateBR(m.match_date)}: {getTeamName(m.teama_id)} vs{" "}
+                    {getTeamName(m.teamb_id)}
                   </option>
                 ))
               ) : (
@@ -792,9 +789,9 @@ const TeamDetails = () => {
               <option value="">-- Select a match --</option>
               {teamMatches.length > 0 ? (
                 teamMatches.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {formatDateBR(m.date)}: {getTeamName(m.teamA)} vs{" "}
-                    {getTeamName(m.teamB)}
+                  <option key={m.match_id} value={m.match_id}>
+                    {formatDateBR(m.match_date)}: {getTeamName(m.teama_id)} vs{" "}
+                    {getTeamName(m.teamb_id)}
                   </option>
                 ))
               ) : (
