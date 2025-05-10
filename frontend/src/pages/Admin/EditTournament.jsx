@@ -70,6 +70,7 @@ const EditTournament = () => {
   const [players, setPlayers] = useState([]);
   const [matches, setMatches] = useState([]);
   const [allMatches, setAllMatches] = useState([]);
+  const [venues, setVenues] = useState([])
 
   const [newPlayer, setNewPlayer] = useState("");
   const [showPlayerModal, setShowPlayerModal] = useState(false);
@@ -92,32 +93,35 @@ const EditTournament = () => {
   const [allVenues, setAllVenues] = useState([])
 
   const [matchDetails, setMatchDetails] = useState({
-    id: "",
-    teamA: "",
-    teamB: "",
-    date: "",
-    startTime: "",
-    endTime: "",
-    captainA: "",
-    captainB: "",
-    venueId: "",
+    match_id: "",
+    teama_id: "",
+    teamb_id: "",
+    match_date: "",
+    start_time: "",
+    end_time: "",
+    captaina_id: "",
+    captainb_id: "",
+    venue_id: "",
   });
   const isEditing = Boolean(matchDetails.match_id);
   const [listType, setListType] = useState("matches");
   const [isConfirmed, setIsConfirmed] = useState(false);
   // Helper to retrieve a team's player roster
   const getTeamPlayers = (teamId) => {
-
-    axios.get(`http://localhost:5000/teams/${teamId}/players`)
-    .then((res) => {
-      setPlayers(res.data.data)
-    })
-    .catch(err=> console.error(err))
+    if (!teamId || players.length === 0) return [];
+    return players.filter(p => String(p.team_id) === String(teamId));
   };
 
 
 
   useEffect(() => {
+
+    //get all venues
+    axios.get(`http://localhost:5000/venues`)
+    .then((res) => {
+      setVenues(res.data.data)
+    })
+    .catch(err => console.error(err))
     
     //get all matches in specific tournament
     axios.get('http://localhost:5000/matches')
@@ -169,6 +173,7 @@ const EditTournament = () => {
     // })
     // .catch(err => console.error(err))
 
+    //get all players in this tournament
     axios.get(`http://localhost:5000/tournaments/${tournamentId}/players`)
     .then((res) => {
       setPlayers(res.data.data)
@@ -191,7 +196,7 @@ const EditTournament = () => {
   useEffect(() => {
     setIsConfirmed(matches.length > 0);
   }, [matches]); // Only runs when matches change
-  
+
   useEffect(() => {
     if (startDate && numTeams) {
       const sd = new Date(startDate);
@@ -289,18 +294,13 @@ const EditTournament = () => {
   // returns only the venues that are free for the new match's date & time
   const getAvailableVenues = () => {
 
-    //get all venues
-    axios.get(`http://localhost:5000/venues`)
-    .then((res) => {
-      setAllVenues(res.data.data)
-    })
-    .catch(err => console.error(err))
+    
 
     const {
-      date: newDateStr,
-      startTime: newStart,
-      endTime: newEnd,
-      id: editingId,
+      match_date: newDateStr,
+      start_time: newStart,
+      end_time: newEnd,
+      match_id: editingId,
     } = matchDetails;
 
     // If date, start time, or end time is not selected yet, don't perform filtering
@@ -509,9 +509,9 @@ const EditTournament = () => {
                                   // Pre-fill match details, use m.match_date as is (already in dd-mm-yyyy format)
                                   setMatchDetails({
                                     ...m,
-                                    date: m.match_date,
-                                    captainA: m.captainA || "",
-                                    captainB: m.captainB || "",
+                                    match_date: m.match_date,
+                                    captaina_id: m.captaina_id || "",
+                                    captainb_id: m.captainb_id || "",
                                   });
                                   setShowMatchModal(true);
                                 }}
@@ -868,7 +868,7 @@ const EditTournament = () => {
                 }}
                 value={matchDetails.teama_id}
                 onChange={(e) =>
-                  setMatchDetails({ ...matchDetails, teamA: e.target.value })
+                  setMatchDetails({ ...matchDetails, teama_id: e.target.value })
                 }
                 disabled={isEditing}
               >
@@ -904,7 +904,7 @@ const EditTournament = () => {
                 }}
                 value={matchDetails.teamb_id}
                 onChange={(e) =>
-                  setMatchDetails({ ...matchDetails, teamB: e.target.value })
+                  setMatchDetails({ ...matchDetails, teamb_id: e.target.value })
                 }
                 disabled={isEditing}
               >
@@ -938,16 +938,16 @@ const EditTournament = () => {
                   border: "1px solid #ccc",
                   fontFamily: "Poppins, sans-serif",
                 }}
-                value={matchDetails.captainA}
+                value={matchDetails.captaina_id}
                 onChange={(e) =>
-                  setMatchDetails({ ...matchDetails, captainA: e.target.value })
+                  setMatchDetails({ ...matchDetails, captaina_id: e.target.value })
                 }
                 disabled={!matchDetails.teama_id}
               >
                 <option value="">Select Captain</option>
-                {getTeamPlayers(matchDetails.teama_id).map((p) => (
+                {getTeamPlayers(matchDetails.teama_id)?.map((p) => (
                   <option key={p.match_id} value={p.match_id}>
-                    {p.name}
+                    {p.player_name}
                   </option>
                 ))}
               </select>
@@ -972,16 +972,16 @@ const EditTournament = () => {
                   border: "1px solid #ccc",
                   fontFamily: "Poppins, sans-serif",
                 }}
-                value={matchDetails.captainB}
+                value={matchDetails.captainb_id}
                 onChange={(e) =>
-                  setMatchDetails({ ...matchDetails, captainB: e.target.value })
+                  setMatchDetails({ ...matchDetails, captainb_id: e.target.value })
                 }
                 disabled={!matchDetails.teamb_id}
               >
                 <option value="">Select Captain</option>
-                {getTeamPlayers(matchDetails.teamb_id).map((p) => (
+                {getTeamPlayers(matchDetails.teamb_id)?.map((p) => (
                   <option key={p.match_id} value={p.match_id}>
-                    {p.name}
+                    {p.player_name}
                   </option>
                 ))}
               </select>
@@ -1031,13 +1031,13 @@ const EditTournament = () => {
               <input
                 type="time"
                 style={{ flex: 1, marginBottom: "0rem", marginTop: "0rem" }}
-                value={matchDetails.startTime || ""}
+                value={matchDetails.start_time || ""}
                 onChange={(e) => {
                   // When start time changes, reset venue selection
                   setMatchDetails({
                     ...matchDetails,
-                    startTime: e.target.value,
-                    venueId: "",
+                    start_time: e.target.value,
+                    venue_id: "",
                   });
                 }}
               />
@@ -1054,13 +1054,13 @@ const EditTournament = () => {
               <input
                 type="time"
                 style={{ flex: 1 }}
-                value={matchDetails.endTime || ""}
+                value={matchDetails.end_time || ""}
                 onChange={(e) => {
                   // When end time changes, reset venue selection
                   setMatchDetails({
                     ...matchDetails,
-                    endTime: e.target.value,
-                    venueId: "",
+                    end_time: e.target.value,
+                    venue_id: "",
                   });
                 }}
               />
@@ -1086,21 +1086,21 @@ const EditTournament = () => {
                   border: "1px solid #ccc",
                   fontFamily: "Poppins, sans-serif",
                 }}
-                value={matchDetails.venueId || ""}
+                value={matchDetails.venue_id || ""}
                 onChange={(e) =>
-                  setMatchDetails({ ...matchDetails, venueId: e.target.value })
+                  setMatchDetails({ ...matchDetails, venue_id: e.target.value })
                 }
                 disabled={
                   !matchDetails.match_date ||
-                  !matchDetails.startTime ||
-                  !matchDetails.endTime ||
-                  matchDetails.startTime >= matchDetails.endTime
+                  !matchDetails.start_time ||
+                  !matchDetails.end_time ||
+                  matchDetails.start_time >= matchDetails.end_time
                 }
               >
                 <option value="">Select a Venue</option>
                 {getAvailableVenues().map((venue) => (
                   <option key={venue.match_id} value={venue.match_id}>
-                    {venue.match_id} ({venue.name})
+                    {venue.match_id} ({venue.venue_name})
                   </option>
                 ))}
               </select>
@@ -1113,9 +1113,9 @@ const EditTournament = () => {
                     !matchDetails.teama_id ||
                     !matchDetails.teamb_id ||
                     !matchDetails.match_date ||
-                    !matchDetails.startTime ||
-                    !matchDetails.endTime ||
-                    !matchDetails.venueId
+                    !matchDetails.start_time ||
+                    !matchDetails.end_time ||
+                    !matchDetails.venue_id
                   ) {
                     alert("All fields are required for the match");
                     return;
@@ -1124,7 +1124,7 @@ const EditTournament = () => {
                     alert("Team A and Team B must be different");
                     return;
                   }
-                  if (matchDetails.endTime <= matchDetails.startTime) {
+                  if (matchDetails.end_time <= matchDetails.start_time) {
                     alert("End time must be after start time");
                     return;
                   }
@@ -1135,7 +1135,7 @@ const EditTournament = () => {
                   const isToday =
                     selectedDate.toDateString() === today.toDateString();
                   if (isToday) {
-                    const [sh, sm] = matchDetails.startTime
+                    const [sh, sm] = matchDetails.start_time
                       .split(":")
                       .map(Number);
                     const matchStart = new Date();
@@ -1148,11 +1148,11 @@ const EditTournament = () => {
                     }
                   }
                   // --- Captain validations ---
-                  if (!matchDetails.captainA) {
+                  if (!matchDetails.captaina_id) {
                     alert("Please select a captain for Team A");
                     return;
                   }
-                  if (!matchDetails.captainB) {
+                  if (!matchDetails.captainb_id) {
                     alert("Please select a captain for Team B");
                     return;
                   }
@@ -1173,9 +1173,9 @@ const EditTournament = () => {
                   const formattedDate = `${y}-${m}-${d}`;
                   const newMatch = {
                     ...matchDetails,
-                    id: matchId,
-                    date: formattedDate,
-                    venueId: matchDetails.venueId,
+                    match_id: matchId,
+                    match_date: formattedDate,
+                    venue_id: matchDetails.venue_id,
                   };
                   // Prevent duplicate match (same teams, date, and time)
                   const duplicateMatch = matches.some(
@@ -1183,8 +1183,8 @@ const EditTournament = () => {
                       m.teama_id === newMatch.teama_id &&
                       m.teamb_id === newMatch.teamb_id &&
                       m.match_date === newMatch.match_date &&
-                      m.startTime === newMatch.startTime &&
-                      m.endTime === newMatch.endTime &&
+                      m.start_time === newMatch.start_time &&
+                      m.end_time === newMatch.end_time &&
                       (!isEditing || m.match_id !== matchId), // Skip the current match when editing
                   );
                   if (duplicateMatch) {
@@ -1196,7 +1196,7 @@ const EditTournament = () => {
                   // Set venue status to Reserved if it was Available
                   
                   const updatedVenues = venues.map((v) =>
-                    String(v.match_id) === String(matchDetails.venueId) &&
+                    String(v.match_id) === String(matchDetails.venue_id) &&
                     v.status === "Available"
                       ? { ...v, status: "Reserved" }
                       : v,
@@ -1221,15 +1221,15 @@ const EditTournament = () => {
                   // );
                   setShowMatchModal(false);
                   setMatchDetails({
-                    id: "",
-                    teamA: "",
-                    teamB: "",
-                    date: "",
-                    startTime: "",
-                    endTime: "",
-                    captainA: "",
-                    captainB: "",
-                    venueId: "",
+                    match_id: "",
+                    teama_id: "",
+                    teamb_id: "",
+                    match_date: "",
+                    start_time: "",
+                    end_time: "",
+                    captaina_id: "",
+                    captainb_id: "",
+                    venue_id: "",
                   });
                 }}
               >
@@ -1274,33 +1274,32 @@ const EditTournament = () => {
               {formatDate(selectedMatch.match_date).replace(/-/g, "/")}
             </p>
             <p>
-              <strong>Time:</strong> {selectedMatch.startTime} -{" "}
-              {selectedMatch.endTime}
+              <strong>Time:</strong> {selectedMatch.start_time} -{" "}
+              {selectedMatch.end_time}
             </p>
             <p>
               <strong>Venue:</strong>{" "}
-              {(() => {
-                // const venue = (
-                //   JSON.parse(localStorage.getItem("venues")) || []
-                // ).find((v) => String(v.match_id) === String(selectedMatch.venueId));
-                return venue ? venue.name : "—";
-              })()}
+              {venues.find(
+                (v) => String(v.venue_id) === String(selectedMatch.venue_id),
+              )?.venue_name || '-'}
             </p>
             <p>
               <strong>Captain A:</strong>{" "}
-              {teams
-                .find((t) => String(t.team_id) === String(selectedMatch.teama_id))
-                ?.players?.find(
-                  (p) => String(p.match_id) === String(selectedMatch.captainA),
-                )?.name || "—"}
+              {
+                players
+                  .find((p) => String(p.team_id) === String(selectedMatch.teama_id)) //find the players in team b
+                  ?.find((p) => String(p.player_id) === String(selectedMatch.captaina_id)) // Find captain by player_id
+                  ?.player_name || "—" // Return name (fallback: "—")
+              }
             </p>
             <p>
               <strong>Captain B:</strong>{" "}
-              {teams
-                .find((t) => String(t.team_id) === String(selectedMatch.teamb_id))
-                ?.players?.find(
-                  (p) => String(p.match_id) === String(selectedMatch.captainB),
-                )?.name || "—"}
+              {
+                players
+                  .find((p) => String(p.team_id) === String(selectedMatch.teamb_id)) //find the players in team b
+                  ?.find((p) => String(p.player_id) === String(selectedMatch.captainb_id)) // Find captain by player_id
+                  ?.player_name || "—" // Return name (fallback: "—")
+              }
             </p>
           </div>
         </div>
