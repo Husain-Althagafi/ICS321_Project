@@ -5,7 +5,7 @@ import DeleteTeamButton from "../../components/DeleteTeamButton";
 // import sealImage from '../../assets/icons/KFUPM Seal White.png';
 import bgImage from "../../assets/images/Illustration 1@4x.png";
 import "../../stylesheets/EditTeam.css";
-
+import axios from 'axios'
 const EditTeam = () => {
   const navigate = useNavigate();
   const { teamId } = useParams();
@@ -26,25 +26,39 @@ const EditTeam = () => {
   const [newPlayer, setNewPlayer] = useState("");
   const [showPlayerModal, setShowPlayerModal] = useState(false);
   const [playerDetails, setPlayerDetails] = useState({
-    id: "",
-    name: "",
-    jerseyNumber: "",
+    player_id: "",
+    player_name: "",
+    jersey_number: "",
     position: "",
-    isSubstitute: false,
+    is_substitute: false,
   });
   const [playerError, setPlayerError] = useState("");
   const [viewPlayerModal, setViewPlayerModal] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [editPlayerModal, setEditPlayerModal] = useState(false);
+  const [team, setTeam] = useState({})
 
   useEffect(() => {
-    const storedTeams = JSON.parse(localStorage.getItem("teams")) || [];
-    const team = storedTeams.find((t) => String(t.team_id) === teamId);
+    
+    //get team based on id
+    axios.get(`http://localhost:5000/teams/${teamId}`)
+    .then((res) => {
+      setTeam(res.data.data)
+    })
+    .catch(err => console.error(err))
+
+
+    axios.get(`http://localhost:5000/teams/${teamId}/players`)
+    .then((res) => {
+      setPlayers(res.data.data)
+    })
+    .catch(err => console.error(err))
+
+
     if (team) {
       setTeamName(team.team_name);
       setCoachName(team.coach_name);
       setManagerName(team.manager_name || "");
-      setTeams(storedTeams);
       setPlayers(team.players || []);
     } else {
       navigate("/admin/teams");
@@ -59,26 +73,25 @@ const EditTeam = () => {
       setTimeout(() => alert(msg), 0);
       return;
     }
-    const updatedTeams = teams.map((t) =>
-      String(t.team_id) === teamId
-        ? {
-            ...t,
-            team_name: teamName,
-            coach_name: coachName,
-            manager_name: managerName,
-            players,
-          }
-        : t,
-    );
-    localStorage.setItem("teams", JSON.stringify(updatedTeams));
-    navigate("/admin/teams");
+
+    axios.put(`http://localhost:5000/teams/${teamId}`, {
+      team_name: teamName,
+      coach_name: coachName,
+      manager_name: managerName
+    })
+    .then((res) => {
+      navigate("/admin/teams");
+    })
+    .catch(err => console.error(err))
   };
 
-  const handleAddPlayer = () => {
-    if (newPlayer.trim() === "") return;
-    setPlayers((prev) => [...prev, newPlayer.trim()]);
-    setNewPlayer("");
-  };
+  // const handleAddPlayer = () => {
+  //   axios.post(`http://localhost:5000/teams/${teamId}/players`, )
+
+  //   if (newPlayer.trim() === "") return;
+  //   setPlayers((prev) => [...prev, newPlayer.trim()]);
+  //   setNewPlayer("");
+  // };
 
   const handleDeleteTeam = () => {
     const confirmDelete = window.confirm(
@@ -86,9 +99,14 @@ const EditTeam = () => {
     );
     if (!confirmDelete) return;
 
-    const updatedTeams = teams.filter((t) => String(t.team_id) !== teamId);
-    localStorage.setItem("teams", JSON.stringify(updatedTeams));
-    navigate("/admin/teams");
+    axios.delete(`http://localhost:5000/admin/teams/${teamId}`)
+    .then((res) => {
+      setTeams(teams.filter((t) => String(t.team_id) !== teamId))
+      navigate("/admin/teams");
+    })
+    .catch(err => console.error(err))
+
+    
   };
 
   return (
@@ -169,8 +187,8 @@ const EditTeam = () => {
                       }}
                     >
                       <span>
-                        {p.name} ({p.position})
-                        {p.isSubstitute && (
+                        {p.player_name} ({p.position})
+                        {p.is_substitute && (
                           <span style={{ color: "red", fontWeight: "bold" }}>
                             &nbsp;Sub
                           </span>
@@ -225,9 +243,12 @@ const EditTeam = () => {
                                 "Are you sure you want to delete this player?",
                               )
                             ) {
-                              setPlayers((prev) =>
-                                prev.filter((_, i) => i !== idx),
-                              );
+                              //delete player
+                              axios.delete(`http://localhost:5000/teams/${teamId}/${p.player_id}`)
+                              .then((res) => {
+                                setPlayers(players.filter(p => p.player_id !== res.data.data[0].player_id))
+                              })
+                              .catch(err => console.error(err))
                             }
                           }}
                         >
@@ -300,12 +321,12 @@ const EditTeam = () => {
               <input
                 type="text"
                 placeholder="Player ID (e.g. s20xxxxxxx)"
-                value={playerDetails.id}
+                value={playerDetails.player_id}
                 maxLength={10}
                 onChange={(e) => {
                   const value = e.target.value;
                   if (value.length <= 10) {
-                    setPlayerDetails({ ...playerDetails, id: value });
+                    setPlayerDetails({ ...playerDetails, player_id: value });
                   }
                 }}
               />
@@ -316,9 +337,9 @@ const EditTeam = () => {
               <input
                 type="text"
                 placeholder="Player Name"
-                value={playerDetails.name}
+                value={playerDetails.player_name}
                 onChange={(e) =>
-                  setPlayerDetails({ ...playerDetails, name: e.target.value })
+                  setPlayerDetails({ ...playerDetails, player_name: e.target.value })
                 }
               />
             </label>
@@ -329,11 +350,11 @@ const EditTeam = () => {
                 type="number"
                 placeholder="Jersey Number"
                 min="1"
-                value={playerDetails.jerseyNumber}
+                value={playerDetails.jersey_number}
                 onChange={(e) => {
                   const value = e.target.value;
                   if (Number(value) >= 1 || value === "") {
-                    setPlayerDetails({ ...playerDetails, jerseyNumber: value });
+                    setPlayerDetails({ ...playerDetails, jersey_number: value });
                   }
                 }}
               />
@@ -381,11 +402,11 @@ const EditTeam = () => {
               <input
                 type="checkbox"
                 style={{ width: "1rem", margin: "0rem" }}
-                checked={playerDetails.isSubstitute}
+                checked={playerDetails.is_substitute}
                 onChange={(e) =>
                   setPlayerDetails({
                     ...playerDetails,
-                    isSubstitute: e.target.checked,
+                    is_substitute: e.target.checked,
                   })
                 }
               />
@@ -395,31 +416,45 @@ const EditTeam = () => {
               <button
                 type="button"
                 onClick={() => {
-                  if (!/^s20.{7}$/.test(playerDetails.id)) {
+                  if (!/^s20.{7}$/.test(playerDetails.player_id)) {
                     setPlayerError(
                       'Player ID must start with "s20" and be 10 characters long',
                     );
                     return;
                   }
                   if (
-                    !playerDetails.id.trim() ||
-                    !playerDetails.name.trim() ||
-                    !playerDetails.jerseyNumber ||
+                    !playerDetails.player_id.trim() ||
+                    !playerDetails.player_name.trim() ||
+                    !playerDetails.jersey_number ||
                     !playerDetails.position.trim()
                   ) {
                     setPlayerError("All fields are required");
                     return;
                   }
-                  setPlayers((prev) => [...prev, playerDetails]);
-                  setPlayerDetails({
-                    id: "",
-                    name: "",
-                    jerseyNumber: "",
-                    position: "",
-                    isSubstitute: false,
-                  });
-                  setPlayerError("");
-                  setShowPlayerModal(false);
+
+                  playerDetails.team_id = teamId
+
+
+                  //add player to team with axios
+                  
+
+                  axios.post(`http://localhost:5000/teams/${teamId}/players`, playerDetails)
+                  .then((res) => {
+                    setPlayerDetails({
+                      id: "",
+                      name: "",
+                      jerseyNumber: "",
+                      position: "",
+                      isSubstitute: false,
+                      team_id: teamId
+                    });
+                    setPlayers((prev) => [...prev, playerDetails]);
+
+                    setPlayerError("");
+                    setShowPlayerModal(false);
+                  })
+                  .catch(err => console.error(err))
+                  
                 }}
               >
                 Add
@@ -445,20 +480,20 @@ const EditTeam = () => {
             </button>
             <h2>Player Details</h2>
             <p>
-              <strong>ID:</strong> {selectedPlayer.id}
+              <strong>ID:</strong> {selectedPlayer.player_id}
             </p>
             <p>
-              <strong>Name:</strong> {selectedPlayer.name}
+              <strong>Name:</strong> {selectedPlayer.player_name}
             </p>
             <p>
-              <strong>Jersey Number:</strong> {selectedPlayer.jerseyNumber}
+              <strong>Jersey Number:</strong> {selectedPlayer.jersey_number}
             </p>
             <p>
               <strong>Position:</strong> {selectedPlayer.position}
             </p>
             <p>
               <strong>Substitute:</strong>{" "}
-              {selectedPlayer.isSubstitute ? "Yes" : "No"}
+              {selectedPlayer.is_substitute ? "Yes" : "No"}
             </p>
           </div>
         </div>
@@ -482,15 +517,15 @@ const EditTeam = () => {
             {/* Replace "Add" button with "Update" */}
             <label>
               Player ID
-              <input type="text" value={playerDetails.id} disabled />
+              <input type="text" value={playerDetails.player_id} disabled />
             </label>
             <label>
               Player Name
               <input
                 type="text"
-                value={playerDetails.name}
+                value={playerDetails.player_name}
                 onChange={(e) =>
-                  setPlayerDetails({ ...playerDetails, name: e.target.value })
+                  setPlayerDetails({ ...playerDetails, player_name: e.target.value })
                 }
               />
             </label>
@@ -498,11 +533,11 @@ const EditTeam = () => {
               Jersey Number
               <input
                 type="number"
-                value={playerDetails.jerseyNumber}
+                value={playerDetails.jersey_number}
                 onChange={(e) =>
                   setPlayerDetails({
                     ...playerDetails,
-                    jerseyNumber: e.target.value,
+                    jersey_number: e.target.value,
                   })
                 }
               />
@@ -548,11 +583,11 @@ const EditTeam = () => {
               <input
                 type="checkbox"
                 style={{ width: "1rem", margin: "0rem" }}
-                checked={playerDetails.isSubstitute}
+                checked={playerDetails.is_substitute}
                 onChange={(e) =>
                   setPlayerDetails({
                     ...playerDetails,
-                    isSubstitute: e.target.checked,
+                    is_substitute: e.target.checked,
                   })
                 }
               />
@@ -560,12 +595,20 @@ const EditTeam = () => {
             <button
               type="button"
               onClick={() => {
-                setPlayers((prev) =>
-                  prev.map((p) =>
-                    p.id === playerDetails.id ? playerDetails : p,
-                  ),
-                );
-                setEditPlayerModal(false);
+
+                const updatedPlayer = {
+                  ...playerDetails,
+                  team_id: teamId
+                };
+                axios.patch(`http://localhost:5000/teams/${teamId}/${updatedPlayer.player_id}`, updatedPlayer)
+                .then((res) => {
+                  const updatedPlayer = res.data.data
+                  setPlayers(players.map(p =>
+                    p.player_id === updatedPlayer.player_id ? updatedPlayer : p
+                  ))
+                  setEditPlayerModal(false);
+                })
+                .catch(err => console.error(err))
               }}
             >
               Update

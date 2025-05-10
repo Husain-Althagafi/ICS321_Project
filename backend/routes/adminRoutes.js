@@ -4,6 +4,8 @@ const router = express.Router()
 const auth = require('../middleware/auth')
 
 
+
+
 //POST
 
 //add tournament
@@ -12,21 +14,32 @@ router.post('/tournaments', adminController.addTournament)
 //add team 
 router.post('/teams', adminController.addTeam)
 
-//add team to tournament
-router.post('/teams/:id', adminController.addTeamToTournament)
+//add matches to tournament
+router.post('/tournaments/:tournament_id/matches', adminController.addMatchesToTournament)
     
 //select captain
-router.post('/:tournament/:match/:team/captain', adminController.selectCaptain)
-
-//add player to team
-router.post('/:team/:player', adminController.approvePlayerToTeam)
-
+// router.post('/:tournament/:match/:team/captain', adminController.selectCaptain)
 
 
 //DELETE
 
 //delete tournament
 router.delete('/tournaments/:id', adminController.deleteTournament)
+
+//delete team
+router.delete('/teams/:id', adminController.deleteTeam)
+
+
+//PATCH
+
+//add team to tournament
+router.patch('/tournaments/:tournament_id/teams/:team_id', adminController.addTeamToTournament)
+
+//remove team from tournament
+router.patch('/tournaments/:tournament_id/teams/:team_id/remove', adminController.removeTeamFromTournament)
+
+//update match info
+router.patch('/matches/:match_id', adminController.updateMatch)
 
 module.exports = router;
 

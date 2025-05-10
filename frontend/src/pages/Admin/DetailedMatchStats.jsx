@@ -8,6 +8,8 @@ import redCardIcon from "../../assets/icons/red_card.png";
 import yellowCardIcon from "../../assets/icons/yellow_card.svg";
 import goldenBootIcon from "../../assets/icons/golden-boot.png";
 
+import axios from 'axios'
+
 const DetailedMatchStats = () => {
   // Helper to format yyyy-mm-dd to dd-mm-yyyy
   const formatDate = (dateString) => {
@@ -26,16 +28,57 @@ const DetailedMatchStats = () => {
   const [availableTeams, setAvailableTeams] = useState([]);
   const [goalCounts, setGoalCounts] = useState({});
   const [motmPlayerId, setMotmPlayerId] = useState(null);
-  const match = matches.find((m) => String(m.id) === matchId) || {};
+  const [match, setMatch] = useState({})
+  const [teams, setTeams] = useState([])
+  const [team1Players, setTeam1Players] = useState([])
+  const [team2Players, setTeam2Players] = useState([])
+  const [captains, setCaptains] = useState([])
+  const [cards, setCards] = useState([])
 
   // Track match completion
   const [isCompleted, setIsCompleted] = useState(false);
-  // Persist completion status per match
-  useEffect(() => {
-    const completed =
-      localStorage.getItem(`match-completed-${matchId}`) === "true";
-    setIsCompleted(completed);
-  }, [matchId]);
+
+  const [goals, setGoals] = useState([])
+
+useEffect(() => {
+  //get match by id from tournament
+  axios.get(`http://localhost:5000/tournaments/${tournamentId}/matches`)
+  .then((res) => {
+    setMatch(res.data.data.find((m) => m.match_no == matchId));
+    setIsCompleted(res.data.data[0].completed)
+  })
+  .catch(err => console.error(err))
+
+  //get teams in this match
+
+  axios.get(`http://localhost:5000/teams/matches/${matchId}`)
+  .then((res) => {
+    setTeams()
+  
+    //get team 1 players
+    axios.get(`http://localhost:5000/teams/${res.data.data[0].team_id}/players`)
+    .then((res) => {
+      setTeam1Players(res.data.data)
+    })
+    .catch(err => console.error(err))
+
+    //get team 2 players
+    axios.get(`http://localhost:5000/teams/${res.data.data[2].team_id}/players`)
+    .then((res) => {
+      setTeam2Players(res.data.data)
+    })
+    .catch(err => console.error(err))
+  })
+  .catch(err => console.error(err))
+
+  //get captains
+  axios.get(`http://localhost:5000/matches/${matchId}/captains`)
+  .then((res) => {
+    setCaptains(res.data.captains[0])
+  })
+  .catch(err=>console.error(err))
+
+}, [])
 
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [goalTime, setGoalTime] = useState("");
@@ -63,8 +106,11 @@ const DetailedMatchStats = () => {
   const [removeYellowTime, setRemoveYellowTime] = useState("");
   const [removeYellowError, setRemoveYellowError] = useState("");
 
+  
   // Modal state for match completion confirmation
   const [showCompleteModal, setShowCompleteModal] = useState(false);
+
+
 
   // Show alert after rendering the error banner (deferred to allow banner to paint first)
   useEffect(() => {
@@ -76,22 +122,35 @@ const DetailedMatchStats = () => {
   }, [yellowError]);
 
   // Compute match time limits in minutes
-  const startMinutes = match.startTime
-    ? parseInt(match.startTime.split(":")[0], 10) * 60 +
-      parseInt(match.startTime.split(":")[1], 10)
-    : 0;
-  const endMinutes = match.endTime
-    ? parseInt(match.endTime.split(":")[0], 10) * 60 +
-      parseInt(match.endTime.split(":")[1], 10)
-    : 0;
+  
+
+  const startMinutes = match?.start_time
+  ? parseInt(match.start_time.split(":")[0], 10) * 60 +
+    parseInt(match.start_time.split(":")[1], 10)
+  : 0;
+const endMinutes = match?.end_time
+  ? parseInt(match.end_time.split(":")[0], 10) * 60 +
+    parseInt(match.end_time.split(":")[1], 10)
+  : 0;
   // Helper to pad numbers and compute duration in HH:mm
   const pad = (n) => String(n).padStart(2, "0");
   const durationMinutes = endMinutes - startMinutes;
   const durationHHMM = `${pad(Math.floor(durationMinutes / 60))}:${pad(durationMinutes % 60)}`;
+  
+  
 
   // Goal handler using native prompt
 
   useEffect(() => {
+    //get goal details from match
+    axios.get(`http://localhost:5000/matches/${matchId}/goals`)
+    .then((res) => {
+      setGoals(res.data.data)
+    })
+    .catch(err => console.error(err))
+
+
+
     const stored = JSON.parse(localStorage.getItem("tournaments")) || [];
     setAvailableTeams(JSON.parse(localStorage.getItem("teams")) || []);
     const tour = stored.find((t) => String(t.id) === tournamentId);
@@ -141,12 +200,12 @@ const DetailedMatchStats = () => {
 
   // Persist MOTM selection to matches and localStorage
   useEffect(() => {
-    if (!match.id) return;
+    if (!match.match_no) return;
     // rest of persistence code...
     // Find the current match in matches and update its motmPlayerId
     if (motmPlayerId !== undefined) {
       const updatedMatches = matches.map((m) =>
-        m.id === match.id ? { ...m, motmPlayerId } : m,
+        m.id === match.match_no ? { ...m, motmPlayerId } : m,
       );
       setMatches(updatedMatches);
       // Persist back to tournaments in localStorage
@@ -157,7 +216,7 @@ const DetailedMatchStats = () => {
       );
       localStorage.setItem("tournaments", JSON.stringify(updatedTours));
     }
-  }, [motmPlayerId, match.id, tournamentId]);
+  }, [motmPlayerId, match.match_no, tournamentId]);
 
   // Compute scores based on goalCounts
   const teamAPlayersList =
@@ -208,17 +267,13 @@ const DetailedMatchStats = () => {
               }}
             >
               <h1 className="teamA-name">
-                {availableTeams.find(
-                  (t) => String(t.team_id) === String(match.teamA),
-                )?.team_name || match.teamA}
+                {match.team1}
               </h1>
               <h2>
-                {scoreA} - {scoreB}
+                {match.goal_score}
               </h2>
               <h1 className="teamB-name">
-                {availableTeams.find(
-                  (t) => String(t.team_id) === String(match.teamB),
-                )?.team_name || match.teamB}
+                {match.team2}
               </h1>
             </div>
             <div
@@ -241,11 +296,9 @@ const DetailedMatchStats = () => {
               >
                 <label>Players</label>
                 <ul style={{ flexGrow: 1, overflowY: "auto" }}>
-                  {(
-                    availableTeams.find(
-                      (t) => String(t.team_id) === String(match.teamA),
-                    )?.players || []
-                  ).map((p, idx) => (
+                  {
+                    
+                    team1Players.map((p, idx) => (
                     <li
                       key={idx}
                       style={{
@@ -258,7 +311,7 @@ const DetailedMatchStats = () => {
                         {goalCounts[p.id] != null && (
                           <strong>[{goalCounts[p.id]}] </strong>
                         )}
-                        {p.name.split(" ").slice(-1)[0]} ({p.position})
+                        {p.name.split(" ").slice(-1)[0]} ({p.position_to_play})
                         {p.isSubstitute && (
                           <span
                             style={{
@@ -270,7 +323,7 @@ const DetailedMatchStats = () => {
                             Sub
                           </span>
                         )}
-                        {match.captainA === p.id && (
+                        {captains.player1_id === p.player_id && (
                           <span
                             className="captain-status"
                             style={{ marginLeft: "0.5rem" }}
@@ -284,24 +337,24 @@ const DetailedMatchStats = () => {
                           type="button"
                           className="btn-motm"
                           disabled={
-                            motmPlayerId !== null && motmPlayerId !== p.id
+                            motmPlayerId !== null && motmPlayerId !== p.player_id
                           }
                           onClick={() => {
-                            if (motmPlayerId === p.id) {
+                            if (motmPlayerId === p.player_id) {
                               setMotmPlayerId(null);
                             } else {
-                              setMotmPlayerId(p.id);
+                              setMotmPlayerId(p.player_id);
                             }
                           }}
                           style={{
                             backgroundImage:
-                              motmPlayerId === p.id
+                              motmPlayerId === p.player_id
                                 ? "linear-gradient(135deg, #00713d, #00934f)"
                                 : motmPlayerId !== null
                                   ? "#ccc"
                                   : undefined,
                             opacity:
-                              motmPlayerId !== null && motmPlayerId !== p.id
+                              motmPlayerId !== null && motmPlayerId !== p.player_id
                                 ? 0.6
                                 : 1,
                           }}
@@ -343,7 +396,7 @@ const DetailedMatchStats = () => {
                               if (window.confirm("Remove red card record?")) {
                                 // Remove red card
                                 const updatedMatches = matches.map((m) =>
-                                  m.id === match.id
+                                  m.id === match.match_no
                                     ? {
                                         ...m,
                                         redCards: Object.fromEntries(
@@ -418,11 +471,9 @@ const DetailedMatchStats = () => {
               >
                 <label>Players</label>
                 <ul style={{ flexGrow: 1, overflowY: "auto" }}>
-                  {(
-                    availableTeams.find(
-                      (t) => String(t.team_id) === String(match.teamB),
-                    )?.players || []
-                  ).map((p, idx) => (
+                  {
+                    
+                  team2Players.map((p, idx) => (
                     <li
                       key={idx}
                       style={{
@@ -447,7 +498,7 @@ const DetailedMatchStats = () => {
                             Sub
                           </span>
                         )}
-                        {match.captainB === p.id && (
+                        {captains.player2_id === p.player_id && (
                           <span
                             className="captain-status"
                             style={{ marginLeft: "0.5rem" }}
@@ -520,7 +571,7 @@ const DetailedMatchStats = () => {
                               if (window.confirm("Remove red card record?")) {
                                 // Remove red card
                                 const updatedMatches = matches.map((m) =>
-                                  m.id === match.id
+                                  m.id === match.match_no
                                     ? {
                                         ...m,
                                         redCards: Object.fromEntries(
@@ -654,7 +705,7 @@ const DetailedMatchStats = () => {
                                       // Update matches array with redCards
                                       const updatedMatchesWithCards =
                                         matches.map((m) =>
-                                          m.id === match.id
+                                          m.id === match.match_no
                                             ? {
                                                 ...m,
                                                 redCards: {
@@ -803,7 +854,7 @@ const DetailedMatchStats = () => {
                                     }
                                     // Update yellowCards in matches and localStorage
                                     const updatedMatches = matches.map((m) =>
-                                      m.id === match.id
+                                      m.id === match.match_no
                                         ? {
                                             ...m,
                                             yellowCards: {
@@ -993,7 +1044,7 @@ const DetailedMatchStats = () => {
                                     }
                                     const tval = parseInt(removeYellowTime, 10);
                                     const updatedMatches = matches.map((m) => {
-                                      if (m.id !== match.id) return m;
+                                      if (m.id !== match.match_no) return m;
                                       const cards = Array.isArray(
                                         m.yellowCards?.[yellowCardPlayer.id],
                                       )
@@ -1172,7 +1223,7 @@ const DetailedMatchStats = () => {
                               const playerIdStr = String(deleteGoalPlayer.id);
 
                               const updatedMatches = matches.map((m) => {
-                                if (m.id !== match.id) return m;
+                                if (m.id !== match.match_no) return m;
 
                                 // Get current goals and times
                                 const goals = m.goals || {};
@@ -1365,7 +1416,7 @@ const DetailedMatchStats = () => {
                               (pl) => String(pl.id) === String(goalPlayer.id),
                             );
                             const updatedMatchesWithScore = matches.map((m) =>
-                              m.id === match.id
+                              m.id === match.match_no
                                 ? (() => {
                                     const prevTimes =
                                       m.goalTimes[goalPlayer.id] || [];
@@ -1479,7 +1530,7 @@ const DetailedMatchStats = () => {
 
                     // Add winner to match and persist scores
                     const updatedMatches = matches.map((m) =>
-                      m.id === match.id ? { ...m, scoreA, scoreB, winner } : m,
+                      m.id === match.match_no ? { ...m, scoreA, scoreB, winner } : m,
                     );
                     setMatches(updatedMatches);
 
