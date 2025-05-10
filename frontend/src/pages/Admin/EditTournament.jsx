@@ -69,6 +69,8 @@ const EditTournament = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [players, setPlayers] = useState([]);
   const [matches, setMatches] = useState([]);
+  const [allMatches, setAllMatches] = useState([]);
+
   const [newPlayer, setNewPlayer] = useState("");
   const [showPlayerModal, setShowPlayerModal] = useState(false);
   const [playerDetails, setPlayerDetails] = useState({
@@ -87,8 +89,7 @@ const EditTournament = () => {
   const [tournament, setTournament] = useState({})
   const [captains, setCaptains] = useState([])
   const [availableTeams, setAvailableTeams] = useState([])
-
-
+  const [allVenues, setAllVenues] = useState([])
 
   const [matchDetails, setMatchDetails] = useState({
     id: "",
@@ -117,9 +118,21 @@ const EditTournament = () => {
 
 
   useEffect(() => {
-    //get all matches in tournaments
-    // When receiving match data from API
+    
+    //get all matches in specific tournament
     axios.get('http://localhost:5000/matches')
+    .then(res => {
+      setAllMatches(res.data.data.map(match => ({
+        ...match,
+        // Convert ISO string to Date object
+        match_date: match.match_date.split("T")[0],
+      })));
+    })
+    .catch(err => console.error(err));
+
+
+  //get all matches in a tournament
+    axios.get(`http://localhost:5000/tournaments/${tournamentId}/matches`)
     .then(res => {
       setMatches(res.data.data.map(match => ({
         ...match,
@@ -149,7 +162,6 @@ const EditTournament = () => {
     })
     .catch(err => console.error(err))
 
-
     // // get tournaments
     // axios.get(`http://localhost:5000/tournaments`)
     // .then((res) => {
@@ -162,22 +174,24 @@ const EditTournament = () => {
       setPlayers(res.data.data)
     })
     .catch(err => console.error(err)) 
-    
+  
     if (tournament) {
       setTournamentName(tournament.name);
       setStartDate(tournament.start_date);
       setEndDate(tournament.end_date);
       setNumTeams(tournament.num_teams || "");
 
-      if (matches.length >= tournament.num_matches) {
-        setIsConfirmed(true)
-      }
+      
       
     } else {
       navigate("/admin/tournaments");
     }
   }, [tournamentId, navigate]);
 
+  useEffect(() => {
+    setIsConfirmed(matches.length > 0);
+  }, [matches]); // Only runs when matches change
+  
   useEffect(() => {
     if (startDate && numTeams) {
       const sd = new Date(startDate);
@@ -274,13 +288,20 @@ const EditTournament = () => {
 
   // returns only the venues that are free for the new match's date & time
   const getAvailableVenues = () => {
+
+    //get all venues
+    axios.get(`http://localhost:5000/venues`)
+    .then((res) => {
+      setAllVenues(res.data.data)
+    })
+    .catch(err => console.error(err))
+
     const {
       date: newDateStr,
       startTime: newStart,
       endTime: newEnd,
       id: editingId,
     } = matchDetails;
-    const allVenues = JSON.parse(localStorage.getItem("venues")) || [];
 
     // If date, start time, or end time is not selected yet, don't perform filtering
     if (!newDateStr || !newStart || !newEnd) {
@@ -293,9 +314,9 @@ const EditTournament = () => {
     const newEndMins = timeToMinutes(newEnd);
 
     // Get all matches from all tournaments
-    const allTournaments =
-      JSON.parse(localStorage.getItem("tournaments")) || [];
-    const allMatches = allTournaments.flatMap((t) => t.matches || []);
+    // const allTournaments =
+    //   JSON.parse(localStorage.getItem("tournaments")) || [];
+    // const allMatches = allTournaments.flatMap((t) => t.matches || []);
 
     // Filter venues to exclude those with time conflicts
     return allVenues.filter((venue) => {
@@ -332,7 +353,6 @@ const EditTournament = () => {
 
   // Prepare venues available times per date
   const dateOptions = getDateOptions(startDate, endDate);
-  const allVenues = JSON.parse(localStorage.getItem("venues")) || [];
   const venuesByDate = {};
   dateOptions.forEach((date) => {
     // For each date, filter venues that are Available
@@ -620,10 +640,10 @@ const EditTournament = () => {
                           String(t.match_id) === tournamentId ? { ...t, matches } : t,
                         );
                         setTournaments(updatedTournaments);
-                        localStorage.setItem(
-                          "tournaments",
-                          JSON.stringify(updatedTournaments),
-                        );
+                        // localStorage.setItem(
+                        //   "tournaments",
+                        //   JSON.stringify(updatedTournaments),
+                        //);
                         alert("Match details saved.");
                       }}
                       style={{
@@ -1174,15 +1194,13 @@ const EditTournament = () => {
                     return;
                   }
                   // Set venue status to Reserved if it was Available
-                  const venues =
-                    JSON.parse(localStorage.getItem("venues")) || [];
+                  
                   const updatedVenues = venues.map((v) =>
                     String(v.match_id) === String(matchDetails.venueId) &&
                     v.status === "Available"
                       ? { ...v, status: "Reserved" }
                       : v,
                   );
-                  localStorage.setItem("venues", JSON.stringify(updatedVenues));
                   const updatedTournaments = tournaments.map((t) => {
                     if (String(t.match_id) !== tournamentId) return t;
                     const updatedMatches = isEditing
@@ -1194,10 +1212,7 @@ const EditTournament = () => {
                       lastMatchNumber: isNew ? newNum : t.lastMatchNumber,
                     };
                   });
-                  localStorage.setItem(
-                    "tournaments",
-                    JSON.stringify(updatedTournaments),
-                  );
+                  
                   setTournaments(updatedTournaments);
                   // setMatches(
                   //   updatedTournaments.find(
@@ -1265,9 +1280,9 @@ const EditTournament = () => {
             <p>
               <strong>Venue:</strong>{" "}
               {(() => {
-                const venue = (
-                  JSON.parse(localStorage.getItem("venues")) || []
-                ).find((v) => String(v.match_id) === String(selectedMatch.venueId));
+                // const venue = (
+                //   JSON.parse(localStorage.getItem("venues")) || []
+                // ).find((v) => String(v.match_id) === String(selectedMatch.venueId));
                 return venue ? venue.name : "—";
               })()}
             </p>

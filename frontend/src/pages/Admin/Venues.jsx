@@ -26,14 +26,7 @@ const Venues = () => {
   const [allMatches, setAllMatches] = useState([])
   const [reservedVenues, setReservedVenues] = useState([])
 
-  const [lastVenueNumber, setLastVenueNumber] = useState(() => {
-    const storedNum = parseInt(localStorage.getItem("lastVenueId"), 10);
-    if (!isNaN(storedNum)) return storedNum;
-    const maxId = venues.length ? Math.max(...venues.map((v) => v.id || 0)) : 0;
-    localStorage.setItem("lastVenueId", maxId);
-    return maxId;
-  });
-  const nextVenueId = lastVenueNumber + 1;
+  
 
   useEffect(() => {
     const loadVenues = () => {
@@ -100,7 +93,6 @@ const Venues = () => {
     });
     if (JSON.stringify(updatedVenues) !== JSON.stringify(venues)) {
       setVenues(updatedVenues);
-      localStorage.setItem("venues", JSON.stringify(updatedVenues));
     }
   }, [allMatches, venues]);
 

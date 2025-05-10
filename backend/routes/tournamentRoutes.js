@@ -10,6 +10,7 @@ router.get('/:id', tournamentController.getTournamentById)
 
 router.get('/:id/players', tournamentController.getPlayersByTournamentId)
 
+//get tournamnet matches
 router.get('/:id/matches', tournamentController.getMatchesByTournamentId)
 
 router.get('/:id/teams', tournamentController.getTeamsByTournamentId)
