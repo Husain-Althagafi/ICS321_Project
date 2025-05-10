@@ -970,9 +970,10 @@ const EditTournament = () => {
                   fontFamily: "Poppins, sans-serif",
                 }}
                 value={matchDetails.captaina_id}
-                onChange={(e) =>
+                onChange={(e) =>{
+                  matches.captaina_id = matchDetails.captaina_id
                   setMatchDetails({ ...matchDetails, captaina_id: e.target.value })
-                }
+                }}
                 disabled={!matchDetails.teama_id}
               >
                 <option value="">Select Captain</option>

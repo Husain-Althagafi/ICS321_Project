@@ -319,3 +319,12 @@ exports.deletePlayer = asyncHandler(async (req, res) => {
     });
   }
 });
+
+
+exports.getTeamsByMatch = asyncHandler (async (req, res) => {
+  const match_id = req.params.match_id
+
+  const result = await db.query(`
+
+    `)
+})

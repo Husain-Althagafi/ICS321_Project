@@ -50,7 +50,6 @@ useEffect(() => {
   .catch(err => console.error(err))
 
   //get teams in this match
-
   axios.get(`http://localhost:5000/teams/matches/${matchId}`)
   .then((res) => {
     setTeams()

@@ -8,7 +8,8 @@ router.get('/:id', teamController.getTeamById)
 
 router.get('/:id/players',teamController.getPlayersByTeamId)
 
-// router.get('/matches/:match_no', teamController.getTeamsByMatch)
+//get teams in a match
+router.get('/matches/:match_id', teamController.getTeamsByMatch)
 
 
 //PUT
