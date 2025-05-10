@@ -72,6 +72,7 @@ const EditTournament = () => {
   const [allMatches, setAllMatches] = useState([]);
   const [venues, setVenues] = useState([])
 
+
   const [newPlayer, setNewPlayer] = useState("");
   const [showPlayerModal, setShowPlayerModal] = useState(false);
   const [playerDetails, setPlayerDetails] = useState({
@@ -113,16 +114,17 @@ const EditTournament = () => {
   };
 
 
-
   useEffect(() => {
+      //get all venues
+      axios.get(`http://localhost:5000/venues`)
+      .then((res) => {
+        setAllVenues(res.data.data)
+      })
+      .catch(err => console.error(err))
+  }, [])
 
-    //get all venues
-    axios.get(`http://localhost:5000/venues`)
-    .then((res) => {
-      setAllVenues(res.data.data)
-    })
-    .catch(err => console.error(err))
-    
+
+  useEffect(() => { 
     //get all matches
     axios.get('http://localhost:5000/matches')
     .then(res => {
@@ -192,7 +194,6 @@ const EditTournament = () => {
       setStartDate(tournament.start_date);
       setEndDate(tournament.end_date);
       setNumTeams(tournament.num_teams || "");
-
       
       
     } else {
@@ -1115,8 +1116,8 @@ const EditTournament = () => {
               >
                 <option value="">Select a Venue</option>
                 {getAvailableVenues().map((venue) => (
-                  <option key={venue.match_id} value={venue.match_id}>
-                    {venue.match_id} ({venue.venue_name})
+                  <option key={venue.venue_id} value={venue.venue_id}>
+                    {venue.venue_id} ({venue.venue_name})
                   </option>
                 ))}
               </select>
@@ -1300,24 +1301,24 @@ const EditTournament = () => {
             </p>
             <p>
               <strong>Venue:</strong>{" "}
-              {venues.find(
+              {allVenues.find(
                 (v) => String(v.venue_id) === String(selectedMatch.venue_id),
               )?.venue_name || '-'}
             </p>
             <p>
               <strong>Captain A:</strong>{" "}
               {
-                players
-                  ?.find((p) => p.player_id === selectedMatch.catptaina_id) //find the players in team b
-                  ?.player_name || "—" // Return name (fallback: "—")
+                players.find(
+                  (p) => String(p.player_id) === String(selectedMatch.captaina_id),
+                )?.player_name || '-'
               }
             </p>
             <p>
               <strong>Captain B:</strong>{" "}
               {
-                players
-                ?.find((p) => p.player_id === selectedMatch.catptainb_id) //find the players in team b
-                ?.player_name || "—" // Return name (fallback: "—")
+                players.find(
+                  (p) => String(p.player_id) === String(selectedMatch.captainb_id),
+                )?.player_name || '-'
               }
             </p>
           </div>

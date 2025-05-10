@@ -18,10 +18,7 @@ router.post('/teams', adminController.addTeam)
 router.post('/tournaments/:tournament_id/matches', adminController.addMatchesToTournament)
     
 //select captain
-router.post('/:tournament/:match/:team/captain', adminController.selectCaptain)
-
-//add player to team
-router.post('/:team/:player', adminController.approvePlayerToTeam)
+// router.post('/:tournament/:match/:team/captain', adminController.selectCaptain)
 
 
 //DELETE

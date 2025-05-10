@@ -102,93 +102,6 @@ exports.addTeamToTournament = asyncHandler( async (req, res) => {
 })
 
 
-exports.selectCaptain = asyncHandler ( async (req, res) => {
-    const tr_id = req.params.tournament
-    const match_id = req.params.match
-    const team_id = req.params.team
-    const {player_id} = req.body
-
-
-    if (!player_id || !team_id || !tr_id || !match_id) {
-        return res.status(400).json({error: 'Required values missing'})
-    }
-
-    const captain = await db.query(
-        `select * from team_players where player_id = $1 and team_id = $2 and tr_id = $3`,
-        [player_id, team_id, tr_id]
-    )
-
-    if (!captain) {
-        return res.status(404).json({error: 'Player not part of the team for the specified tournament'})
-    }
-
-    const result = await db.query(
-        `update match_captain set player_captain = $1 where team_id = $2 and match_no = $3 RETURNING *`,
-        [player_id, team_id, match_id]
-    )
-
-    return res.status(201).json({
-        message: 'Successfully set captain',
-        data: result.rows[0]
-    }) 
-})
-
-
-exports.approvePlayerToTeam = asyncHandler (async (req, res) => {
-
-    const player_id = req.params.player
-    const team_id = req.params.team
-    const tr_id = req.params.tournament
-
-    if (!player_id || !team_id) {
-        return res.status(400).json({error: 'Required values missing'})
-    }
-
-    const player = await db.query(
-        `select * from player where player_id = $1`,
-        [player_id]
-    )
-
-    if (!player) {
-        return res.status(400).json({error: 'Player doesnt exist'})
-    }
-
-    const team = await db.query(
-        `select * from team where team_id = $1`,
-        [team_id]
-    )
-
-    if (!team) {
-        return res.status(400).json({error: 'Team doesnt exist'})
-    }
-
-    const tournament = await db.query(
-        `select * from tournament where tr_id = $1`,
-        [tr_id]
-    )
-
-    if (!tournament) {
-        return res.status(400).json({error: 'Tournament doesnt exist'})
-    }
-
-    // verified that player team and tournament exist
-
-    query `
-     INSERT INTO team_player VALUES ($1, $2, $3) RETURNING *
-    `
-
-    const result = await db.query(query, [player_id, team_id, tr_id])
-
-    if (!result) {
-        return res.status(400).json({error: 'Error adding player to team'})
-    }
-
-    return res.status(200).json({
-        message: 'Successfully added team to tournament',
-        data: result.rows[0]
-    })
-})
-
 
 exports.deleteTeam = asyncHandler(async(req, res) => {
     const id = req.params.id
@@ -334,7 +247,7 @@ exports.updateMatch = asyncHandler(async (req, res) => {
              SET teama_id = $1, teamb_id = $2, match_date = $3, start_time = $4, end_time = $5, captaina_id = $6, captainb_id = $7, venue_id = $8
              WHERE match_id = $9
              RETURNING *`,
-            [teama_id, teamb_id , match_date, start_time, end_time, captaina_id, captainb_id, venue_id, tournament_id]
+            [teama_id, teamb_id , match_date, start_time, end_time, captaina_id, captainb_id, venue_id, match_id]
         );
 
         if (result.rows.length === 0) {

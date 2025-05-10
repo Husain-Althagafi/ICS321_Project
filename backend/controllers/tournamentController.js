@@ -57,57 +57,57 @@ exports.getMatchesByTournamentId = asyncHandler(async (req, res) => {
 });
 
 
-exports.updateTournamentById = asyncHandler(async (req, res) => {
-    const tournamentId = req.params.id;
-    const { tr_name, start_date, end_date } = req.body;
+// exports.updateTournamentById = asyncHandler(async (req, res) => {
+//     const tournamentId = req.params.id;
+//     const { tr_name, start_date, end_date } = req.body;
 
-    // Validate required fields
-    if (!tr_name || !start_date || !end_date) {
-        return res.status(400).json({
-            success: false,
-            message: 'Please provide all required fields (tr_name, start_date, end_date)'
-        });
-    }
+//     // Validate required fields
+//     if (!tr_name || !start_date || !end_date) {
+//         return res.status(400).json({
+//             success: false,
+//             message: 'Please provide all required fields (tr_name, start_date, end_date)'
+//         });
+//     }
 
-    // Validate date format and logic (end_date should be after start_date)
-    if (new Date(end_date) <= new Date(start_date)) {
-        return res.status(400).json({
-            success: false,
-            message: 'End date must be after start date'
-        });
-    }
+//     // Validate date format and logic (end_date should be after start_date)
+//     if (new Date(end_date) <= new Date(start_date)) {
+//         return res.status(400).json({
+//             success: false,
+//             message: 'End date must be after start date'
+//         });
+//     }
 
-    try {
-        const result = await db.query(
-            `UPDATE tournament 
-             SET tr_name = $1, start_date = $2, end_date = $3 
-             WHERE tr_id = $4 
-             RETURNING *`,
-            [tr_name, start_date, end_date, tournamentId]
-        );
+//     try {
+//         const result = await db.query(
+//             `UPDATE tournament 
+//              SET tr_name = $1, start_date = $2, end_date = $3 
+//              WHERE tr_id = $4 
+//              RETURNING *`,
+//             [tr_name, start_date, end_date, tournamentId]
+//         );
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: `Tournament with ID ${tournamentId} not found`
-            });
-        }
+//         if (result.rows.length === 0) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: `Tournament with ID ${tournamentId} not found`
+//             });
+//         }
 
-        res.status(200).json({
-            success: true,
-            message: 'Tournament updated successfully',
-            data: result.rows[0]
-        });
+//         res.status(200).json({
+//             success: true,
+//             message: 'Tournament updated successfully',
+//             data: result.rows[0]
+//         });
 
-    } catch (error) {
-        console.error('Error updating tournament:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error while updating tournament',
-            error: error.message
-        });
-    }
-});
+//     } catch (error) {
+//         console.error('Error updating tournament:', error);
+//         res.status(500).json({
+//             success: false,
+//             message: 'Server error while updating tournament',
+//             error: error.message
+//         });
+//     }
+// });
 exports.getTeamsByTournamentId = asyncHandler(async (req, res) => {
     const tournamentId = req.params.id;
 
