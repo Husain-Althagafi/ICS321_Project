@@ -23,8 +23,14 @@ router.get('/:id/teams', tournamentController.getTeamsByTournamentId)
 
 // router.put('/:id', tournamentController.updateTournamentById)
 
-module.exports = router
+//PATCH
+
+router.patch('/:tournament_id', tournamentController.updateTournament)
+
 
 //DELETE
 
 // router.delete('/:id', tournamentController.deleteTournamentById)
+
+
+module.exports = router

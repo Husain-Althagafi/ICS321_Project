@@ -159,3 +159,18 @@ exports.getTeamsByTournamentId = asyncHandler(async (req, res) => {
 });
 
 
+exports.updateTournament = asyncHandler (async (req, res) => {
+    const tournament_id = req.params.tournament_id
+    const {name, start_date, end_date} = req.body
+
+    const result = await db.query(`
+            UPDATE tournaments 
+            SET name = $1, start_date = $2, end_date = $3 
+            WHERE tournament_id = $4
+            RETURNING *
+        `, [name, start_date, end_date, tournament_id])
+
+    return res.status(200).json({success: true, data: result.rows})
+
+})
+
