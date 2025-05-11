@@ -4,16 +4,15 @@ import "../../stylesheets/AdminLogin.css";
 import showPasswordIcon from "../../assets/icons/find_15067049.png";
 import hidePasswordIcon from "../../assets/icons/see_4230235.png";
 import sealImage from "../../assets/icons/KFUPM Seal White.png";
-
 import securityQuestionImage from "../../assets/images/security-question.png";
-
 import axios from "axios";
 
 function AdminLogin() {
-  const [username, setUsername] = useState("");
+  const [adminId, setAdminId] = useState("");
   const [password, setPassword] = useState("");
-  const [passwordVisible, setPasswordVisible] = useState(false); // State to toggle password visibility
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [showSecurityModal, setShowSecurityModal] = useState(false);
   const [securityAnswer, setSecurityAnswer] = useState("");
@@ -21,49 +20,57 @@ function AdminLogin() {
   const [securityAction, setSecurityAction] = useState("");
   const navigate = useNavigate();
 
-  const [token, setToken] = useState(null);
-
-  // Predefined Admin credentials for demo purposes
-  const adminUsername = "admin";
-  const adminPassword = "password123";
-
+  // Expected security answer
   const expectedSecurityAnswer = "0";
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     if (e) e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    // axios.post('http://localhost:5000/auth/login/admin', {
-    //   username: username,
-    //   password: password
-    // })
-    // .then((res) => {
-    //   setToken(res.data.token)
-    //   setSecurityAction('login')
-    //   setShowSecurityModal(true)
-    //   setError('')
-    // })
-    // .catch((err) => {
-    //   localStorage.removeItem('token')
-    //   const errorMsg = err.response?.data?.message || 'Invalid username or password';
-    //   setError(errorMsg);
-    //   setTimeout(() => alert(errorMsg), 0);
-    //   console.error("Login error:", err);
-    // });
+    // Validate username format: firstname.lastname.id
+    const usernamePattern = /^[a-zA-Z]+\.[a-zA-Z]+\.\d+$/;
+    if (!usernamePattern.test(adminId)) {
+      setError("Username must be in the format firstname.lastname.id");
+      setLoading(false);
+      return;
+    }
 
-    // Original hardcoded login logic
-    if (username === adminUsername && password === adminPassword) {
-      setError("");
-      setSecurityAction("login");
-      setShowSecurityModal(true);
-    } else {
-      const errorMsg = "Invalid username or password";
+    // Extract numeric ID from username of form firstname.lastname.id
+    const idParts = adminId.split(".");
+    const id = idParts[idParts.length - 1];
+
+    try {
+      // First, verify the admin credentials with the backend
+      const response = await axios.get(`/api/auth/login/admin/${id}`);
+      
+      // If admin exists, check password
+      if (response.data.success) {
+        const admin = response.data.data;
+        
+        // Verify password (in a real app, this should be done on the server)
+        if (admin.admin_password === password) {
+          // Show security question before completing login
+          setSecurityAction("login");
+          setShowSecurityModal(true);
+        } else {
+          throw new Error("Invalid password");
+        }
+      } else {
+        throw new Error("Admin not found");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      const errorMsg = err.response?.data?.message || err.message || "Invalid admin ID or password";
       setError(errorMsg);
       setTimeout(() => alert(errorMsg), 0);
+    } finally {
+      setLoading(false);
     }
   };
 
   const togglePasswordVisibility = () => {
-    setPasswordVisible(!passwordVisible); // Toggle the visibility of the password
+    setPasswordVisible(!passwordVisible);
   };
 
   const handleSecuritySubmit = () => {
@@ -71,14 +78,15 @@ function AdminLogin() {
     if (normalized === expectedSecurityAnswer) {
       setShowSecurityModal(false);
       setSecurityError("");
+      
       if (securityAction === "signup") {
         navigate("/admin/signup");
       } else if (securityAction === "login") {
-        localStorage.setItem("token", token);
+        // Set token or admin info in localStorage
+        localStorage.setItem("adminId", adminId);
         navigate("/admin/home");
       }
     } else {
-      localStorage.removeItem("token");
       const errorMsg = "Incorrect answer to the security question!";
       alert(errorMsg);
       setShowSecurityModal(false);
@@ -98,8 +106,10 @@ function AdminLogin() {
               <label>Username</label>
               <input
                 type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={adminId}
+                onChange={(e) => setAdminId(e.target.value)}
+                placeholder="Enter your username"
+                required
               />
             </div>
             <div className="password-container form-group">
@@ -109,6 +119,8 @@ function AdminLogin() {
                   type={passwordVisible ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
                 />
                 <img
                   src={passwordVisible ? hidePasswordIcon : showPasswordIcon}
@@ -119,7 +131,9 @@ function AdminLogin() {
               </div>
             </div>
             {error && <p className="error">{error}</p>}
-            <button type="submit">Login</button>
+            <button type="submit" disabled={loading}>
+              {loading ? "Logging in..." : "Login"}
+            </button>
             <p className="admin-signup-link">
               <span
                 onClick={() => {
