@@ -211,9 +211,9 @@ const Venues = () => {
                               }}
                             >
                               {reservedMatchesForVenue.map((m) => (
-                                <li key={m.id}>
-                                  Match {m.id}: {formatDate(m.date)} (
-                                  {m.startTime}–{m.endTime})
+                                <li key={m.match_id}>
+                                  Match {m.match_id}: {formatDate(m.match_date.split("T")[0])} (
+                                  {m.start_time}–{m.end_time})
                                 </li>
                               ))}
                             </ul>
