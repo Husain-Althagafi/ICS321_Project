@@ -637,22 +637,22 @@ exports.getAllCards = asyncHandler(async (req, res) => {
 
     try {
         const result = await db.query(`
-            DELETE FROM red_cards 
+            DELETE FROM red_card_events
             WHERE match_id = $1 
             AND player_id = $2 
             RETURNING *
         `, [match_id, player_id]);
 
-        if (result.rowCount === 0) {
-            return res.status(404).json({ error: 'Red card record not found' });
-        }
-
         res.status(200).json({
             message: 'Red card deleted successfully',
-            deletedRecord: result.rows
+            deletedRecord: result.rows,
+            input: {
+                match_id: match_id,
+                player_id: player_id
+            }
         });
     } catch (error) {
         console.error('Error deleting red card:', error);
-        res.status(500).json({ error: 'Failed to delete red card' });
+        res.status(500).json({ error: 'Failed to delete red card'+ error });
     }
 });

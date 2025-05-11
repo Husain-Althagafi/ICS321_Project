@@ -407,14 +407,15 @@ const endMinutes = match?.end_time
                           type="button"
                           className="btn-red-card"
                           onClick={() => {
-                            const hasCard = redCards[p.player_id] !== null;
+                            const hasCard = p.player_id in redCards;
                             if (hasCard) {
                               if (window.confirm("Remove red card record?")) {
                                 
                                 // Remove red card
                                 axios.delete(`http://localhost:5000/admin/red-cards`, {
-                                  player_id: p.player_id,
-                                  match_id: matchId,
+                                  data:
+                                  {player_id: p.player_id,
+                                  match_id: matchId},
                                 })
                                 .then((res) => {
                                   delete redCards[p.player_id]
@@ -567,10 +568,20 @@ const endMinutes = match?.end_time
                           type="button"
                           className="btn-red-card"
                           onClick={() => {
-                            const hasCard = match.redCards?.[p.player_id] != null;
+                            const hasCard = redCards[p.player_id] !== null;
                             if (hasCard) {
                               if (window.confirm("Remove red card record?")) {
                                 // Remove red card
+                                axios.delete(`http://localhost:5000/admin/red-cards`, {
+                                  data:
+                                  {player_id: p.player_id,
+                                  match_id: matchId}
+                                })
+                                .then((res) => {
+                                  delete redCards[p.player_id]
+                                  setMatch(match)
+                                })
+                                .catch(err => console.error(err))
                                 const updatedMatches = matches.map((m) =>
                                   m.match_id === match.match_id
                                     ? {
@@ -704,13 +715,10 @@ const endMinutes = match?.end_time
                                       //add red card with request
                                       axios.post(`http://localhost:5000/admin/red-cards`, {
                                         match_id: matchId,
-                                        player_id: p.player_id,
+                                        player_id: cardPlayer.player_id,
                                         event_time: minutesValue
                                       })
                                       .then((res) => {
-
-
-
                                         setShowCardModal(false);
                                         setCardError("");
                                       })

@@ -257,18 +257,15 @@ const EditTournament = () => {
       start_date: startDate,
       end_date: endDate,
       num_teams: parseInt(numTeams, 10),
+    })
+    .then((res) => {
+      alert("Tournament updated successfully!");
+      navigate("/admin/tournaments"); // Redirect to tournaments list page
+    })
+    .catch((err) => {
+      console.error("Error updating tournament:", err);
+      alert("Failed to update tournament.");
     });
-
-    // Send the updated tournament data to the backend using the PATCH request
-    axios.patch(`http://localhost:5000/admin/tournaments/${tournamentId}`, updateTournament)
-      .then((res) => {
-        alert("Tournament updated successfully!");
-        navigate("/admin/tournaments"); // Redirect to tournaments list page
-      })
-      .catch((err) => {
-        console.error("Error updating tournament:", err);
-        alert("Failed to update tournament.");
-      });
   };
 
   const handleAddPlayer = () => {
