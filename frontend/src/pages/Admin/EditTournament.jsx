@@ -250,7 +250,7 @@ const EditTournament = () => {
     };
 
     // Send the updated tournament data to the backend using the PATCH request
-    axios.patch(`http://localhost:5000/tournaments/${tournamentId}`, updateTournament)
+    axios.patch(`http://localhost:5000/admin/tournaments/${tournamentId}`, updateTournament)
       .then((res) => {
         alert("Tournament updated successfully!");
         navigate("/admin/tournaments"); // Redirect to tournaments list page

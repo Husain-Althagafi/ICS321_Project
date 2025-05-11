@@ -68,7 +68,7 @@ router.get('/red-cards/:match_id', adminController.getRedCardsForMatch)
 
 router.post('/red-cards', adminController.addRedCard)
 
-// router.delete('/red-cards')
+router.delete('/red-cards', adminController.deleteRedCard)
 
 // router.get('/yellow-cards')
 

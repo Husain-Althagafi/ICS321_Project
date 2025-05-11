@@ -61,11 +61,12 @@ const DetailedMatchStats = () => {
         setTeams(teamsData);
 
         //Set cards data
-        const redcards = {};
+        
+        const formattedRedCards = {};
         redCardsRes.data.data.forEach(item => {
-          redcards[item.player_id] = item.goal_count;
-        })
-        setRedCards(redCardsRes)
+        formattedRedCards[item.player_id] = item.event_time;
+        });
+        setRedCards(formattedRedCards);
   
         // Fetch players for both teams in parallel
         const [team1PlayersRes, team2PlayersRes] = await Promise.all([
@@ -406,14 +407,14 @@ const endMinutes = match?.end_time
                           type="button"
                           className="btn-red-card"
                           onClick={() => {
-                            const hasCard = redCards[p.player_id] != null;
+                            const hasCard = redCards[p.player_id] !== null;
                             if (hasCard) {
                               if (window.confirm("Remove red card record?")) {
                                 
                                 // Remove red card
                                 axios.delete(`http://localhost:5000/admin/red-cards`, {
                                   player_id: p.player_id,
-                                  match_id: matchId
+                                  match_id: matchId,
                                 })
                                 .then((res) => {
                                   delete redCards[p.player_id]
