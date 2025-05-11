@@ -188,7 +188,9 @@ const endMinutes = match?.end_time
       .then((res) => {
         const counts = {};
         res.data.data.forEach(item => {
-        counts[item.player_id] = item.goal_count;
+          if (item.match_id === matchId) {
+            counts[item.player_id] = item.goal_count;
+          }
       });
       setGoalCounts(counts);
       // setGoalCounts(res.data.data || {});
