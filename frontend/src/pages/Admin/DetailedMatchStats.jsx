@@ -163,8 +163,13 @@ const endMinutes = match?.end_time
       initialized.find((m) => String(m.match_id) === matchId) || {};
 
     axios.get(`http://localhost:5000/admin/match-goals`)
-    .then((res) => {
-      setGoalCounts(res.data.data || {});
+      .then((res) => {
+        const counts = {};
+        res.data.data.forEach(item => {
+        counts[item.player_id] = item.goal_count;
+      });
+      setGoalCounts(counts);
+      // setGoalCounts(res.data.data || {});
     })
     .catch(err => console.error(err))
     // Load persisted MOTM if any
@@ -1409,6 +1414,8 @@ const endMinutes = match?.end_time
                               goal_time: minutesValue
                             })
                             .then((res) => {
+
+
                               setGoalCounts((prev) => ({
                                 ...prev,
                                 [goalPlayer.player_id]: (prev[goalPlayer.player_id] || 0) + 1,
@@ -1515,14 +1522,14 @@ const endMinutes = match?.end_time
                   type="button"
                   onClick={() => {
                     // Determine match winner
-                    const teamAName =
-                      availableTeams.find(
-                        (t) => String(t.team_id) === String(match.teama_id),
-                      )?.team_name || match.teama_id;
-                    const teamBName =
-                      availableTeams.find(
-                        (t) => String(t.team_id) === String(match.teamb_id),
-                      )?.team_name || match.teamb_id;
+                    // const teamAName =
+                    //   availableTeams.find(
+                    //     (t) => String(t.team_id) === String(match.teama_id),
+                    //   )?.team_name || match.teama_id;
+                    // const teamBName =
+                    //   availableTeams.find(
+                    //     (t) => String(t.team_id) === String(match.teamb_id),
+                    //   )?.team_name || match.teamb_id;
                     const winner =
                       scoreA > scoreB
                         ? match.teama_id

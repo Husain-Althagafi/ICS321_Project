@@ -67,56 +67,56 @@ exports.getAllMatches = asyncHandler(async(req, res) => {
 
 
 exports.addGoalToMatch = asyncHandler(async (req, res) => {
-  const { matchId } = req.params.match_id;
-  const { player_id, event_time } = req.body;
+  const { matchId } = req.params;
+  const { playerId, minute } = req.body;
 
   // Validate input
-  if (!player_id || !event_time) {
+  if (!playerId || !minute) {
     return res.status(400).json({
       success: false,
-      error: 'Player ID and event_time are required'
+      error: 'Player ID and minute are required'
     });
   }
 
-  if (isNaN(event_time) || event_time < 0) {
+  if (isNaN(minute) || minute < 0) {
     return res.status(400).json({
       success: false,
-      error: 'event_time must be a positive number'
+      error: 'Minute must be a positive number'
     });
   }
 
-  const client = await db.connect();
+  const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
 
-    // // 1. Verify the match exists and get team information
+    // 1. Verify the match exists and get team information
     const matchQuery = await client.query(
       'SELECT teama_id, teamb_id FROM matches WHERE match_id = $1',
       [matchId]
     );
 
-    // if (matchQuery.rows.length === 0) {
-    //   return res.status(404).json({
-    //     success: false,
-    //     error: 'Match not found'
-    //   });
-    // }
+    if (matchQuery.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Match not found'
+      });
+    }
 
-    const { teama_id, teamb_id } = matchQuery.rows;
+    const { teama_id, teamb_id } = matchQuery.rows[0];
 
     // 2. Verify the player belongs to one of the match teams
     const playerQuery = await client.query(
       'SELECT team_id FROM players WHERE player_id = $1',
-      [player_id]
+      [playerId]
     );
 
-    // if (playerQuery.rows.length === 0) {
-    //   return res.status(404).json({
-    //     success: false,
-    //     error: 'Player not found'
-    //   });
-    // }
+    if (playerQuery.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Player not found'
+      });
+    }
 
     const { team_id } = playerQuery.rows[0];
 
@@ -130,7 +130,7 @@ exports.addGoalToMatch = asyncHandler(async (req, res) => {
     // 3. Record the goal event
     await client.query(
       'INSERT INTO goal_events (match_id, player_id, event_time) VALUES ($1, $2, $3)',
-      [matchId, player_id, event_time]
+      [matchId, playerId, minute]
     );
 
     // 4. Update the aggregated goal count
@@ -139,7 +139,7 @@ exports.addGoalToMatch = asyncHandler(async (req, res) => {
       VALUES ($1, $2, 1)
       ON CONFLICT (match_id, player_id)
       DO UPDATE SET goal_count = match_goals.goal_count + 1
-    `, [matchId, player_id]);
+    `, [matchId, playerId]);
 
     // 5. Update the match score
     await client.query(`

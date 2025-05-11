@@ -274,23 +274,99 @@ exports.updateMatch = asyncHandler(async (req, res) => {
 });
 
 exports.addGoalEvent = asyncHandler(async (req, res) => {
-  const { match_id, player_id, goal_time } = req.body;
-  if (!match_id || !player_id || goal_time == null) {
-    return res.status(400).json({ success: false, error: "match_id, player_id, and event_time are required" });
-  }
-  try {
-    const result = await db.query(
-      `INSERT INTO goal_events (match_id, player_id, event_time)
-       VALUES ($1, $2, $3)
-       RETURNING *`,
-      [match_id, player_id, goal_time]
-    );
-
-
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
+    const { match_id, player_id, goal_time } = req.body;
+    
+    // Validate input
+    if (!match_id || !player_id || goal_time == null) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "match_id, player_id, and goal_time are required" 
+      });
+    }
+  
+    if (isNaN(goal_time) || goal_time < 0) {
+      return res.status(400).json({
+        success: false,
+        error: "goal_time must be a positive number"
+      });
+    }
+  
+    const client = await db.connect();
+  
+    try {
+      await client.query('BEGIN');
+  
+      // 1. First verify the player belongs to one of the match teams
+      const teamCheck = await client.query(
+        `SELECT m.teama_id, m.teamb_id, p.team_id 
+         FROM matches m
+         JOIN players p ON p.player_id = $1
+         WHERE m.match_id = $2`,
+        [player_id, match_id]
+      );
+  
+      if (teamCheck.rows.length === 0) {
+        throw new Error('Player or match not found');
+      }
+  
+      const { teama_id, teamb_id, team_id } = teamCheck.rows[0];
+      const isTeamA = team_id === teama_id;
+  
+      // 2. Insert into goal_events
+      const goalEvent = await client.query(
+        `INSERT INTO goal_events (match_id, player_id, event_time)
+         VALUES ($1, $2, $3)
+         RETURNING *`,
+        [match_id, player_id, goal_time]
+      );
+  
+      // 3. Update match_goals (aggregated count)
+      await client.query(
+        `INSERT INTO match_goals (match_id, player_id, goal_count)
+         VALUES ($1, $2, 1)
+         ON CONFLICT (match_id, player_id)
+         DO UPDATE SET goal_count = match_goals.goal_count + 1`,
+        [match_id, player_id]
+      );
+  
+      // 4. Update the match score (increment correct team's score)
+      const updatedMatch = await client.query(
+        `UPDATE matches
+         SET ${isTeamA ? 'scorea = COALESCE(scorea, 0) + 1' : 'scoreb = COALESCE(scoreb, 0) + 1'}
+         WHERE match_id = $1
+         RETURNING *`,
+        [match_id]
+      );
+  
+      await client.query('COMMIT');
+  
+      res.status(201).json({
+        success: true,
+        data: {
+          goal_event: goalEvent.rows[0],
+          match: updatedMatch.rows[0]
+        }
+      });
+  
+    } catch (err) {
+      await client.query('ROLLBACK');
+      
+      if (err.code === '23505') { // Unique violation (duplicate goal)
+        return res.status(409).json({
+          success: false,
+          error: "This goal event already exists"
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        error: err.message,
+        details: err.detail // PostgreSQL specific error details
+      });
+    } finally {
+      client.release();
+    }
+  });
 
 exports.addMatchGoals = asyncHandler(async (req, res) => {
     const { match_id, player_id, goal_count } = req.body;
