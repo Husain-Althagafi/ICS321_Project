@@ -172,8 +172,16 @@ const EditTournament = () => {
         start_date: tournamentData.start_date.split('T')[0], // "2025-11-10"
         end_date: tournamentData.end_date.split('T')[0]     // "2025-11-20"
       });
+      setTournamentName(tournamentData.name);  // Set tournament name here
+      setStartDate(tournamentData.start_date.split('T')[0]);
+      setEndDate(tournamentData.end_date.split('T')[0]);
+      setNumTeams(tournamentData.num_teams || "");
+      setMatches(tournamentData.matches || []);
     })
-    .catch(err => console.error(err));
+    .catch(err => {
+      console.error(err);
+      navigate("/admin/tournaments");
+    });
 
     // // get tournaments
     // axios.get(`http://localhost:5000/tournaments`)
@@ -189,16 +197,6 @@ const EditTournament = () => {
     })
     .catch(err => console.error(err)) 
   
-    if (tournament) {
-      setTournamentName(tournament.name);
-      setStartDate(tournament.start_date);
-      setEndDate(tournament.end_date);
-      setNumTeams(tournament.num_teams || "");
-      
-      
-    } else {
-      navigate("/admin/tournaments");
-    }
   }, [tournamentId, navigate]);
 
   useEffect(() => {
@@ -424,7 +422,7 @@ const EditTournament = () => {
                   Tournament Name:
                   <input
                     type="text"
-                    value={tournament.name}
+                    value={tournamentName}
                     onChange={(e) => setTournamentName(e.target.value)}
                     required
                   />
