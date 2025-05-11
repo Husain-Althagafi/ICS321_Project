@@ -1111,9 +1111,36 @@ const endMinutes = match?.end_time
                     {deleteGoalPlayer && (
                       <>
                         <p>
-                          Select a goal time to remove for{" "}
-                          {deleteGoalPlayer?.player_name?.split(" ").slice(-1)[0]}
-                        </p>
+                        Select a goal time to remove for{" "}
+                        {deleteGoalPlayer?.player_name?.split(" ").slice(-1)[0]}
+                      </p>
+                      <select
+                        value={deleteGoalTime}
+                        onChange={(e) => setDeleteGoalTime(e.target.value)}
+                        className="score-input"
+                        disabled={!deleteGoalPlayer}
+                      >
+                        <option value="" disabled = {(goals || []).filter(
+                          goal => goal.player_id === deleteGoalPlayer.player_id
+                        )}>
+                          {deleteGoalPlayer ? "Select time" : "Select a player first"}
+                        </option>
+                        {(() => {
+                          if (!deleteGoalPlayer) return null;
+                          
+                          const playerGoals = (goals || []).filter(
+                            goal => goal.player_id === deleteGoalPlayer.player_id
+                          );
+                          return playerGoals
+                            .map(goal => goal.event_time)
+                            .sort((a, b) => b - a) // Newest first
+                            .map((time, index) => (
+                              <option key={`${deleteGoalPlayer.player_id}-${time}-${index}`} value={time}>
+                                {time}'
+                              </option>
+                            ));
+                        })()}
+                      </select>
 
                         {/* Debug info to understand the data structure */}
                         {/* <div style={{ fontSize: '12px', background: '#f0f0f0', padding: '8px', margin: '8px 0', borderRadius: '4px', maxHeight: '100px', overflow: 'auto' }}>
@@ -1139,7 +1166,7 @@ const endMinutes = match?.end_time
                         })()}
                       </div> */}
 
-                        <select
+                        {/* <select
                           value={deleteGoalTime}
                           onChange={(e) => setDeleteGoalTime(e.target.value)}
                           className="score-input"
@@ -1209,7 +1236,7 @@ const endMinutes = match?.end_time
                                 </option>
                               ));
                           })()}
-                        </select>
+                        </select> */}
                         {deleteGoalError && (
                           <p style={{ color: "red", fontWeight: "bold" }}>
                             {deleteGoalError}
@@ -1421,11 +1448,6 @@ const endMinutes = match?.end_time
                                 [goalPlayer.player_id]: (prev[goalPlayer.player_id] || 0) + 1,
                               }));
                             })
-
-
-
-
-                           
 
                             // Update matches array and goalTimes
                             const teamAPlayers =
