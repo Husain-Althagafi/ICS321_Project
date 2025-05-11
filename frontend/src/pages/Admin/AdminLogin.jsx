@@ -42,7 +42,7 @@ function AdminLogin() {
 
     try {
       // First, verify the admin credentials with the backend
-      const response = await axios.get(`/api/auth/login/admin/${id}`);
+      const response = await axios.get(`http://localhost:5000/auth/login/admin/${id}`);
       
       // If admin exists, check password
       if (response.data.success) {

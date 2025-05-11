@@ -21,7 +21,7 @@ function GuestSignUp() {
   // const adminUsername = 'admin';
   // const adminPassword = 'password123';
 
-  const handleSignUp = (e) => {
+  const handleSignUp = async (e) => {
     e.preventDefault();
     const usernamePattern = /^s20\d{7}$/i;
     if (!usernamePattern.test(username.trim())) {
@@ -36,9 +36,24 @@ function GuestSignUp() {
       setTimeout(() => alert(errorMsg), 0);
       return;
     }
-    // Simulate successful sign-up
-    alert("Sign-up successful! Redirecting to Guest login page...");
-    navigate("/guest/login");
+    // Add the guest data to the backend
+    try {
+      const response = await axios.post('http://localhost:5000/auth/register/guest', {
+        guest_id: username,
+        guest_firstname: firstName,
+        guest_lastname: lastName,
+        guest_password: password,
+      });
+      if (response.data.success) {
+        alert("Sign-up successful! Redirecting to Guest login page...");
+        navigate("/guest/login");
+      } else {
+        setError(response.data.message || "Sign-up failed!");
+      }
+    } catch (err) {
+      setError("An error occurred during sign-up.");
+      setTimeout(() => alert("An error occurred during sign-up."), 0);
+    }
   };
 
   const togglePasswordVisibility = () => {

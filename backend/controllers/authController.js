@@ -66,10 +66,10 @@ exports.registerAdmin = asyncHandler(async (req, res) => {
 });
 
 exports.loginGuest = asyncHandler(async (req, res) => {
-    const { guest_id, guest_firstname, guest_lastname, guest_password } = req.body;
+    const guest_id = req.params.guest_id;
 
     // Validate inputs
-    if (!guest_id || !guest_firstname || !guest_lastname || !guest_password) {
+    if (!guest_id || !guest_password) {
         return res.status(400).json({ error: 'First name, last name, and password are required' });
     }
 

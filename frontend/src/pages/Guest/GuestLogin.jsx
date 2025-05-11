@@ -4,6 +4,7 @@ import "../../stylesheets/GuestLogin.css";
 import showPasswordIcon from "../../assets/icons/find_15067049.png";
 import hidePasswordIcon from "../../assets/icons/see_4230235.png";
 import sealImage from "../../assets/icons/KFUPM Seal White.png";
+import axios from "axios";
 
 function GuestLogin() {
   const [id, setid] = useState("");
@@ -13,16 +14,41 @@ function GuestLogin() {
   const navigate = useNavigate();
 
   // Predefined guest credentials for demo purposes
-  const guestid = "s20123456";
-  const guestPassword = "password123!";
+  // const guestid = "s20123456";
+  // const guestPassword = "password123!";
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (id === guestid && password === guestPassword) {
-      // On successful login, redirect to guest page
-      navigate("/guest/home");
-    } else {
-      const errorMsg = "Invalid id or password!";
+
+    // Check if the ID matches the expected format
+    const idPattern = /^s20\d{7}$/;
+    if (!idPattern.test(id)) {
+      const errorMsg = "Invalid ID format. It should be in the form s20xxxxxxx.";
+      setError(errorMsg);
+      setTimeout(() => alert(errorMsg), 0);
+      return;
+    }
+
+    try {
+      const response = await axios.get(`http://localhost:5000/auth/login/guest/${id}`);
+
+      if (response.data.success) {
+        // Compare the fetched password with the entered password here
+        if (response.data.guest_password === password) {
+          // On successful password match, redirect to guest page
+          navigate("/guest/home");
+        } else {
+          const errorMsg = "Invalid password!";
+          setError(errorMsg);
+          setTimeout(() => alert(errorMsg), 0);
+        }
+      } else {
+        const errorMsg = response.data.message || "Invalid id!";
+        setError(errorMsg);
+        setTimeout(() => alert(errorMsg), 0);
+      }
+    } catch (err) {
+      const errorMsg = "An error occurred during login.";
       setError(errorMsg);
       setTimeout(() => alert(errorMsg), 0);
     }
