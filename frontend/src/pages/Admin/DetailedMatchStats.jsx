@@ -33,8 +33,8 @@ const DetailedMatchStats = () => {
   const [team2Players, setTeam2Players] = useState([])
   const [captains, setCaptains] = useState([])
   const [cards, setCards] = useState([])
-  const [redCards, setRedCards] = useState([])
-  const [yellowCards, setYellowCards] = useState([])
+  const [redCards, setRedCards] = useState({})
+  const [yellowCards, setYellowCards] = useState({})
 
   // Track match completion
   const [isCompleted, setIsCompleted] = useState(false);
@@ -61,9 +61,9 @@ const DetailedMatchStats = () => {
         setTeams(teamsData);
 
         //Set cards data
-        const counts = {};
-        redCardsRes.forEach(item => {
-          counts[item.player_id] = item.goal_count;
+        const redcards = {};
+        redCardsRes.data.data.forEach(item => {
+          redcards[item.player_id] = item.goal_count;
         })
         setRedCards(redCardsRes)
   
@@ -406,24 +406,16 @@ const endMinutes = match?.end_time
                           type="button"
                           className="btn-red-card"
                           onClick={() => {
-                            const hasCard = match.redCards?.[p.player_id] != null;
+                            const hasCard = redCards[p.player_id] != null;
                             if (hasCard) {
                               if (window.confirm("Remove red card record?")) {
                                 // Remove red card
-                                const updatedMatches = matches.map((m) =>
-                                  m.id === match.match_id
-                                    ? {
-                                        ...m,
-                                        redCards: Object.fromEntries(
-                                          Object.entries(
-                                            m.redCards || {},
-                                          ).filter(
-                                            ([pid]) => pid !== String(p.id),
-                                          ),
-                                        ),
-                                      }
-                                    : m,
-                                );
+
+                                axios.delete(`http://localhost:5000/admin/red-cards`, {
+                                  player_id: p.player_id,
+                                  match_id: matchId
+                                })
+                                delete redCards[p.player_id]
                                 setMatches(updatedMatches);
                                 const updatedTours = JSON.parse(
                                   localStorage.getItem("tournaments") || "[]",
