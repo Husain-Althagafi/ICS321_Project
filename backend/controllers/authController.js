@@ -4,7 +4,7 @@ const asyncHandler = require('../middleware/asyncHandler')
 // const bcrypt = require('bcrypt')         might not used hash passwords for ease, will see
 
 exports.loginAdmin = asyncHandler(async (req, res) => {
-    const adminId = req.params.admin_id;
+    const adminId = req.params.adminId;
 
     if (!adminId) {
         return res.status(400).json({ error: 'Admin ID is required' });
@@ -36,10 +36,10 @@ exports.loginAdmin = asyncHandler(async (req, res) => {
 });
 
 exports.registerAdmin = asyncHandler(async (req, res) => {
-    const { admin_id, admin_username, admin_password } = req.body;
+    const { admin_id, admin_username, password } = req.body;
 
     // Validate inputs
-    if (!admin_id || !admin_username || !admin_password) {
+    if (!admin_id || !admin_username || !password) {
         return res.status(400).json({ error: 'Username and password are required' });
     }
 
@@ -49,7 +49,7 @@ exports.registerAdmin = asyncHandler(async (req, res) => {
             INSERT INTO admin (admin_id, admin_username, admin_password) 
             VALUES ($1, $2, $3) 
             RETURNING *;
-        `, [admin_id, admin_username, admin_password]);
+        `, [admin_id, admin_username, password]);
 
         res.status(201).json({
             success: true,
@@ -66,7 +66,7 @@ exports.registerAdmin = asyncHandler(async (req, res) => {
 });
 
 exports.loginGuest = asyncHandler(async (req, res) => {
-    const guest_id = req.params.guest_id;
+    const {guest_id, guest_password} = req.body
 
     // Validate inputs
     if (!guest_id || !guest_password) {
@@ -86,16 +86,16 @@ exports.loginGuest = asyncHandler(async (req, res) => {
             });
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: 'Guest logged in successfully',
             data: result.rows[0], // Returning the guest details
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
-            error: 'Error logging in guest',
+            error: 'Error logging in guest'+err,
         });
     }
 });

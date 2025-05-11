@@ -45,8 +45,8 @@ router.patch('/matches/:match_id', adminController.updateMatch)
 router.patch('/tournaments/:tournament_id', adminController.updateTournament)
 
 
-// //update match details
-// router.post('/matches/:match_id/details', adminController.updateMatchDetails)
+//update match details
+router.post('/matches/:match_id/details', adminController.updateMatchDetails)
 
 
 
@@ -60,6 +60,25 @@ router.post('/match-goals', adminController.addMatchGoals);
 router.get('/match-goals', adminController.getMatchGoals);
 router.patch('/match-goals', adminController.updateMatchGoals);
 router.delete('/match-goals/player/:player_id', adminController.deletePlayerMatchGoals);
+
+
+// Cards
+
+router.get('/red-cards/:match_id', adminController.getRedCardsForMatch)
+router.get('/yellow-cards/:match_id', adminController.getYellowCardsForMatch)
+
+
+router.post('/red-cards', adminController.addRedCard)
+router.post('/yellow-cards', adminController.addYellowCard)
+
+
+router.delete('/red-cards', adminController.deleteRedCard)
+
+// router.get('/yellow-cards')
+
+// router.post('/yellow-cards')
+
+// router.delete('/yellow-cards')
 
 module.exports = router;
 

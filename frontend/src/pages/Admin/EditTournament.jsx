@@ -256,12 +256,16 @@ const EditTournament = () => {
       name: tournamentName,
       start_date: startDate,
       end_date: endDate,
-      num_teams: parseInt(numTeams, 10)
+      num_teams: parseInt(numTeams, 10),
     })
-    .then(
-      navigate("/admin/tournaments")
-    )
-    .catch(err => console.error(err))
+    .then((res) => {
+      alert("Tournament updated successfully!");
+      navigate("/admin/tournaments"); // Redirect to tournaments list page
+    })
+    .catch((err) => {
+      console.error("Error updating tournament:", err);
+      alert("Failed to update tournament.");
+    });
   };
 
   const handleAddPlayer = () => {

@@ -274,22 +274,99 @@ exports.updateMatch = asyncHandler(async (req, res) => {
 });
 
 exports.addGoalEvent = asyncHandler(async (req, res) => {
-  const { match_id, player_id, goal_time } = req.body;
-  if (!match_id || !player_id || goal_time == null) {
-    return res.status(400).json({ success: false, error: "match_id, player_id, and event_time are required" });
-  }
-  try {
-    const result = await db.query(
-      `INSERT INTO goal_events (match_id, player_id, event_time)
-       VALUES ($1, $2, $3)
-       RETURNING *`,
-      [match_id, player_id, goal_time]
-    );
-    res.status(200).json({ success: true, data: result.rows[0] });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
+    const { match_id, player_id, goal_time } = req.body;
+    
+    // Validate input
+    if (!match_id || !player_id || goal_time == null) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "match_id, player_id, and goal_time are required" 
+      });
+    }
+  
+    if (isNaN(goal_time) || goal_time < 0) {
+      return res.status(400).json({
+        success: false,
+        error: "goal_time must be a positive number"
+      });
+    }
+  
+    const client = await db.connect();
+  
+    try {
+      await client.query('BEGIN');
+  
+      // 1. First verify the player belongs to one of the match teams
+      const teamCheck = await client.query(
+        `SELECT m.teama_id, m.teamb_id, p.team_id 
+         FROM matches m
+         JOIN players p ON p.player_id = $1
+         WHERE m.match_id = $2`,
+        [player_id, match_id]
+      );
+  
+      if (teamCheck.rows.length === 0) {
+        throw new Error('Player or match not found');
+      }
+  
+      const { teama_id, teamb_id, team_id } = teamCheck.rows[0];
+      const isTeamA = team_id === teama_id;
+  
+      // 2. Insert into goal_events
+      const goalEvent = await client.query(
+        `INSERT INTO goal_events (match_id, player_id, event_time)
+         VALUES ($1, $2, $3)
+         RETURNING *`,
+        [match_id, player_id, goal_time]
+      );
+  
+      // 3. Update match_goals (aggregated count)
+      await client.query(
+        `INSERT INTO match_goals (match_id, player_id, goal_count)
+         VALUES ($1, $2, 1)
+         ON CONFLICT (match_id, player_id)
+         DO UPDATE SET goal_count = match_goals.goal_count + 1`,
+        [match_id, player_id]
+      );
+  
+      // 4. Update the match score (increment correct team's score)
+      const updatedMatch = await client.query(
+        `UPDATE matches
+         SET ${isTeamA ? 'scorea = COALESCE(scorea, 0) + 1' : 'scoreb = COALESCE(scoreb, 0) + 1'}
+         WHERE match_id = $1
+         RETURNING *`,
+        [match_id]
+      );
+  
+      await client.query('COMMIT');
+  
+      res.status(201).json({
+        success: true,
+        data: {
+          goal_event: goalEvent.rows[0],
+          match: updatedMatch.rows[0]
+        }
+      });
+  
+    } catch (err) {
+      await client.query('ROLLBACK');
+      
+      if (err.code === '23505') { // Unique violation (duplicate goal)
+        return res.status(409).json({
+          success: false,
+          error: "This goal event already exists"
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        error: err.message,
+        details: err.detail // PostgreSQL specific error details
+      });
+    } finally {
+      client.release();
+    }
+  });
 
 exports.addMatchGoals = asyncHandler(async (req, res) => {
     const { match_id, player_id, goal_count } = req.body;
@@ -357,26 +434,111 @@ exports.updateMatchGoals = asyncHandler(async (req, res) => {
     }
   });
 
-exports.deleteGoalEvent = asyncHandler(async (req, res) => {
-  const { match_id, player_id, goal_time } = req.body;
-  if (!match_id || !player_id || goal_time == null) {
-    return res.status(400).json({ success: false, error: "match_id, player_id, and goal_time are required" });
-  }
-  try {
-    const result = await db.query(
-      `DELETE FROM goal_events
-       WHERE match_id = $1 AND player_id = $2 AND goal_time = $3
-       RETURNING *`,
-      [match_id, player_id, goal_time]
-    );
-    if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: "No goal_event found for given keys" });
+  exports.deleteGoalEvent = asyncHandler(async (req, res) => {
+    const { match_id, player_id, goal_time } = req.body;
+    
+    // Validate input
+    if (!match_id || !player_id || goal_time == null) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "match_id, player_id, and goal_time are required" 
+      });
     }
-    res.status(200).json({ success: true, data: result.rows[0] });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
+  
+    if (isNaN(goal_time) || goal_time < 0) {
+      return res.status(400).json({
+        success: false,
+        error: "goal_time must be a positive number"
+      });
+    }
+  
+    const client = await db.connect();
+  
+    try {
+      await client.query('BEGIN');
+  
+      // 1. First verify the player belongs to one of the match teams
+      const teamCheck = await client.query(
+        `SELECT m.teama_id, m.teamb_id, p.team_id, m.scorea, m.scoreb
+         FROM matches m
+         JOIN players p ON p.player_id = $1
+         WHERE m.match_id = $2`,
+        [player_id, match_id]
+      );
+  
+      if (teamCheck.rows.length === 0) {
+        throw new Error('Player or match not found');
+      }
+  
+      const { teama_id, teamb_id, team_id, scorea, scoreb } = teamCheck.rows[0];
+      const isTeamA = team_id === teama_id;
+  
+      // 2. Delete from goal_events
+      const deletedGoal = await client.query(
+        `DELETE FROM goal_events
+         WHERE match_id = $1 AND player_id = $2 AND event_time = $3
+         RETURNING *`,
+        [match_id, player_id, goal_time]
+      );
+  
+      if (deletedGoal.rows.length === 0) {
+        throw new Error('No goal event found with these parameters');
+      }
+  
+      // 3. Update match_goals (decrement aggregated count)
+      await client.query(
+        `UPDATE match_goals
+         SET goal_count = goal_count - 1
+         WHERE match_id = $1 AND player_id = $2
+         RETURNING *`,
+        [match_id, player_id]
+      );
+  
+      // 4. Update the match score (decrement correct team's score)
+      const updatedMatch = await client.query(
+        `UPDATE matches
+         SET ${isTeamA ? 'scorea = GREATEST(COALESCE(scorea, 0) - 1, 0)' : 'scoreb = GREATEST(COALESCE(scoreb, 0) - 1, 0)'}
+         WHERE match_id = $1
+         RETURNING *`,
+        [match_id]
+      );
+  
+      // 5. Clean up any zero-count records
+      await client.query(
+        `DELETE FROM match_goals
+         WHERE match_id = $1 AND player_id = $2 AND goal_count <= 0`,
+        [match_id, player_id]
+      );
+  
+      await client.query('COMMIT');
+  
+      res.status(200).json({
+        success: true,
+        data: {
+          deleted_goal: deletedGoal.rows[0],
+          match: updatedMatch.rows[0]
+        }
+      });
+  
+    } catch (err) {
+      await client.query('ROLLBACK');
+      
+      if (err.message === 'No goal event found with these parameters') {
+        return res.status(404).json({
+          success: false,
+          error: err.message
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        error: err.message,
+        details: err.detail
+      });
+    } finally {
+      client.release();
+    }
+  });
 
 exports.deletePlayerMatchGoals = asyncHandler(async (req, res) => {
   const { player_id } = req.params;
@@ -412,3 +574,143 @@ exports.updateTournament = asyncHandler(async(req, res) => {
         data: result.rows
     })
 })
+
+exports.getRedCardsForMatch = asyncHandler(async(req, res) => {
+    const match_id = req.params.match_id
+
+    if (!match_id) {
+        return res.status(400).json({error: 'Missing match id'})
+    }
+
+    const result = await db.query(`
+            SELECT *
+            FROM red_card_events
+            WHERE match_id = $1
+        `, [match_id])
+
+    res.status(200).json({success: true, data: result.rows})
+})
+
+exports.getAllCards = asyncHandler(async (req, res) => {
+
+    const [redCards, yellowCards] = await Promise.all([
+      db.query(`SELECT * FROM red_card_events WHERE match_id = $1`, [req.params.match_id]),
+      db.query(`SELECT * FROM yellow_card_events WHERE match_id = $1`, [req.params.match_id])
+    ]);
+    
+
+    res.json({
+        success: true,
+        data: {
+            red: redCards.rows,
+            yellow: yellowCards.rows
+        }
+    });
+  });
+
+
+  exports.addRedCard = asyncHandler(async(req, res) => {
+    const {match_id, player_id, event_time} = req.body
+
+    if (!match_id || !player_id || !event_time) {
+        return res.status(400).json({error: 'Missing values for red card'})
+    }
+
+    const result = await db.query(`
+            INSERT INTO red_card_events 
+            (match_id, player_id, event_time)
+            VALUES ($1, $2, $3)
+            RETURNING *
+        `, [match_id, player_id, event_time])
+
+    
+    return res.status(200).json({success: true, data: result.rows})
+  })
+
+
+  exports.deleteRedCard = asyncHandler(async (req, res) => {
+    const { match_id, player_id } = req.body;
+
+    if (!match_id || !player_id) {
+        return res.status(400).json({ error: 'Missing values' });
+    }
+
+    try {
+        const result = await db.query(`
+            DELETE FROM red_card_events
+            WHERE match_id = $1 
+            AND player_id = $2 
+            RETURNING *
+        `, [match_id, player_id]);
+
+        res.status(200).json({
+            message: 'Red card deleted successfully',
+            deletedRecord: result.rows,
+            input: {
+                match_id: match_id,
+                player_id: player_id
+            }
+        });
+    } catch (error) {
+        console.error('Error deleting red card:', error);
+        res.status(500).json({ error: 'Failed to delete red card'+ error });
+    }
+});
+
+
+exports.getYellowCardsForMatch = asyncHandler(async(req, res) => {
+    const match_id = req.params.match_id
+
+    if (!match_id) {
+        return res.status(400).json({error: 'Missing match id'})
+    }
+
+    const result = await db.query(`
+            SELECT *
+            FROM yellow_card_events
+            WHERE match_id = $1
+        `, [match_id])
+
+    res.status(200).json({success: true, data: result.rows})
+})
+
+
+
+exports.addYellowCard = asyncHandler(async(req, res) => {
+    const {match_id, player_id, event_time} = req.body
+
+    if (!match_id || !player_id || !event_time) {
+        return res.status(400).json({error: 'Missing values for yellow card'})
+    }
+
+    const result = await db.query(`
+            INSERT INTO yellow_card_events 
+            (match_id, player_id, event_time)
+            VALUES ($1, $2, $3)
+            RETURNING *
+        `, [match_id, player_id, event_time])
+
+    
+    return res.status(200).json({success: true, data: result.rows})
+  })
+
+
+
+  exports.updateMatchDetails = asyncHandler(async(req, res) => {
+    const match_id = req.params.match_id
+    const {match_completed, winner_team_id} = req.body
+
+    if (!match_id || !winner_team_id || typeof match_completed === 'undefined') {
+        return res.status(400).json({error: 'Missing values'})
+    }
+
+    const result = await db.query(`
+            UPDATE matches 
+             SET match_completed = $1,
+                 winner_team_id = $2
+             WHERE match_id = $3
+             RETURNING *
+        `, [match_completed, winner_team_id, match_id])
+
+    return res.status(200).json({success: true, data : result.rows})
+  })

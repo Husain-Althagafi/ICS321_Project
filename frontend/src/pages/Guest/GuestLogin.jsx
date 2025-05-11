@@ -29,29 +29,40 @@ function GuestLogin() {
       return;
     }
 
-    try {
-      const response = await axios.get(`http://localhost:5000/auth/login/guest/${id}`);
-
-      if (response.data.success) {
-        // Compare the fetched password with the entered password here
-        if (response.data.guest_password === password) {
-          // On successful password match, redirect to guest page
+    
+      axios.post(`http://localhost:5000/auth/login/guest`, {guest_id: id, guest_password: password})
+      .then((res) => {
+        if (res.data.data.guest_password === password) {
           navigate("/guest/home");
-        } else {
-          const errorMsg = "Invalid password!";
-          setError(errorMsg);
-          setTimeout(() => alert(errorMsg), 0);
         }
-      } else {
-        const errorMsg = response.data.message || "Invalid id!";
-        setError(errorMsg);
-        setTimeout(() => alert(errorMsg), 0);
-      }
-    } catch (err) {
-      const errorMsg = "An error occurred during login.";
-      setError(errorMsg);
-      setTimeout(() => alert(errorMsg), 0);
-    }
+        else {
+          alert('invalid')
+
+        }
+      })
+      .catch(err => console.error(err))
+    //   const response = await axios.get(`http://localhost:5000/auth/login/guest/${id}`);
+
+    //   if (response.data.success) {
+    //     // Compare the fetched password with the entered password here
+    //     if (response.data.guest_password === password) {
+    //       // On successful password match, redirect to guest page
+    //       navigate("/guest/home");
+    //     } else {
+    //       const errorMsg = "Invalid password!";
+    //       setError(errorMsg);
+    //       setTimeout(() => alert(errorMsg), 0);
+    //     }
+    //   } else {
+    //     const errorMsg = response.data.message || "Invalid id!";
+    //     setError(errorMsg);
+    //     setTimeout(() => alert(errorMsg), 0);
+    //   }
+    // } catch (err) {
+    //   const errorMsg = "An error occurred during login." + err;
+    //   setError(errorMsg);
+    //   setTimeout(() => alert(errorMsg), 0);
+    
   };
 
   const togglePasswordVisibility = () => {
