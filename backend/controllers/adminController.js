@@ -574,3 +574,36 @@ exports.updateTournament = asyncHandler(async(req, res) => {
         data: result.rows
     })
 })
+
+exports.getRedCardsForMatch = asyncHandler(async(req, res) => {
+    const match_id = req.params.match_id
+
+    if (!match_id) {
+        return res.status(400).json({error: 'Missing match id'})
+    }
+
+    const result = await db.query(`
+            SELECT *
+            FROM red_card_events
+            WHERE match_id = $1
+        `, [match_id])
+
+    res.status(200).json({success: true, data: result.rows})
+})
+
+exports.getAllCards = asyncHandler(async (req, res) => {
+
+    const [redCards, yellowCards] = await Promise.all([
+      db.query(`SELECT * FROM red_card_events WHERE match_id = $1`, [req.params.match_id]),
+      db.query(`SELECT * FROM yellow_card_events WHERE match_id = $1`, [req.params.match_id])
+    ]);
+    
+
+    res.json({
+        success: true,
+        data: {
+            red: redCards.rows,
+            yellow: yellowCards.rows
+        }
+    });
+  });

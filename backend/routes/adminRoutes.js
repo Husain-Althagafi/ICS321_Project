@@ -61,5 +61,20 @@ router.get('/match-goals', adminController.getMatchGoals);
 router.patch('/match-goals', adminController.updateMatchGoals);
 router.delete('/match-goals/player/:player_id', adminController.deletePlayerMatchGoals);
 
+
+// Cards
+
+router.get('/red-cards/:match_id', adminController.getRedCardsForMatch)
+
+// router.post('/red-cards')
+
+// router.delete('/red-cards')
+
+// router.get('/yellow-cards')
+
+// router.post('/yellow-cards')
+
+// router.delete('/yellow-cards')
+
 module.exports = router;
 

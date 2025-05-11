@@ -33,6 +33,8 @@ const DetailedMatchStats = () => {
   const [team2Players, setTeam2Players] = useState([])
   const [captains, setCaptains] = useState([])
   const [cards, setCards] = useState([])
+  const [redCards, setRedCards] = useState([])
+  const [yellowCards, setYellowCards] = useState([])
 
   // Track match completion
   const [isCompleted, setIsCompleted] = useState(false);
@@ -42,10 +44,11 @@ const DetailedMatchStats = () => {
   useEffect(() => {
     const fetchMatchData = async () => {
       try {
-        const [matchesRes, teamsRes, captainsRes] = await Promise.all([
+        const [matchesRes, teamsRes, captainsRes, redCardsRes] = await Promise.all([
           axios.get(`http://localhost:5000/tournaments/${tournamentId}/matches`),
           axios.get(`http://localhost:5000/teams/matches/${matchId}`),
-          axios.get(`http://localhost:5000/matches/${matchId}/captains`)
+          axios.get(`http://localhost:5000/matches/${matchId}/captains`),
+          axios.get(`http://localhost:5000/admin/red-cards/${matchId}`)
         ]);
   
         // Set basic match data
@@ -56,6 +59,13 @@ const DetailedMatchStats = () => {
         // Set teams data
         const teamsData = teamsRes.data.data[0];
         setTeams(teamsData);
+
+        //Set cards data
+        const counts = {};
+        redCardsRes.forEach(item => {
+          counts[item.player_id] = item.goal_count;
+        })
+        setRedCards(redCardsRes)
   
         // Fetch players for both teams in parallel
         const [team1PlayersRes, team2PlayersRes] = await Promise.all([
