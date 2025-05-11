@@ -815,19 +815,18 @@ const EditTournament = () => {
                     getDateOptions(tournament.start_date, tournament.end_date),
                     tournamentId,
                   );
-
-                  //send request with generated matches to add to db
-
-                
+                  // Send the generated matches to the backend
                   axios.post(`http://localhost:5000/admin/tournaments/${tournamentId}/matches`, {
                     matches: generated
                   })
                   .then((res) => {
-                    setMatches(generated);
+                    // Update matches state with backend response
+                    setMatches(res.data.data);
                     setListType("matches");
                   })
                   .catch(err => {
-                    console.error(err)
+                    console.error("Error creating matches:", err);
+                    alert("Failed to create matches.");
                   });
                   setShowMatchModal(false);
                 }}
