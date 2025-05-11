@@ -40,34 +40,56 @@ function AdminLogin() {
     const idParts = adminId.split(".");
     const id = idParts[idParts.length - 1];
 
-    try {
-      // First, verify the admin credentials with the backend
-      const response = await axios.get(`http://localhost:5000/auth/login/admin/${id}`);
-      
-      // If admin exists, check password
-      if (response.data.success) {
-        const admin = response.data.data;
-        
-        // Verify password (in a real app, this should be done on the server)
-        if (admin.admin_password === password) {
-          // Show security question before completing login
-          setSecurityAction("login");
-          setShowSecurityModal(true);
-        } else {
-          throw new Error("Invalid password");
-        }
-      } else {
-        throw new Error("Admin not found");
+
+    axios.post(`http://localhost:5000/auth/login/admin`, {
+      adminId: id
+    })
+    .then((res) => {
+      const admin = res.data.data
+
+      if (admin.admin_password === password) {
+        setSecurityAction("login");
+        setShowSecurityModal(true);
       }
-    } catch (err) {
-      console.error("Login error:", err);
-      const errorMsg = err.response?.data?.message || err.message || "Invalid admin ID or password";
-      setError(errorMsg);
-      setTimeout(() => alert(errorMsg), 0);
-    } finally {
-      setLoading(false);
-    }
-  };
+      else {
+        throw new Error('Invalid password')
+      } 
+    })
+    .catch(err => {
+      console.error(err)
+    })
+    
+} 
+  //   try {
+  //     // First, verify the admin credentials with the backend
+  //     const response = await axios.post(`http://localhost:5000/auth/login/admin` {
+  //       adminId: id
+  //     });
+      
+  //     // If admin exists, check password
+  //     if (response.data.success) {
+  //       const admin = response.data.data;
+        
+  //       // Verify password (in a real app, this should be done on the server)
+  //       if (admin.admin_password === password) {
+  //         // Show security question before completing login
+  //         setSecurityAction("login");
+  //         setShowSecurityModal(true);
+  //       } else {
+  //         throw new Error("Invalid password");
+  //       }
+  //     } else {
+  //       throw new Error("Admin not found");
+  //     }
+  //   } catch (err) {
+  //     console.error("Login error:", err);
+  //     const errorMsg = err.response?.data?.message || err.message || "Invalid admin ID or password";
+  //     setError(errorMsg);
+  //     setTimeout(() => alert(errorMsg), 0);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);

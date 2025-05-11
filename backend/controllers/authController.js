@@ -4,13 +4,13 @@ const asyncHandler = require('../middleware/asyncHandler')
 // const bcrypt = require('bcrypt')         might not used hash passwords for ease, will see
 
 exports.loginAdmin = asyncHandler(async (req, res) => {
-    const adminId = req.params.adminId;
+    const {adminId} = req.body;
 
     if (!adminId) {
         return res.status(400).json({ error: 'Admin ID is required' });
     }
 
-    try {
+  
         const result = await db.query(`
             SELECT * FROM admin WHERE admin_id = $1
         `, [adminId]);
@@ -26,14 +26,9 @@ exports.loginAdmin = asyncHandler(async (req, res) => {
             success: true,
             data: result.rows[0],
         });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({
-            success: false,
-            error: 'Error fetching admin details',
-        });
-    }
-});
+    } 
+    
+);
 
 exports.registerAdmin = asyncHandler(async (req, res) => {
     const { admin_id, admin_username, password } = req.body;
@@ -43,10 +38,10 @@ exports.registerAdmin = asyncHandler(async (req, res) => {
         return res.status(400).json({ error: 'Username and password are required' });
     }
 
-    try {
+    
         // Insert the new admin into the admin table
         const result = await db.query(`
-            INSERT INTO admin (admin_id, admin_username, admin_password) 
+            INSERT INTO admin (admin_id, admin_name, admin_password) 
             VALUES ($1, $2, $3) 
             RETURNING *;
         `, [admin_id, admin_username, password]);
@@ -56,13 +51,7 @@ exports.registerAdmin = asyncHandler(async (req, res) => {
             message: 'Admin created successfully',
             data: result.rows[0], // Returning the newly inserted admin
         });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({
-            success: false,
-            error: 'Error creating admin',
-        });
-    }
+    
 });
 
 exports.loginGuest = asyncHandler(async (req, res) => {

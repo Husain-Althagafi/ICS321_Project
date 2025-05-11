@@ -2,7 +2,7 @@ const express = require('express');
 const authController = require('../controllers/authController');
 const router = express.Router();
 
-router.get('/login/admin/:adminId', authController.loginAdmin)
+router.post('/login/admin/', authController.loginAdmin)
 
 router.post('/login/guest', authController.loginGuest)
 

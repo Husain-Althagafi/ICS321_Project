@@ -188,7 +188,9 @@ const endMinutes = match?.end_time
       .then((res) => {
         const counts = {};
         res.data.data.forEach(item => {
-        counts[item.player_id] = item.goal_count;
+          if (item.match_id === matchId) {
+            counts[item.player_id] = item.goal_count;
+          }
       });
       setGoalCounts(counts);
       // setGoalCounts(res.data.data || {});
@@ -1032,10 +1034,10 @@ const endMinutes = match?.end_time
                                 <option value="" disabled>
                                   Select time
                                 </option>
-                                {Array.isArray(
-                                  yellowCards?.[yellowCardPlayer?.player_id],
-                                )
-                                  ? yellowCards[yellowCardPlayer.player_id]
+                                {
+                                  yellowCards?.[yellowCardPlayer?.player_id]
+                                
+                                  ? yellowCards[yellowCardPlayer.player_id].event_time
                                       .slice()
                                       .sort((a, b) => a - b)
                                       .map((t) => (
@@ -1066,43 +1068,62 @@ const endMinutes = match?.end_time
                                       );
                                       return;
                                     }
-                                    const tval = parseInt(removeYellowTime, 10);
-                                    const updatedMatches = matches.map((m) => {
-                                      if (m.player_id !== match.match_id) return m;
-                                      const cards = Array.isArray(
-                                        m.yellowCards?.[yellowCardPlayer.player_id],
-                                      )
-                                        ? [
-                                            ...m.yellowCards[
-                                              yellowCardPlayer.player_id
-                                            ],
-                                          ]
-                                        : [];
-                                      const newCards = cards.filter(
-                                        (x) => x !== tval,
-                                      );
-                                      return {
-                                        ...m,
-                                        yellowCards: {
-                                          ...(m.yellowCards || {}),
-                                          [yellowCardPlayer.player_id]: newCards,
-                                        },
-                                      };
-                                    });
-                                    setMatches(updatedMatches);
-                                    const allTours = JSON.parse(
-                                      localStorage.getItem("tournaments") ||
-                                        "[]",
-                                    ).map((t) =>
-                                      String(t.player_id) === tournamentId
-                                        ? { ...t, matches: updatedMatches }
-                                        : t,
-                                    );
-                                    localStorage.setItem(
-                                      "tournaments",
-                                      JSON.stringify(allTours),
-                                    );
+
+                                    //delete yellow card request
+                                    axios.delete(`http://localhost:5000/admin/yellow-cards`, {
+                                      data: 
+                                        {
+                                          match_id : matchId,
+                                          player_id: yellowCardPlayer.player_id,
+                                          event_time: removeYellowTime
+                                        }
+                                    })
+                                    .then((res) => {
+                                      yellowCards[yellowCardPlayer.player_id].count --
+                                      
+                                      setMatch(match)
+                                      setShowYellowTimeModal(false);                           
+                                    })
+                                    .catch(err => console.error(err))
+
                                     setShowRemoveYellowModal(false);
+
+                                    // const tval = parseInt(removeYellowTime, 10);
+                                    // const updatedMatches = matches.map((m) => {
+                                    //   if (m.player_id !== match.match_id) return m;
+                                    //   const cards = Array.isArray(
+                                    //     m.yellowCards?.[yellowCardPlayer.player_id],
+                                    //   )
+                                    //     ? [
+                                    //         ...m.yellowCards[
+                                    //           yellowCardPlayer.player_id
+                                    //         ],
+                                    //       ]
+                                    //     : [];
+                                    //   const newCards = cards.filter(
+                                    //     (x) => x !== tval,
+                                    //   );
+                                    //   return {
+                                    //     ...m,
+                                    //     yellowCards: {
+                                    //       ...(m.yellowCards || {}),
+                                    //       [yellowCardPlayer.player_id]: newCards,
+                                    //     },
+                                    //   };
+                                    // });
+                                    // setMatches(updatedMatches);
+                                    // const allTours = JSON.parse(
+                                    //   localStorage.getItem("tournaments") ||
+                                    //     "[]",
+                                    // ).map((t) =>
+                                    //   String(t.player_id) === tournamentId
+                                    //     ? { ...t, matches: updatedMatches }
+                                    //     : t,
+                                    // );
+                                    // localStorage.setItem(
+                                    //   "tournaments",
+                                    //   JSON.stringify(allTours),
+                                    // );
                                   }}
                                 >
                                   Remove

@@ -111,7 +111,10 @@ exports.getMatches = asyncHandler(async (req, res) => {
         m.scorea,
         m.scoreb,
         m.winner_team_id,
-        m.match_completed
+        m.match_completed,
+        m.venue_id,
+        m.motm_player_id
+
       FROM matches m
       LEFT JOIN teams t1 ON m.teama_id = t1.team_id
       LEFT JOIN teams t2 ON m.teamb_id = t2.team_id

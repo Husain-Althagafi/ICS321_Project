@@ -698,19 +698,52 @@ exports.addYellowCard = asyncHandler(async(req, res) => {
 
   exports.updateMatchDetails = asyncHandler(async(req, res) => {
     const match_id = req.params.match_id
-    const {match_completed, winner_team_id} = req.body
+    const {match_completed, winner_team_id, motm_player_id} = req.body
 
-    if (!match_id || !winner_team_id || typeof match_completed === 'undefined') {
+    if (!match_id || typeof match_completed === 'undefined') {
         return res.status(400).json({error: 'Missing values'})
     }
 
     const result = await db.query(`
             UPDATE matches 
              SET match_completed = $1,
-                 winner_team_id = $2
-             WHERE match_id = $3
+                 winner_team_id = $2,
+                 motm_player_id = $3
+             WHERE match_id = $4
              RETURNING *
-        `, [match_completed, winner_team_id, match_id])
+        `, [match_completed, winner_team_id, motm_player_id, match_id])
 
     return res.status(200).json({success: true, data : result.rows})
   })
+
+
+  exports.deleteYellowCard = asyncHandler(async (req, res) => {
+    const { match_id, player_id, event_time} = req.body;
+
+    if (!match_id || !player_id) {
+        return res.status(400).json({ error: 'Missing values' });
+    }
+
+    try {
+        const result = await db.query(`
+            DELETE FROM yellow_card_events
+            WHERE match_id = $1 
+            AND player_id = $2 
+            AND event_time = $3
+            RETURNING *
+        `, [match_id, player_id, event_time]);
+
+        res.status(200).json({
+            message: 'Yellow card deleted successfully',
+            deletedRecord: result.rows,
+            input: {
+                match_id: match_id,
+                player_id: player_id,
+                event_time: event_time
+            }
+        });
+    } catch (error) {
+        console.error('Error deleting yellow card:', error);
+        res.status(500).json({ error: 'Failed to delete yellow card'+ error });
+    }
+});

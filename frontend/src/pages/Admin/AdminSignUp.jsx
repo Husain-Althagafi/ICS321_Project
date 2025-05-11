@@ -62,7 +62,6 @@ function AdminSignUp() {
         password: password,
       })
       .then((res) => {
-        localStorage.setItem("token", res.data.token);
         alert("Sign-up successful! Redirecting to Admin login page...");
         setError("");
         navigate("/admin/login");

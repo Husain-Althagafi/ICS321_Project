@@ -79,18 +79,18 @@ const Matches_DetailedMatchStats = () => {
                       }}
                     >
                       <h3 style={{ margin: 0 }}>
-                        Match Id:{ ' '+m.match_id}
-                        <span className="match-name-gradient">{m.id}</span>
+                        Match Id:{ ' '}
+                        <span className="match-name-gradient">{m.match_id}</span>
                       </h3>
                     </div>
                     <p>
                       <strong>Teams:</strong>{" "}
                       {availableTeams.find(
-                        (t) => String(t.team_id) === String(m.team1),
+                        (t) => String(t.team_id) === String(m.teama_id),
                       )?.team_name || m.team1}{" "}
                       vs{" "}
                       {availableTeams.find(
-                        (t) => String(t.team_id) === String(m.team2),
+                        (t) => String(t.team_id) === String(m.teamb_id),
                       )?.team_name || m.team2}
                     </p>
                     <p>
@@ -98,6 +98,9 @@ const Matches_DetailedMatchStats = () => {
                     </p>
                     <p>
                       <strong>Time:</strong> {m.start_time || 'no time set'} - {m.end_time || 'no time set'}
+                    </p>
+                    <p>
+                      <strong>Status:</strong> {m.match_completed? 'Completed': 'Not complete'}
                     </p>
                     {localStorage.getItem(`match-completed-${m.id}`) ===
                       "true" && (

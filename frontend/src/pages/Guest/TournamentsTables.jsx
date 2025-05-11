@@ -27,7 +27,7 @@ const TournamentsTables = () => {
         ga = 0;
       (selectedTournament.matches || []).forEach((m) => {
         if (m.teama_id === teamId || m.teamb_id === teamId) {
-          if (m.scorea != null && m.scoreb != null) {
+          if (m.match_completed != null && m.match_completed != null) {
             played++;
             const teamScore = m.teama_id === teamId ? m.scorea : m.scoreb;
             const oppScore = m.teama_id === teamId ? m.scoreb : m.scorea;
@@ -55,7 +55,7 @@ const TournamentsTables = () => {
   standings.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
 
   const allMatchesCompleted = selectedTournament?.matches?.every(
-    (m) => m.scorea != null && m.scoreb != null,
+    (m) => m.match_completed != null && m.match_completed != null,
   );
 
   useEffect(() => {

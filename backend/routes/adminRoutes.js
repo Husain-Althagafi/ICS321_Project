@@ -73,6 +73,8 @@ router.post('/yellow-cards', adminController.addYellowCard)
 
 
 router.delete('/red-cards', adminController.deleteRedCard)
+router.delete('/yellow-cards', adminController.deleteYellowCard)
+
 
 // router.get('/yellow-cards')
 
