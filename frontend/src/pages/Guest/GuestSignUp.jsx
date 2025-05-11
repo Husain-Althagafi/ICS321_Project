@@ -4,7 +4,7 @@ import "../../stylesheets/GuestSignUp.css";
 import showPasswordIcon from "../../assets/icons/find_15067049.png";
 import hidePasswordIcon from "../../assets/icons/see_4230235.png";
 import sealImage from "../../assets/icons/KFUPM Seal White.png";
-
+import axios from 'axios'
 function GuestSignUp() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -37,23 +37,11 @@ function GuestSignUp() {
       return;
     }
     // Add the guest data to the backend
-    try {
-      const response = await axios.post('http://localhost:5000/auth/register/guest', {
-        guest_id: username,
-        guest_firstname: firstName,
-        guest_lastname: lastName,
-        guest_password: password,
-      });
-      if (response.data.success) {
-        alert("Sign-up successful! Redirecting to Guest login page...");
-        navigate("/guest/login");
-      } else {
-        setError(response.data.message || "Sign-up failed!");
-      }
-    } catch (err) {
-      setError("An error occurred during sign-up.");
-      setTimeout(() => alert("An error occurred during sign-up."), 0);
-    }
+    axios.post(`http://localhost:5000/auth/register/guest`, { guest_id: username, guest_firstname: firstName, guest_lastname: lastName, guest_password: password})
+    .then((res) => {
+      navigate("/guest/login");
+    })
+    .catch(err => console.error(err))
   };
 
   const togglePasswordVisibility = () => {
