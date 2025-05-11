@@ -61,15 +61,15 @@ const Matches_DetailedMatchStats = () => {
                   m.winner ||
                   (m.scoreA > m.scoreB
                     ? availableTeams.find(
-                        (t) => String(t.team_id) === String(m.teamA),
-                      )?.team_name || m.teamA
+                        (t) => String(t.team_id) === String(m.teama_id),
+                      )?.team_name || m.teama_id
                     : m.scoreB > m.scoreA
                       ? availableTeams.find(
-                          (t) => String(t.team_id) === String(m.teamB),
-                        )?.team_name || m.teamB
+                          (t) => String(t.team_id) === String(m.teamb_id),
+                        )?.team_name || m.teamb_id
                       : "Draw");
                 return (
-                  <div key={m.match_no} className="match-card">
+                  <div key={m.match_id} className="match-card">
                     <div
                       className="match-card-header"
                       style={{
@@ -79,7 +79,7 @@ const Matches_DetailedMatchStats = () => {
                       }}
                     >
                       <h3 style={{ margin: 0 }}>
-                        Match Id:{ ' '+m.match_no}
+                        Match Id:{ ' '+m.match_id}
                         <span className="match-name-gradient">{m.id}</span>
                       </h3>
                     </div>
@@ -94,10 +94,10 @@ const Matches_DetailedMatchStats = () => {
                       )?.team_name || m.team2}
                     </p>
                     <p>
-                      <strong>Date:</strong> {formatDate(m.play_date.split("T")[0])}
+                      <strong>Date:</strong> {formatDate(m.match_date.split("T")[0])}
                     </p>
                     <p>
-                      <strong>Time:</strong> {'startTime'} - {'no end time' || endTime}
+                      <strong>Time:</strong> {m.start_time || 'no time set'} - {m.end_time || 'no time set'}
                     </p>
                     {localStorage.getItem(`match-completed-${m.id}`) ===
                       "true" && (
@@ -119,7 +119,7 @@ const Matches_DetailedMatchStats = () => {
                       className="edit-button"
                       onClick={() =>
                         navigate(
-                          `/admin/detailed-match-stats/${tournamentId}/${m.match_no}/match-stats`,
+                          `/admin/detailed-match-stats/${tournamentId}/${m.match_id}/match-stats`,
                         )
                       }
                     >

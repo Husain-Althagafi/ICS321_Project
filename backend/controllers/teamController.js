@@ -81,38 +81,21 @@ exports.getPlayersByTeamId = asyncHandler(async (req, res) => {
 });
 
 
-// exports.getTeamsByMatch = asyncHandler(async (req, res) => {
-//   const match_no = req.params.match_no
+exports.getTeamsByMatch = asyncHandler(async (req, res) => {
+  const match_id = req.params.match_id
 
-//   const query = `
-//     SELECT 
-//       t.team_id,
-//       t.team_name,
-//       p_captain.name AS captain_name,
-//       p_gk.name AS goalkeeper_name,
-//       md.win_lose,
-//       md.goal_score,
-//       md.penalty_score,
-//       tt.tr_id,
-//       tt.team_group,
-//       tt.points
-//     FROM match_details md
-//     JOIN TEAM t ON md.team_id = t.team_id
-//     LEFT JOIN MATCH_CAPTAIN mc ON mc.match_no = md.match_no AND mc.team_id = t.team_id
-//     LEFT JOIN PLAYER captain ON captain.player_id = mc.player_captain
-//     LEFT JOIN PERSON p_captain ON p_captain.kfupm_id = captain.player_id
-//     LEFT JOIN PLAYER gk ON gk.player_id = md.player_gk
-//     LEFT JOIN PERSON p_gk ON p_gk.kfupm_id = gk.player_id
-//     LEFT JOIN TOURNAMENT_TEAM tt ON tt.team_id = t.team_id
-//     WHERE md.match_no = $1
+  const query = `
+    SELECT teama_id, teamb_id
+    FROM matches
+    WHERE match_id = $1
+  `;
 
-//   `;
+  const { rows } = await db.query(query, [match_id]);
 
-//   const { rows } = await db.query(query, [match_no]);
+  res.status(200).json({ success: true, data: rows
+   });
 
-//   res.status(200).json({ success: true, data: rows });
-
-// })
+})
 
 
 exports.updateTeam = asyncHandler(async (req, res) => {
