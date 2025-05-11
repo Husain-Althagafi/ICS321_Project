@@ -509,7 +509,19 @@ const EditTournament = () => {
                   <select
                     className="matches-dropdown"
                     value={listType}
-                    onChange={(e) => setListType(e.target.value)}
+                    onChange={(e) => {
+                      axios.get(`http://localhost:5000/tournaments/${tournamentId}/matches`)
+                      .then((res) => {
+
+                        setMatches(res.data.data.map(match => ({
+                          ...match,
+                          match_date: match.match_date.split("T")[0],
+                        })))
+                      })
+                      .catch(err => console.error(err))
+                      setListType(e.target.value)
+                      
+                    }}
                   >
                     <option value="matches">Matches</option>
                     <option value="teams">Teams</option>
@@ -517,7 +529,7 @@ const EditTournament = () => {
                 </label>
                 <ul style={{ flexGrow: 1, overflowY: "auto" }}>
                   {listType === "matches"
-                    ? matches.map((m, idx) => {
+                      ? matches.map((m, idx) => {
                         const teamAName =
                           teams.find(
                             (t) => String(t.team_id) === String(m.teama_id),
@@ -1266,19 +1278,8 @@ const EditTournament = () => {
                         })
                         .catch(err => console.error(err))
                   
-                  const updatedTournaments = tournaments.map((t) => {
-                    if (String(t.match_id) !== tournamentId) return t;
-                    const updatedMatches = isEditing
-                      ? t.matches.map((m) => (m.match_id === matchId ? newMatch : m))
-                      : [...(t.matches || []), newMatch];
-                    return {
-                      ...t,
-                      matches: updatedMatches,
-                      lastMatchNumber: isNew ? newNum : t.lastMatchNumber,
-                    };
-                  });
                   
-                  setTournaments(updatedTournaments);
+                  
                   // setMatches(
                   //   updatedTournaments.find(
                   //     (t) => String(t.match_id) === tournamentId,
