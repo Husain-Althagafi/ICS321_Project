@@ -213,12 +213,15 @@ const EditTournament = () => {
 
   const handleUpdateTeam = (e) => {
     e.preventDefault();
+
+    // Validate input
     if (!tournamentName || !startDate || !endDate) {
       const msg = "All fields are required.";
       setErrorMsg(msg);
       setTimeout(() => alert(msg), 0);
       return;
     }
+
     const today = new Date().setHours(0, 0, 0, 0);
     const start = new Date(startDate).setHours(0, 0, 0, 0);
     const end = new Date(endDate).setHours(0, 0, 0, 0);
@@ -229,25 +232,33 @@ const EditTournament = () => {
       setTimeout(() => alert(msg), 0);
       return;
     }
+
     if (start < today || end < today) {
       const msg = "Start and end dates cannot be in the past.";
       setErrorMsg(msg);
       setTimeout(() => alert(msg), 0);
       return;
     }
-    const updatedTournaments = tournaments.map((t) =>
-      String(t.tournament_id) === tournamentId
-        ? {
-            ...t,
-            name: tournamentName,
-            startDate,
-            endDate,
-            numTeams: parseInt(numTeams, 10),
-            players,
-          }
-        : t,
-    );
-    navigate("/admin/tournaments");
+
+    // Prepare updated tournament data to be sent to the backend
+    const updateTournament = {
+      tournament_id: tournamentId,
+      name: tournamentName,
+      start_date: startDate,
+      end_date: endDate,
+      num_teams: parseInt(numTeams, 10),
+    };
+
+    // Send the updated tournament data to the backend using the PATCH request
+    axios.patch(`http://localhost:5000/tournaments/${tournamentId}`, updateTournament)
+      .then((res) => {
+        alert("Tournament updated successfully!");
+        navigate("/admin/tournaments"); // Redirect to tournaments list page
+      })
+      .catch((err) => {
+        console.error("Error updating tournament:", err);
+        alert("Failed to update tournament.");
+      });
   };
 
   const handleAddPlayer = () => {
