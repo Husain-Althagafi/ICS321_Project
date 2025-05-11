@@ -607,3 +607,22 @@ exports.getAllCards = asyncHandler(async (req, res) => {
         }
     });
   });
+
+
+  exports.addRedCard = asyncHandler(async(req, res) => {
+    const {match_id, player_id, event_time} = req.body
+
+    if (!match_id || !player_id || !event_time) {
+        return res.status(400).json({error: 'Missing values for red card'})
+    }
+
+    const result = await db.query(`
+            INSERT INTO red_card_events 
+            (match_id, player_id, event_time)
+            VALUES ($1, $2, $3)
+            RETURNING *
+        `, [match_id, player_id, event_time])
+
+    
+    return res.status(200).json({success: true, data: result.rows})
+  })

@@ -700,8 +700,23 @@ const endMinutes = match?.end_time
                                     }
 
                                     if (cardPlayer) {
-                                      setShowCardModal(false);
-                                      setCardError("");
+                                      //add red card with request
+                                      axios.post(`http://localhost:5000/admin/red-cards`, {
+                                        match_id: matchId,
+                                        player_id: p.player_id,
+                                        event_time: minutesValue
+                                      })
+                                      .then((res) => {
+
+
+
+                                        setShowCardModal(false);
+                                        setCardError("");
+                                      })
+                                      .catch(err => console.error(err))
+
+
+                                      
                                       // Update matches array with redCards
                                       const updatedMatchesWithCards =
                                         matches.map((m) =>
