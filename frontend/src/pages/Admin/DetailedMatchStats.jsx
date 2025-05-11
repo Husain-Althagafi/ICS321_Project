@@ -40,46 +40,44 @@ const DetailedMatchStats = () => {
 
   const [goals, setGoals] = useState([])
 
-useEffect(() => {
-  //get match by id from tournament
-  axios.get(`http://localhost:5000/tournaments/${tournamentId}/matches`)
-  .then((res) => {
-    setMatch(res.data.data.find((m) => m.match_id == matchId));
-    setIsCompleted(res.data.data[0].completed)
-  })
-  .catch(err => console.error(err))
-
-  //get teams in this match
-
-  //get match info
-  axios.get(`http://localhost:5000/teams/matches/${matchId}`)
-  .then((res) => {
-    setTeams(res.data.data[0])
+  useEffect(() => {
+    const fetchMatchData = async () => {
+      try {
+        const [matchesRes, teamsRes, captainsRes] = await Promise.all([
+          axios.get(`http://localhost:5000/tournaments/${tournamentId}/matches`),
+          axios.get(`http://localhost:5000/teams/matches/${matchId}`),
+          axios.get(`http://localhost:5000/matches/${matchId}/captains`)
+        ]);
   
-    //get team 1 players
-    axios.get(`http://localhost:5000/teams/${res.data.data[0].teama_id}/players`)
-    .then((res) => {
-      setTeam1Players(res.data.data)
-    })
-    .catch(err => console.error(err))
-
-    //get team 2 players
-    axios.get(`http://localhost:5000/teams/${res.data.data[0].teamb_id}/players`)
-    .then((res) => {
-      setTeam2Players(res.data.data)
-    })
-    .catch(err => console.error(err))
-  })
-  .catch(err => console.error(err))
-
-  //get captains
-  axios.get(`http://localhost:5000/matches/${matchId}/captains`)
-  .then((res) => {
-    setCaptains(res.data.data.captains)
-  })
-  .catch(err=>console.error(err))
-
-}, [])
+        // Set basic match data
+        const matchData = matchesRes.data.data.find(m => m.match_id == matchId);
+        setMatch(matchData);
+        setIsCompleted(matchData.completed);
+  
+        // Set teams data
+        const teamsData = teamsRes.data.data[0];
+        setTeams(teamsData);
+  
+        // Fetch players for both teams in parallel
+        const [team1PlayersRes, team2PlayersRes] = await Promise.all([
+          axios.get(`http://localhost:5000/teams/${teamsData.teama_id}/players`),
+          axios.get(`http://localhost:5000/teams/${teamsData.teamb_id}/players`)
+        ]);
+  
+        setTeam1Players(team1PlayersRes.data.data);
+        setTeam2Players(team2PlayersRes.data.data);
+  
+        // Set captains data
+        setCaptains(captainsRes.data.data.captains);
+  
+      } catch (err) {
+        console.error("Error fetching match data:", err);
+        // Add error state handling here if needed
+      }
+    };
+  
+    fetchMatchData();
+  }, [tournamentId, matchId]);  // Add dependencies
 
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [goalTime, setGoalTime] = useState("");
@@ -152,12 +150,9 @@ const endMinutes = match?.end_time
 
 
 
-    const stored = JSON.parse(localStorage.getItem("tournaments")) || [];
-    setAvailableTeams(JSON.parse(localStorage.getItem("teams")) || []);
-    const tour = stored.find((t) => String(t.id) === tournamentId);
-    const loadedMatches = tour?.matches || [];
+    
     // initialize goalTimes and yellowCards on each match
-    const initialized = loadedMatches.map((m) => ({
+    const initialized = matches.map((m) => ({
       ...m,
       goalTimes: m.goalTimes || {},
       yellowCards: Array.isArray(m.yellowCards)
@@ -166,7 +161,7 @@ const endMinutes = match?.end_time
     }));
     setMatches(initialized);
     const currentMatch =
-      initialized.find((m) => String(m.id) === matchId) || {};
+      initialized.find((m) => String(m.match_id) === matchId) || {};
     setGoalCounts(currentMatch.goals || {});
     // Load persisted MOTM if any
     const savedMotm = currentMatch.motmPlayerId;
@@ -221,10 +216,10 @@ const endMinutes = match?.end_time
 
   // Compute scores based on goalCounts
   const teamAPlayersList =
-    availableTeams.find((t) => String(t.team_id) === String(match.teamA))
+    availableTeams.find((t) => String(t.team_id) === String(match.teama_id))
       ?.players || [];
   const teamBPlayersList =
-    availableTeams.find((t) => String(t.team_id) === String(match.teamB))
+    availableTeams.find((t) => String(t.team_id) === String(match.teamb_id))
       ?.players || [];
   const scoreA = teamAPlayersList.reduce(
     (sum, p) => sum + (goalCounts[p.id] || 0),
@@ -309,11 +304,11 @@ const endMinutes = match?.end_time
                       }}
                     >
                       <span>
-                        {goalCounts[p.id] != null && (
-                          <strong>[{goalCounts[p.id]}] </strong>
+                        {goalCounts[p.player_id] != null && (
+                          <strong>[{goalCounts[p.player_id]}] </strong>
                         )}
-                        {p.player_name.split(" ").slice(-1)[0]} ({p.position_to_play})
-                        {p.isSubstitute && (
+                        {p.player_name.split(" ").slice(-1)[0]} ({p.position})
+                        {p.is_substitute && (
                           <span
                             style={{
                               color: "red",
@@ -488,7 +483,7 @@ const endMinutes = match?.end_time
                           <strong>[{goalCounts[p.id]}] </strong>
                         )}
                         {p.player_name.split(" ").slice(-1)[0]} ({p.position})
-                        {p.isSubstitute && (
+                        {p.is_substitute && (
                           <span
                             style={{
                               color: "red",
@@ -1108,7 +1103,7 @@ const endMinutes = match?.end_time
                       <>
                         <p>
                           Select a goal time to remove for{" "}
-                          {deleteGoalPlayer?.name?.split(" ").slice(-1)[0]}
+                          {deleteGoalPlayer?.player_name?.split(" ").slice(-1)[0]}
                         </p>
 
                         {/* Debug info to understand the data structure */}
@@ -1150,15 +1145,15 @@ const endMinutes = match?.end_time
                             if (!currentMatch || !deleteGoalPlayer) return null;
 
                             // Try different formats of the player ID to find goal times
-                            const playerIdStr = String(deleteGoalPlayer.id);
-                            const playerIdNum = Number(deleteGoalPlayer.id);
+                            const playerIdStr = String(deleteGoalPlayer.player_id);
+                            const playerIdNum = Number(deleteGoalPlayer.player_id);
 
                             // Look for goal times in all possible formats
                             let timesArray = [];
                             const goalTimes = currentMatch.goalTimes || {};
 
-                            if (Array.isArray(goalTimes[deleteGoalPlayer.id])) {
-                              timesArray = goalTimes[deleteGoalPlayer.id];
+                            if (Array.isArray(goalTimes[deleteGoalPlayer.player_id])) {
+                              timesArray = goalTimes[deleteGoalPlayer.player_id];
                             } else if (Array.isArray(goalTimes[playerIdStr])) {
                               timesArray = goalTimes[playerIdStr];
                             } else if (Array.isArray(goalTimes[playerIdNum])) {
@@ -1172,12 +1167,12 @@ const endMinutes = match?.end_time
                               currentMatch.goals &&
                               (currentMatch.goals[playerIdStr] ||
                                 currentMatch.goals[playerIdNum] ||
-                                currentMatch.goals[deleteGoalPlayer.id])
+                                currentMatch.goals[deleteGoalPlayer.player_id])
                             ) {
                               const goalCount =
                                 currentMatch.goals[playerIdStr] ||
                                 currentMatch.goals[playerIdNum] ||
-                                currentMatch.goals[deleteGoalPlayer.id] ||
+                                currentMatch.goals[deleteGoalPlayer.player_id] ||
                                 0;
 
                               // Create placeholder times at 10-minute intervals
@@ -1221,7 +1216,7 @@ const endMinutes = match?.end_time
                               }
 
                               const tval = parseInt(deleteGoalTime, 10);
-                              const playerIdStr = String(deleteGoalPlayer.id);
+                              const playerIdStr = String(deleteGoalPlayer.player_id);
 
                               const updatedMatches = matches.map((m) => {
                                 if (m.id !== match.match_id) return m;
@@ -1233,10 +1228,10 @@ const endMinutes = match?.end_time
                                 // Get current goal times for this player (handling different ID formats)
                                 let playerGoalTimes = [];
                                 if (
-                                  Array.isArray(goalTimes[deleteGoalPlayer.id])
+                                  Array.isArray(goalTimes[deleteGoalPlayer.player_id])
                                 ) {
                                   playerGoalTimes =
-                                    goalTimes[deleteGoalPlayer.id];
+                                    goalTimes[deleteGoalPlayer.player_id];
                                 } else if (
                                   Array.isArray(goalTimes[playerIdStr])
                                 ) {
@@ -1262,7 +1257,7 @@ const endMinutes = match?.end_time
                                 const teamAPlayers =
                                   availableTeams.find(
                                     (t) =>
-                                      String(t.team_id) === String(match.teamA),
+                                      String(t.team_id) === String(match.teama_id),
                                   )?.players || [];
                                 const isTeamA = teamAPlayers.some(
                                   (pl) => String(pl.id) === playerIdStr,
@@ -1336,7 +1331,7 @@ const endMinutes = match?.end_time
                     <h2>Record Goal Time</h2>
                     <p>
                       Enter goal time (minutes or HH:MM) between{" "}
-                      {match.startTime} (0) and {match.endTime} (
+                      {match.start_time} (0) and {match.end_time} (
                       {durationMinutes})
                     </p>
                     <input
@@ -1402,25 +1397,39 @@ const endMinutes = match?.end_time
                           }
 
                           if (goalPlayer) {
-                            setGoalCounts((prev) => ({
-                              ...prev,
-                              [goalPlayer.id]: (prev[goalPlayer.id] || 0) + 1,
-                            }));
+
+                            //add goal to match
+                            axios.post(`http://localhost:5000/matches/${matchId}/goals`, {
+                              player_id: goalPlayer.player_id,
+                              event_time: minutesValue
+                            })
+                            .then((res) => {
+
+                              setGoalCounts((prev) => ({
+                                ...prev,
+                                [goalPlayer.player_id]: (prev[goalPlayer.player_id] || 0) + 1,
+                              }));
+                            })
+
+
+
+
+                           
 
                             // Update matches array and goalTimes
                             const teamAPlayers =
                               availableTeams.find(
                                 (t) =>
-                                  String(t.team_id) === String(match.teamA),
+                                  String(t.team_id) === String(match.teama_id),
                               )?.players || [];
                             const isTeamA = teamAPlayers.some(
-                              (pl) => String(pl.id) === String(goalPlayer.id),
+                              (pl) => String(pl.id) === String(goalPlayer.player_id),
                             );
                             const updatedMatchesWithScore = matches.map((m) =>
                               m.id === match.match_id
                                 ? (() => {
                                     const prevTimes =
-                                      m.goalTimes[goalPlayer.id] || [];
+                                      m.goalTimes[goalPlayer.player_id] || [];
                                     const newTimes = [
                                       ...prevTimes,
                                       minutesValue,
@@ -1429,11 +1438,11 @@ const endMinutes = match?.end_time
                                       ...m,
                                       goals: {
                                         ...(m.goals || {}),
-                                        [goalPlayer.id]: newTimes.length,
+                                        [goalPlayer.player_id]: newTimes.length,
                                       },
                                       goalTimes: {
                                         ...(m.goalTimes || {}),
-                                        [goalPlayer.id]: newTimes,
+                                        [goalPlayer.player_id]: newTimes,
                                       },
                                       scoreA: isTeamA
                                         ? (m.scoreA || 0) + 1
@@ -1446,19 +1455,7 @@ const endMinutes = match?.end_time
                                 : m,
                             );
                             setMatches(updatedMatchesWithScore);
-
-                            // Persist back to tournaments
-                            const updatedToursWithScore = JSON.parse(
-                              localStorage.getItem("tournaments") || "[]",
-                            ).map((t) =>
-                              String(t.id) === tournamentId
-                                ? { ...t, matches: updatedMatchesWithScore }
-                                : t,
-                            );
-                            localStorage.setItem(
-                              "tournaments",
-                              JSON.stringify(updatedToursWithScore),
-                            );
+                            
                           }
 
                           console.log(`Goal at ${minutesValue} minutes`);
@@ -1516,12 +1513,12 @@ const endMinutes = match?.end_time
                     // Determine match winner
                     const teamAName =
                       availableTeams.find(
-                        (t) => String(t.team_id) === String(match.teamA),
-                      )?.team_name || match.teamA;
+                        (t) => String(t.team_id) === String(match.teama_id),
+                      )?.team_name || match.teama_id;
                     const teamBName =
                       availableTeams.find(
-                        (t) => String(t.team_id) === String(match.teamB),
-                      )?.team_name || match.teamB;
+                        (t) => String(t.team_id) === String(match.teamb_id),
+                      )?.team_name || match.teamb_id;
                     const winner =
                       scoreA > scoreB
                         ? teamAName

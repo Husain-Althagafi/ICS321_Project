@@ -64,3 +64,108 @@ exports.getAllMatches = asyncHandler(async(req, res) => {
     data: result.rows
   })
 })
+
+
+exports.addGoalToMatch = asyncHandler(async (req, res) => {
+  const { matchId } = req.params.match_id;
+  const { player_id, event_time } = req.body;
+
+  // Validate input
+  if (!player_id || !event_time) {
+    return res.status(400).json({
+      success: false,
+      error: 'Player ID and event_time are required'
+    });
+  }
+
+  if (isNaN(event_time) || event_time < 0) {
+    return res.status(400).json({
+      success: false,
+      error: 'event_time must be a positive number'
+    });
+  }
+
+  const client = await db.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // // 1. Verify the match exists and get team information
+    const matchQuery = await client.query(
+      'SELECT teama_id, teamb_id FROM matches WHERE match_id = $1',
+      [matchId]
+    );
+
+    // if (matchQuery.rows.length === 0) {
+    //   return res.status(404).json({
+    //     success: false,
+    //     error: 'Match not found'
+    //   });
+    // }
+
+    const { teama_id, teamb_id } = matchQuery.rows[0];
+
+    // 2. Verify the player belongs to one of the match teams
+    const playerQuery = await client.query(
+      'SELECT team_id FROM players WHERE player_id = $1',
+      [player_id]
+    );
+
+    // if (playerQuery.rows.length === 0) {
+    //   return res.status(404).json({
+    //     success: false,
+    //     error: 'Player not found'
+    //   });
+    // }
+
+    const { team_id } = playerQuery.rows[0];
+
+    if (team_id !== teama_id && team_id !== teamb_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Player is not part of this match'
+      });
+    }
+
+    // 3. Record the goal event
+    await client.query(
+      'INSERT INTO goal_events (match_id, player_id, event_time) VALUES ($1, $2, $3)',
+      [matchId, player_id, event_time]
+    );
+
+    // 4. Update the aggregated goal count
+    await client.query(`
+      INSERT INTO match_goals (match_id, player_id, goal_count)
+      VALUES ($1, $2, 1)
+      ON CONFLICT (match_id, player_id)
+      DO UPDATE SET goal_count = match_goals.goal_count + 1
+    `, [matchId, player_id]);
+
+    // 5. Update the match score
+    await client.query(`
+      UPDATE matches
+      SET 
+        scorea = CASE WHEN $1 THEN COALESCE(scorea, 0) + 1 ELSE scorea END,
+        scoreb = CASE WHEN $2 THEN COALESCE(scoreb, 0) + 1 ELSE scoreb END
+      WHERE match_id = $3
+    `, [team_id === teama_id, team_id === teamb_id, matchId]);
+
+    await client.query('COMMIT');
+
+    res.status(201).json({
+      success: true,
+      message: 'Goal recorded successfully'
+    });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error recording goal:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to record goal',
+      details: error.message
+    });
+  } finally {
+    client.release();
+  }
+});

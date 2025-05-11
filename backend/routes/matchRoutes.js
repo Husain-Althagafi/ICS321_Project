@@ -8,5 +8,9 @@ router.get('/:match_no/goals', matchController.getGoalsByMatchNo)
 
 router.get('/:match_id/captains', matchController.getCaptainsByMatchId)
 
+//POST
+
+//add goal to match
+router.post('/:match_id/goals', matchController.addGoalToMatch)
 
 module.exports = router
