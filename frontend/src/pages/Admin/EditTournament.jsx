@@ -461,12 +461,7 @@ const EditTournament = () => {
                 </label>
                 <label>
                   End Date:
-                  <input type="date" value={endDate} disabled readOnly 
-                  style={{
-                    backgroundColor: "#f0f0f0",
-                    color: "#666",
-                    cursor: "not-allowed",
-                  }}/>
+            
                   <input type="date" value={endDate} disabled readOnly 
                   style={{
                     backgroundColor: "#f0f0f0",

@@ -99,6 +99,9 @@ const Matches_DetailedMatchStats = () => {
                     <p>
                       <strong>Time:</strong> {m.start_time || 'no time set'} - {m.end_time || 'no time set'}
                     </p>
+                    <p>
+                      <strong>Status:</strong> {m.match_completed? 'Completed': 'Not complete'}
+                    </p>
                     {localStorage.getItem(`match-completed-${m.id}`) ===
                       "true" && (
                       <p>

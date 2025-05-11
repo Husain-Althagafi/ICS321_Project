@@ -136,7 +136,7 @@ const MatchesResults = () => {
     return 0;
   });
   const completedMatches = sortedMatches.filter(
-    (m) => m.scorea != null && m.scoreb != null
+    (m) => m.match_completed != null
   );
 
   return (
@@ -180,11 +180,11 @@ const MatchesResults = () => {
             {completedMatches.length > 0 ? (
               completedMatches.map((m) => {
                 const venueName =
-                  venues.find((v) => String(v.venue_id) === String(m.venue_id))
+                  venues.find((v) => String(v.venue_id) == String(m.venue_id))
                     ?.venue_name || "Unknown";
                 let computedWinner;
-                if (m.scorea == null || m.scoreb == null) {
-                  computedWinner = "Match not completed";
+                if (m.scorea == null && m.scoreb == null) {
+                  computedWinner = "Draw";
                 } else {
                   computedWinner =
                     m.winner_team_id
@@ -204,7 +204,7 @@ const MatchesResults = () => {
                 const motmName =
                   availableTeams
                     .flatMap((t) => t.players || [])
-                    .find((p) => p.id === m.motm_player_id)?.name || "N/A";
+                    .find((p) => p.player_id === m.motm_player_id)?.player_name || "N/A";
                 // Compute yellow card details and count
                 let yellowDetails;
                 let yellowCount;
@@ -397,7 +397,7 @@ const MatchesResults = () => {
                                 cursor: m.scorea > 0 ? "help" : "default",
                               }}
                             >
-                              {m.scorea}
+                              {m.scorea || 0}
                             </span>
                             {hoveredScoreAId === m.match_id && (
                               <div
@@ -458,7 +458,7 @@ const MatchesResults = () => {
                                 cursor: m.scoreb > 0 ? "help" : "default",
                               }}
                             >
-                              {m.scoreb}
+                              {m.scoreb ||0}
                             </span>
                             {hoveredScoreBId === m.match_id && (
                               <div
