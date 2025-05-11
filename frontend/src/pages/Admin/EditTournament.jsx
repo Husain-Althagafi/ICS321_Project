@@ -245,14 +245,16 @@ const EditTournament = () => {
         : t,
     );
     // If you send an axios.patch here, ensure the payload keys are correct:
-    // axios.patch(`http://localhost:5000/admin/tournaments/${tournamentId}`, {
-    //   name: tournamentName,
-    //   start_date: startDate,
-    //   end_date: endDate,
-    //   num_teams: parseInt(numTeams, 10)
-    // })
-    // .then(...)
-    navigate("/admin/tournaments");
+    axios.patch(`http://localhost:5000/admin/tournaments/${tournamentId}`, {
+      name: tournamentName,
+      start_date: startDate,
+      end_date: endDate,
+      num_teams: parseInt(numTeams, 10)
+    })
+    .then(
+      navigate("/admin/tournaments")
+    )
+    .catch(err => console.error(err))
   };
 
   const handleAddPlayer = () => {

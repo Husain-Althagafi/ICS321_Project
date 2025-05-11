@@ -41,8 +41,14 @@ router.patch('/tournaments/:tournament_id/teams/:team_id/remove', adminControlle
 //update match info
 router.patch('/matches/:match_id', adminController.updateMatch)
 
+//update tournament info
+router.patch('/tournaments/:tournament_id', adminController.updateTournament)
+
+
 // //update match details
 // router.post('/matches/:match_id/details', adminController.updateMatchDetails)
+
+
 
 // Goal events
 router.post('/goal-events', adminController.addGoalEvent);

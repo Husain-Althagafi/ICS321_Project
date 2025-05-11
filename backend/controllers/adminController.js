@@ -395,3 +395,20 @@ exports.deletePlayerMatchGoals = asyncHandler(async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+
+exports.updateTournament = asyncHandler(async(req, res) => {
+    const tournament_id = req.params.tournament_id
+    const {start_date, end_date, name} = req.body
+
+    const result = await db.query(`
+        UPDATE tournaments 
+        SET name = $1, start_date = $2, end_date = $3 
+        WHERE tournament_id = $4       
+     `, [name, start_date, end_date, tournament_id])
+
+    return res.status(200).json({
+        success: true,
+        data: result.rows
+    })
+})
