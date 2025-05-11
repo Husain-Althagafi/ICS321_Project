@@ -73,7 +73,7 @@ const DetailedMatchStats = () => {
         yellowCardsRes.data.data.forEach(item => {
           if (!formattedYellowCards[item.player_id]) {
             formattedYellowCards[item.player_id] = {
-              times: [],
+              event_time: [],
               count: 0
             };
           }
@@ -234,14 +234,14 @@ const endMinutes = match?.end_time
     if (motmPlayerId !== undefined) {
       match.motm_player_id = motmPlayerId
       // const updatedMatches = matches.map((m) =>
-      //   m.id === match.match_id ? { ...m, motmPlayerId } : m,
+      //   m.player_id === match.match_id ? { ...m, motmPlayerId } : m,
       // );
       // setMatches(updatedMatches);
       // // Persist back to tournaments in localStorage
       // const updatedTours = JSON.parse(
       //   localStorage.getItem("tournaments") || "[]",
       // ).map((t) =>
-      //   String(t.id) === tournamentId ? { ...t, matches: updatedMatches } : t,
+      //   String(t.player_id) === tournamentId ? { ...t, matches: updatedMatches } : t,
       // );
       // localStorage.setItem("tournaments", JSON.stringify(updatedTours));
     }
@@ -611,7 +611,7 @@ const endMinutes = match?.end_time
                                 const updatedTours = JSON.parse(
                                   localStorage.getItem("tournaments") || "[]",
                                 ).map((t) =>
-                                  String(t.id) === tournamentId
+                                  String(t.player_id) === tournamentId
                                     ? { ...t, matches: updatedMatches }
                                     : t,
                                 );
@@ -741,12 +741,12 @@ const endMinutes = match?.end_time
                                       // Update matches array with redCards
                                       const updatedMatchesWithCards =
                                         matches.map((m) =>
-                                          m.id === match.match_id
+                                          m.player_id === match.match_id
                                             ? {
                                                 ...m,
                                                 redCards: {
                                                   ...(m.redCards || {}),
-                                                  [cardPlayer.id]: minutesValue,
+                                                  [cardPlayer.player_id]: minutesValue,
                                                 },
                                               }
                                             : m,
@@ -757,7 +757,7 @@ const endMinutes = match?.end_time
                                         localStorage.getItem("tournaments") ||
                                           "[]",
                                       ).map((t) =>
-                                        String(t.id) === tournamentId
+                                        String(t.player_id) === tournamentId
                                           ? {
                                               ...t,
                                               matches: updatedMatchesWithCards,
@@ -808,7 +808,7 @@ const endMinutes = match?.end_time
                                 between {match.start_time} (0) and{" "}
                                 {match.end_time} ({durationMinutes})
                               </p>
-                              {yellowCardPlayer &&
+                              {yellowCardPlayer && 
                                 
                                 //   yellowCards?.[yellowCardPlayer.player_id]
                                  
@@ -829,7 +829,7 @@ const endMinutes = match?.end_time
                                     </p>
                                     <p>
                                       <strong>Timings:</strong>{" "}
-                                      {yellowCards[yellowCardPlayer.player_id].count || 'N/A'
+                                      {yellowCards[yellowCardPlayer.player_id]?.count || 'N/A'
                                         // .slice()
                                         // .sort((a, b) => a - b)
                                         // .map((t) => `${t}'`)
@@ -891,14 +891,23 @@ const endMinutes = match?.end_time
                                     // Update yellowCards in matches and localStorage
 
                                     //send request to add yellow card
-                                    axios.post(`http://localhost:admin/yellow-cards`, {
+                                    axios.post(`http://localhost:5000/admin/yellow-cards`, {
                                       match_id: matchId,
                                       player_id: yellowCardPlayer.player_id,
                                       event_time: minutesValue
                                     })
                                     .then((res) => {
-                                      yellowCards[yellowCardPlayer.player_id].event_time = minutesValue
-                                      yellowCards[yellowCardPlayer.player_id].count ++
+                                      if (!yellowCards[yellowCardPlayer.player_id]) {
+                                        yellowCards[yellowCardPlayer.player_id] = {
+                                          count: 1,
+                                          event_time: minutesValue
+                                        }
+                                      }
+                                      else{
+                                        yellowCards[yellowCardPlayer.player_id].event_time.push(minutesValue)
+                                        yellowCards[yellowCardPlayer.player_id].count ++
+                                      }
+
                                       setMatch(match)
                                       setShowYellowTimeModal(false);                           
                                     })
@@ -969,6 +978,7 @@ const endMinutes = match?.end_time
                               <div className="yellow-modal-buttons">
                                 <button
                                   type="button"
+                                  disable = {yellowCards[yellowCardPlayer.player_id] && yellowCards[yellowCardPlayer.player_id].count >= 2}
                                   onClick={() => {
                                     setShowYellowModal(false);
                                     setYellowTime("");
@@ -1007,7 +1017,7 @@ const endMinutes = match?.end_time
                               <h2>Remove Yellow Card Time</h2>
                               <p>
                                 Select a yellow card time to remove for{" "}
-                                {yellowCardPlayer?.name.split(" ").slice(-1)[0]}
+                                {yellowCardPlayer?.player_name.split(" ").slice(-1)[0]}
                                 :
                               </p>
                               <select
@@ -1021,9 +1031,9 @@ const endMinutes = match?.end_time
                                   Select time
                                 </option>
                                 {Array.isArray(
-                                  match.yellowCards?.[yellowCardPlayer?.id],
+                                  yellowCards?.[yellowCardPlayer?.player_id],
                                 )
-                                  ? match.yellowCards[yellowCardPlayer.id]
+                                  ? yellowCards[yellowCardPlayer.player_id]
                                       .slice()
                                       .sort((a, b) => a - b)
                                       .map((t) => (
@@ -1056,13 +1066,13 @@ const endMinutes = match?.end_time
                                     }
                                     const tval = parseInt(removeYellowTime, 10);
                                     const updatedMatches = matches.map((m) => {
-                                      if (m.id !== match.match_id) return m;
+                                      if (m.player_id !== match.match_id) return m;
                                       const cards = Array.isArray(
-                                        m.yellowCards?.[yellowCardPlayer.id],
+                                        m.yellowCards?.[yellowCardPlayer.player_id],
                                       )
                                         ? [
                                             ...m.yellowCards[
-                                              yellowCardPlayer.id
+                                              yellowCardPlayer.player_id
                                             ],
                                           ]
                                         : [];
@@ -1073,7 +1083,7 @@ const endMinutes = match?.end_time
                                         ...m,
                                         yellowCards: {
                                           ...(m.yellowCards || {}),
-                                          [yellowCardPlayer.id]: newCards,
+                                          [yellowCardPlayer.player_id]: newCards,
                                         },
                                       };
                                     });
@@ -1082,7 +1092,7 @@ const endMinutes = match?.end_time
                                       localStorage.getItem("tournaments") ||
                                         "[]",
                                     ).map((t) =>
-                                      String(t.id) === tournamentId
+                                      String(t.player_id) === tournamentId
                                         ? { ...t, matches: updatedMatches }
                                         : t,
                                     );
@@ -1151,19 +1161,19 @@ const endMinutes = match?.end_time
 
                         {/* Debug info to understand the data structure */}
                         {/* <div style={{ fontSize: '12px', background: '#f0f0f0', padding: '8px', margin: '8px 0', borderRadius: '4px', maxHeight: '100px', overflow: 'auto' }}>
-                        <strong>Debug:</strong> Player ID: {deleteGoalPlayer?.id}<br/>
+                        <strong>Debug:</strong> Player ID: {deleteGoalPlayer?.player_id}<br/>
                         {(() => {
-                          const currentMatch = matches.find(m => String(m.id) === matchId);
+                          const currentMatch = matches.find(m => String(m.player_id) === matchId);
                           console.log("Current match:", currentMatch);
                           console.log("Goal times structure:", currentMatch?.goalTimes);
-                          console.log("Player ID:", deleteGoalPlayer?.id);
-                          console.log("Goal times for player:", currentMatch?.goalTimes?.[deleteGoalPlayer?.id]);
+                          console.log("Player ID:", deleteGoalPlayer?.player_id);
+                          console.log("Goal times for player:", currentMatch?.goalTimes?.[deleteGoalPlayer?.player_id]);
                           
                           // Check all possible ways the ID might be stored
                           const possibilities = [
-                            deleteGoalPlayer?.id,
-                            String(deleteGoalPlayer?.id),
-                            Number(deleteGoalPlayer?.id)
+                            deleteGoalPlayer?.player_id,
+                            String(deleteGoalPlayer?.player_id),
+                            Number(deleteGoalPlayer?.player_id)
                           ];
                           
                           // Return debug info about goal times
@@ -1183,7 +1193,7 @@ const endMinutes = match?.end_time
                           </option>
                           {(() => {
                             const currentMatch = matches.find(
-                              (m) => String(m.id) === matchId,
+                              (m) => String(m.player_id) === matchId,
                             );
                             if (!currentMatch || !deleteGoalPlayer) return null;
 
@@ -1300,7 +1310,7 @@ const endMinutes = match?.end_time
                               // const playerIdStr = String(deleteGoalPlayer.player_id);
 
                               // const updatedMatches = matches.map((m) => {
-                              //   if (m.id !== match.match_id) return m;
+                              //   if (m.player_id !== match.match_id) return m;
 
                               //   // Get current goals and times
                               //   const goals = m.goals || {};
@@ -1341,7 +1351,7 @@ const endMinutes = match?.end_time
                               //         String(t.team_id) === String(match.teama_id),
                               //     )?.players || [];
                               //   const isTeamA = teamAPlayers.some(
-                              //     (pl) => String(pl.id) === playerIdStr,
+                              //     (pl) => String(pl.player_id) === playerIdStr,
                               //   );
 
                               //   const newGoalTimes = { ...goalTimes };
@@ -1375,7 +1385,7 @@ const endMinutes = match?.end_time
                               // const allTours = JSON.parse(
                               //   localStorage.getItem("tournaments") || "[]",
                               // ).map((t) =>
-                              //   String(t.id) === tournamentId
+                              //   String(t.player_id) === tournamentId
                               //     ? { ...t, matches: updatedMatches }
                               //     : t,
                               // );
@@ -1506,10 +1516,10 @@ const endMinutes = match?.end_time
                                   String(t.team_id) === String(match.teama_id),
                               )?.players || [];
                             const isTeamA = teamAPlayers.some(
-                              (pl) => String(pl.id) === String(goalPlayer.player_id),
+                              (pl) => String(pl.player_id) === String(goalPlayer.player_id),
                             );
                             const updatedMatchesWithScore = matches.map((m) =>
-                              m.id === match.match_id
+                              m.player_id === match.match_id
                                 ? (() => {
                                     const prevTimes =
                                       m.goalTimes[goalPlayer.player_id] || [];

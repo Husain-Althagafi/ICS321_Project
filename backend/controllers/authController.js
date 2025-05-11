@@ -36,10 +36,10 @@ exports.loginAdmin = asyncHandler(async (req, res) => {
 });
 
 exports.registerAdmin = asyncHandler(async (req, res) => {
-    const { admin_id, admin_username, admin_password } = req.body;
+    const { admin_id, admin_username, password } = req.body;
 
     // Validate inputs
-    if (!admin_id || !admin_username || !admin_password) {
+    if (!admin_id || !admin_username || !password) {
         return res.status(400).json({ error: 'Username and password are required' });
     }
 
@@ -49,7 +49,7 @@ exports.registerAdmin = asyncHandler(async (req, res) => {
             INSERT INTO admin (admin_id, admin_username, admin_password) 
             VALUES ($1, $2, $3) 
             RETURNING *;
-        `, [admin_id, admin_username, admin_password]);
+        `, [admin_id, admin_username, password]);
 
         res.status(201).json({
             success: true,
