@@ -325,7 +325,7 @@ const MatchesResults = () => {
                           className="match-date"
                           style={{ marginRight: "0.5rem", fontWeight: "bold" }}
                         >
-                          {formatDate(m.match_date)}
+                          {formatDate(m.match_date.split("T")[0])}
                         </span>
                         <button
                           type="button"

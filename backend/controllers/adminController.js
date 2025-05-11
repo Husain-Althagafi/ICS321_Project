@@ -700,7 +700,7 @@ exports.addYellowCard = asyncHandler(async(req, res) => {
     const match_id = req.params.match_id
     const {match_completed, winner_team_id} = req.body
 
-    if (!match_id || !winner_team_id || typeof match_completed === 'undefined') {
+    if (!match_id || typeof match_completed === 'undefined') {
         return res.status(400).json({error: 'Missing values'})
     }
 
