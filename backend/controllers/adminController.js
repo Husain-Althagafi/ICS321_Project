@@ -434,26 +434,111 @@ exports.updateMatchGoals = asyncHandler(async (req, res) => {
     }
   });
 
-exports.deleteGoalEvent = asyncHandler(async (req, res) => {
-  const { match_id, player_id, goal_time } = req.body;
-  if (!match_id || !player_id || goal_time == null) {
-    return res.status(400).json({ success: false, error: "match_id, player_id, and goal_time are required" });
-  }
-  try {
-    const result = await db.query(
-      `DELETE FROM goal_events
-       WHERE match_id = $1 AND player_id = $2 AND goal_time = $3
-       RETURNING *`,
-      [match_id, player_id, goal_time]
-    );
-    if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: "No goal_event found for given keys" });
+  exports.deleteGoalEvent = asyncHandler(async (req, res) => {
+    const { match_id, player_id, goal_time } = req.body;
+    
+    // Validate input
+    if (!match_id || !player_id || goal_time == null) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "match_id, player_id, and goal_time are required" 
+      });
     }
-    res.status(200).json({ success: true, data: result.rows[0] });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
+  
+    if (isNaN(goal_time) || goal_time < 0) {
+      return res.status(400).json({
+        success: false,
+        error: "goal_time must be a positive number"
+      });
+    }
+  
+    const client = await db.connect();
+  
+    try {
+      await client.query('BEGIN');
+  
+      // 1. First verify the player belongs to one of the match teams
+      const teamCheck = await client.query(
+        `SELECT m.teama_id, m.teamb_id, p.team_id, m.scorea, m.scoreb
+         FROM matches m
+         JOIN players p ON p.player_id = $1
+         WHERE m.match_id = $2`,
+        [player_id, match_id]
+      );
+  
+      if (teamCheck.rows.length === 0) {
+        throw new Error('Player or match not found');
+      }
+  
+      const { teama_id, teamb_id, team_id, scorea, scoreb } = teamCheck.rows[0];
+      const isTeamA = team_id === teama_id;
+  
+      // 2. Delete from goal_events
+      const deletedGoal = await client.query(
+        `DELETE FROM goal_events
+         WHERE match_id = $1 AND player_id = $2 AND event_time = $3
+         RETURNING *`,
+        [match_id, player_id, goal_time]
+      );
+  
+      if (deletedGoal.rows.length === 0) {
+        throw new Error('No goal event found with these parameters');
+      }
+  
+      // 3. Update match_goals (decrement aggregated count)
+      await client.query(
+        `UPDATE match_goals
+         SET goal_count = goal_count - 1
+         WHERE match_id = $1 AND player_id = $2
+         RETURNING *`,
+        [match_id, player_id]
+      );
+  
+      // 4. Update the match score (decrement correct team's score)
+      const updatedMatch = await client.query(
+        `UPDATE matches
+         SET ${isTeamA ? 'scorea = GREATEST(COALESCE(scorea, 0) - 1, 0)' : 'scoreb = GREATEST(COALESCE(scoreb, 0) - 1, 0)'}
+         WHERE match_id = $1
+         RETURNING *`,
+        [match_id]
+      );
+  
+      // 5. Clean up any zero-count records
+      await client.query(
+        `DELETE FROM match_goals
+         WHERE match_id = $1 AND player_id = $2 AND goal_count <= 0`,
+        [match_id, player_id]
+      );
+  
+      await client.query('COMMIT');
+  
+      res.status(200).json({
+        success: true,
+        data: {
+          deleted_goal: deletedGoal.rows[0],
+          match: updatedMatch.rows[0]
+        }
+      });
+  
+    } catch (err) {
+      await client.query('ROLLBACK');
+      
+      if (err.message === 'No goal event found with these parameters') {
+        return res.status(404).json({
+          success: false,
+          error: err.message
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        error: err.message,
+        details: err.detail
+      });
+    } finally {
+      client.release();
+    }
+  });
 
 exports.deletePlayerMatchGoals = asyncHandler(async (req, res) => {
   const { player_id } = req.params;

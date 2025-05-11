@@ -396,7 +396,7 @@ const endMinutes = match?.end_time
                           type="button"
                           className="btn-red-card"
                           onClick={() => {
-                            const hasCard = match.redCards?.[p.id] != null;
+                            const hasCard = match.redCards?.[p.player_id] != null;
                             if (hasCard) {
                               if (window.confirm("Remove red card record?")) {
                                 // Remove red card
@@ -1250,96 +1250,133 @@ const endMinutes = match?.end_time
                                 setDeleteGoalError("Please select a time");
                                 return;
                               }
+                              console.log(match)
+                              //send request to delete
+                              axios.delete(`http://localhost:5000/admin/goal-events`, {
+                                data: {
+                                  match_id: match.match_id,
+                                  player_id: deleteGoalPlayer.player_id,
+                                  goal_time: deleteGoalTime
+                              }})
+                              .then((res) => {
+                                setMatch(res.data.data.match)
+                                setGoals(prevGoals => prevGoals.filter(goal => 
+                                  !(goal.match_id === match.match_id && 
+                                    goal.player_id === deleteGoalPlayer.player_id && 
+                                    goal.event_time === parseInt(deleteGoalTime))
+                                ))
+  
+                                setGoalCounts((prev) => {
+                                  const newCount = (prev[deleteGoalPlayer.player_id] || 0) - 1;
+                                  
+                                  // Create a new object without spreading the previous state first
+                                  const newGoalCounts = { ...prev };
+                                  
+                                  if (newCount <= 0) {
+                                    // Remove the player entirely if count is 0 or less
+                                    delete newGoalCounts[deleteGoalPlayer.player_id];
+                                  } else {
+                                    // Update with the new count
+                                    newGoalCounts[deleteGoalPlayer.player_id] = newCount;
+                                  }
+                                  
+                                  return newGoalCounts;
+                                });
 
-                              const tval = parseInt(deleteGoalTime, 10);
-                              const playerIdStr = String(deleteGoalPlayer.player_id);
 
-                              const updatedMatches = matches.map((m) => {
-                                if (m.id !== match.match_id) return m;
+                                setShowDeleteGoalModal(false);
 
-                                // Get current goals and times
-                                const goals = m.goals || {};
-                                const goalTimes = m.goalTimes || {};
+                              })
+                              .catch(err => console.error(err))
 
-                                // Get current goal times for this player (handling different ID formats)
-                                let playerGoalTimes = [];
-                                if (
-                                  Array.isArray(goalTimes[deleteGoalPlayer.player_id])
-                                ) {
-                                  playerGoalTimes =
-                                    goalTimes[deleteGoalPlayer.player_id];
-                                } else if (
-                                  Array.isArray(goalTimes[playerIdStr])
-                                ) {
-                                  playerGoalTimes = goalTimes[playerIdStr];
-                                }
+                              // const tval = parseInt(deleteGoalTime, 10);
+                              // const playerIdStr = String(deleteGoalPlayer.player_id);
 
-                                // Filter out the deleted goal time
-                                const times = playerGoalTimes.filter(
-                                  (x) => x !== tval,
-                                );
+                              // const updatedMatches = matches.map((m) => {
+                              //   if (m.id !== match.match_id) return m;
 
-                                // Update goals count
-                                const newGoalsCount = times.length;
-                                const newGoalsObj = { ...goals };
+                              //   // Get current goals and times
+                              //   const goals = m.goals || {};
+                              //   const goalTimes = m.goalTimes || {};
 
-                                if (newGoalsCount > 0) {
-                                  newGoalsObj[playerIdStr] = newGoalsCount;
-                                } else {
-                                  delete newGoalsObj[playerIdStr];
-                                }
+                              //   // Get current goal times for this player (handling different ID formats)
+                              //   let playerGoalTimes = [];
+                              //   if (
+                              //     Array.isArray(goalTimes[deleteGoalPlayer.player_id])
+                              //   ) {
+                              //     playerGoalTimes =
+                              //       goalTimes[deleteGoalPlayer.player_id];
+                              //   } else if (
+                              //     Array.isArray(goalTimes[playerIdStr])
+                              //   ) {
+                              //     playerGoalTimes = goalTimes[playerIdStr];
+                              //   }
 
-                                // Check which team the player belongs to
-                                const teamAPlayers =
-                                  availableTeams.find(
-                                    (t) =>
-                                      String(t.team_id) === String(match.teama_id),
-                                  )?.players || [];
-                                const isTeamA = teamAPlayers.some(
-                                  (pl) => String(pl.id) === playerIdStr,
-                                );
+                              //   // Filter out the deleted goal time
+                              //   const times = playerGoalTimes.filter(
+                              //     (x) => x !== tval,
+                              //   );
 
-                                const newGoalTimes = { ...goalTimes };
-                                newGoalTimes[playerIdStr] = times;
+                              //   // Update goals count
+                              //   const newGoalsCount = times.length;
+                              //   const newGoalsObj = { ...goals };
 
-                                return {
-                                  ...m,
-                                  goals: newGoalsObj,
-                                  goalTimes: newGoalTimes,
-                                  scoreA: isTeamA
-                                    ? (m.scoreA || 0) - 1
-                                    : m.scoreA,
-                                  scoreB: !isTeamA
-                                    ? (m.scoreB || 0) - 1
-                                    : m.scoreB,
-                                };
-                              });
+                              //   if (newGoalsCount > 0) {
+                              //     newGoalsObj[playerIdStr] = newGoalsCount;
+                              //   } else {
+                              //     delete newGoalsObj[playerIdStr];
+                              //   }
 
-                              setMatches(updatedMatches);
-                              setGoalCounts((prev) => {
-                                const newCounts = { ...prev };
-                                if (newCounts[playerIdStr] > 1) {
-                                  newCounts[playerIdStr] -= 1;
-                                } else {
-                                  delete newCounts[playerIdStr];
-                                }
-                                return newCounts;
-                              });
+                              //   // Check which team the player belongs to
+                              //   const teamAPlayers =
+                              //     availableTeams.find(
+                              //       (t) =>
+                              //         String(t.team_id) === String(match.teama_id),
+                              //     )?.players || [];
+                              //   const isTeamA = teamAPlayers.some(
+                              //     (pl) => String(pl.id) === playerIdStr,
+                              //   );
 
-                              // Update localStorage
-                              const allTours = JSON.parse(
-                                localStorage.getItem("tournaments") || "[]",
-                              ).map((t) =>
-                                String(t.id) === tournamentId
-                                  ? { ...t, matches: updatedMatches }
-                                  : t,
-                              );
-                              localStorage.setItem(
-                                "tournaments",
-                                JSON.stringify(allTours),
-                              );
+                              //   const newGoalTimes = { ...goalTimes };
+                              //   newGoalTimes[playerIdStr] = times;
 
-                              setShowDeleteGoalModal(false);
+                              //   return {
+                              //     ...m,
+                              //     goals: newGoalsObj,
+                              //     goalTimes: newGoalTimes,
+                              //     scoreA: isTeamA
+                              //       ? (m.scoreA || 0) - 1
+                              //       : m.scoreA,
+                              //     scoreB: !isTeamA
+                              //       ? (m.scoreB || 0) - 1
+                              //       : m.scoreB,
+                              //   };
+                              // });
+
+                              // setMatches(updatedMatches);
+                              // setGoalCounts((prev) => {
+                              //   const newCounts = { ...prev };
+                              //   if (newCounts[playerIdStr] > 1) {
+                              //     newCounts[playerIdStr] -= 1;
+                              //   } else {
+                              //     delete newCounts[playerIdStr];
+                              //   }
+                              //   return newCounts;
+                              // });
+
+                              // // Update localStorage
+                              // const allTours = JSON.parse(
+                              //   localStorage.getItem("tournaments") || "[]",
+                              // ).map((t) =>
+                              //   String(t.id) === tournamentId
+                              //     ? { ...t, matches: updatedMatches }
+                              //     : t,
+                              // );
+                              // localStorage.setItem(
+                              //   "tournaments",
+                              //   JSON.stringify(allTours),
+                              // );
+
                             }}
                           >
                             Delete Goal
@@ -1442,6 +1479,12 @@ const endMinutes = match?.end_time
                             })
                             .then((res) => {
 
+                              setMatch(res.data.data.match)
+                              setGoals(prevGoals => [...prevGoals, {
+                                match_id: match.match_id,
+                                player_id: goalPlayer.player_id,
+                                goal_time: minutesValue
+                              }])
 
                               setGoalCounts((prev) => ({
                                 ...prev,
