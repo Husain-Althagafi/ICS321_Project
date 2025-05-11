@@ -51,9 +51,10 @@ useEffect(() => {
 
   //get teams in this match
 
+  //get match info
   axios.get(`http://localhost:5000/teams/matches/${matchId}`)
   .then((res) => {
-    setTeams(res.data.data)
+    setTeams(res.data.data[0])
   
     //get team 1 players
     axios.get(`http://localhost:5000/teams/${res.data.data[0].teama_id}/players`)
@@ -267,13 +268,13 @@ const endMinutes = match?.end_time
               }}
             >
               <h1 className="teamA-name">
-                {match.team1}
+                {teams.teama_name}
               </h1>
               <h2>
                 {match.scorea || 0} - {match.scoreb || 0}
               </h2>
               <h1 className="teamB-name">
-                {match.team2}
+                {teams.teamb_name}
               </h1>
             </div>
             <div

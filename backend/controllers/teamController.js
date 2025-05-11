@@ -85,9 +85,11 @@ exports.getTeamsByMatch = asyncHandler(async (req, res) => {
   const match_id = req.params.match_id
 
   const query = `
-    SELECT teama_id, teamb_id
-    FROM matches
-    WHERE match_id = $1
+    SELECT m.*, ta.team_name as teama_name, tb.team_name as teamb_name 
+    FROM matches m
+    JOIN teams ta ON m.teama_id = ta.team_id
+    JOIN teams tb ON m.teamb_id = tb.team_id
+    WHERE m.match_id = $1
   `;
 
   const { rows } = await db.query(query, [match_id]);
