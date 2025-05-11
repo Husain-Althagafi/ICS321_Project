@@ -74,7 +74,7 @@ function GuestSignUp() {
             />
           </div>
           <div className="form-group">
-            <label>Username</label>
+            <label>ID</label>
             <input
               type="text"
               value={username}
