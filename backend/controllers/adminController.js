@@ -276,11 +276,11 @@ exports.updateMatch = asyncHandler(async (req, res) => {
 exports.addGoalEvent = asyncHandler(async (req, res) => {
   const { match_id, player_id, goal_time } = req.body;
   if (!match_id || !player_id || goal_time == null) {
-    return res.status(400).json({ success: false, error: "match_id, player_id, and goal_time are required" });
+    return res.status(400).json({ success: false, error: "match_id, player_id, and event_time are required" });
   }
   try {
     const result = await db.query(
-      `INSERT INTO goal_events (match_id, player_id, goal_time)
+      `INSERT INTO goal_events (match_id, player_id, event_time)
        VALUES ($1, $2, $3)
        RETURNING *`,
       [match_id, player_id, goal_time]

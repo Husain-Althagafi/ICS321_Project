@@ -1400,11 +1400,17 @@ const endMinutes = match?.end_time
                           if (goalPlayer) {
 
                             //add goal to match
-                            axios.post(`http://localhost:5000/matches/${matchId}/goals`, {
+                            axios.post(`http://localhost:5000/admin/goal-events`, {
+                              match_id: match.match_id,
                               player_id: goalPlayer.player_id,
-                              event_time: minutesValue
+                              goal_time: minutesValue
                             })
                             .then((res) => {
+                              
+
+
+
+
 
                               setGoalCounts((prev) => ({
                                 ...prev,
