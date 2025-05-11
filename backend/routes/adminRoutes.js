@@ -41,5 +41,9 @@ router.patch('/tournaments/:tournament_id/teams/:team_id/remove', adminControlle
 //update match info
 router.patch('/matches/:match_id', adminController.updateMatch)
 
+// //update match details
+router.post('/matches/:match_id/details', adminController.updateMatchDetails)
+
+
 module.exports = router;
 

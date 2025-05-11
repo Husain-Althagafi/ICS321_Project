@@ -272,3 +272,95 @@ exports.updateMatch = asyncHandler(async (req, res) => {
         });
     }
 });
+
+exports.updateMatchDetails = asyncHandler(async (req, res) => {
+    const { match_id } = req.params;
+    const { scoreA, scoreB, winner_team_id, match_completed } = req.body;
+
+    // Validate input
+    // if (scoreA === undefined || scoreB === undefined) {
+    //     return res.status(400).json({
+    //         success: false,
+    //         error: 'Both scores are required'
+    //     });
+    // }
+
+    // if (isNaN(scoreA) || isNaN(scoreB)) {
+    //     return res.status(400).json({
+    //         success: false,
+    //         error: 'Scores must be numbers'
+    //     });
+    // }
+
+    // if (match_completed && winner_team_id === undefined) {
+    //     return res.status(400).json({
+    //         success: false,
+    //         error: 'Winner must be specified when completing a match'
+    //     });
+    // }
+
+    const client = await db.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        // // 1. Verify the match exists
+        // const matchQuery = await client.query(
+        //     'SELECT teama_id, teamb_id FROM matches WHERE match_id = $1',
+        //     [match_id]
+        // );
+
+        // if (matchQuery.rows.length === 0) {
+        //     return res.status(404).json({
+        //         success: false,
+        //         error: 'Match not found'
+        //     });
+        // }
+
+        // const { teama_id, teamb_id } = matchQuery.rows[0];
+
+        // // 2. Validate winner is one of the teams (or null for draw)
+        // if (winner_team_id && ![teama_id, teamb_id].includes(winner_team_id)) {
+        //     return res.status(400).json({
+        //         success: false,
+        //         error: 'Winner must be one of the participating teams'
+        //     });
+        // }
+
+        // 3. Update match details
+        await client.query(
+            `UPDATE matches 
+             SET scorea = $1, 
+                 scoreb = $2, 
+                 winner_team_id = $3, 
+                 match_completed = $4
+             WHERE match_id = $5`,
+            [scoreA, scoreB, winner_team_id, match_completed, match_id]
+        );
+
+        await client.query('COMMIT');
+
+        res.status(200).json({
+            success: true,
+            message: 'Match details updated successfully',
+            data: {
+                match_id,
+                scoreA,
+                scoreB,
+                winner_team_id,
+                match_completed
+            }
+        });
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Error updating match details:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to update match details',
+            details: error.message
+        });
+    } finally {
+        client.release();
+    }
+});

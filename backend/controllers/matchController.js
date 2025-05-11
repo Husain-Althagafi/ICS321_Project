@@ -103,7 +103,7 @@ exports.addGoalToMatch = asyncHandler(async (req, res) => {
     //   });
     // }
 
-    const { teama_id, teamb_id } = matchQuery.rows[0];
+    const { teama_id, teamb_id } = matchQuery.rows;
 
     // 2. Verify the player belongs to one of the match teams
     const playerQuery = await client.query(

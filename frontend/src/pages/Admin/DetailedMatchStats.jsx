@@ -52,7 +52,7 @@ const DetailedMatchStats = () => {
         // Set basic match data
         const matchData = matchesRes.data.data.find(m => m.match_id == matchId);
         setMatch(matchData);
-        setIsCompleted(matchData.completed);
+        setIsCompleted(matchData.match_completed);
   
         // Set teams data
         const teamsData = teamsRes.data.data[0];
@@ -1521,34 +1521,34 @@ const endMinutes = match?.end_time
                       )?.team_name || match.teamb_id;
                     const winner =
                       scoreA > scoreB
-                        ? teamAName
+                        ? match.teama_id
                         : scoreB > scoreA
-                          ? teamBName
-                          : "Draw";
+                          ? match.teamb_id
+                          : null;
 
-                    // Add winner to match and persist scores
-                    const updatedMatches = matches.map((m) =>
-                      m.id === match.match_id ? { ...m, scoreA, scoreB, winner } : m,
-                    );
-                    setMatches(updatedMatches);
+                    setMatch(prev => ({
+                      ...prev,
+                      scoreA,
+                      scoreB,
+                      winner_team_id: winner,
+                      match_completed: true
+                    }));
 
-                    // Persist back to tournaments in localStorage
-                    const allTours = JSON.parse(
-                      localStorage.getItem("tournaments") || "[]",
-                    ).map((t) =>
-                      String(t.id) === tournamentId
-                        ? { ...t, matches: updatedMatches }
-                        : t,
-                    );
-                    localStorage.setItem(
-                      "tournaments",
-                      JSON.stringify(allTours),
-                    );
-
-                    // Mark completed
-                    setIsCompleted(true);
-                    localStorage.setItem(`match-completed-${matchId}`, "true");
-                    setShowCompleteModal(false);
+                    const updatedMatch = {
+                      ...match,
+                      scoreA,
+                      scoreB,
+                      winner_team_id: winner,
+                      match_completed: true
+                    };
+                    
+                    //update match details
+                    axios.post(`http://localhost:5000/admin/matches/${matchId}/details`, updatedMatch)
+                    .then((res) => {
+                      setIsCompleted(true);
+                      setShowCompleteModal(false);
+                    })
+                    .catch(err => console.error(err))                    
                   }}
                 >
                   Confirm
