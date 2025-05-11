@@ -285,7 +285,7 @@ const EditTournament = () => {
       const day = String(current.getDate()).padStart(2, "0");
       const month = String(current.getMonth() + 1).padStart(2, "0");
       const year = current.getFullYear();
-      dates.push(`${day}-${month}-${year}`);
+      dates.push(`${month}-${day}-${year}`);
       current.setDate(current.getDate() + 1);
     }
     console.log(dates)
