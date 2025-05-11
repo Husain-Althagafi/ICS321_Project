@@ -714,3 +714,35 @@ exports.addYellowCard = asyncHandler(async(req, res) => {
 
     return res.status(200).json({success: true, data : result.rows})
   })
+
+
+  exports.deleteYellowCard = asyncHandler(async (req, res) => {
+    const { match_id, player_id, event_time} = req.body;
+
+    if (!match_id || !player_id) {
+        return res.status(400).json({ error: 'Missing values' });
+    }
+
+    try {
+        const result = await db.query(`
+            DELETE FROM yellow_card_events
+            WHERE match_id = $1 
+            AND player_id = $2 
+            AND event_time = $3
+            RETURNING *
+        `, [match_id, player_id, event_time]);
+
+        res.status(200).json({
+            message: 'Yellow card deleted successfully',
+            deletedRecord: result.rows,
+            input: {
+                match_id: match_id,
+                player_id: player_id,
+                event_time: event_time
+            }
+        });
+    } catch (error) {
+        console.error('Error deleting yellow card:', error);
+        res.status(500).json({ error: 'Failed to delete yellow card'+ error });
+    }
+});
