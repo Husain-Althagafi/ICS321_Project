@@ -39,30 +39,25 @@ const EditTeam = () => {
   const [team, setTeam] = useState({})
 
   useEffect(() => {
-    
-    //get team based on id
+    // get team based on id
     axios.get(`http://localhost:5000/teams/${teamId}`)
-    .then((res) => {
-      setTeam(res.data.data)
-    })
-    .catch(err => console.error(err))
-
+      .then((res) => {
+        setTeam(res.data.data);
+        const t = res.data.data;
+        setTeamName(t.team_name);
+        setCoachName(t.coach_name);
+        setManagerName(t.manager_name || "");
+      })
+      .catch(err => {
+        console.error(err);
+        navigate("/admin/teams");
+      });
 
     axios.get(`http://localhost:5000/teams/${teamId}/players`)
-    .then((res) => {
-      setPlayers(res.data.data)
-    })
-    .catch(err => console.error(err))
-
-
-    if (team) {
-      setTeamName(team.team_name);
-      setCoachName(team.coach_name);
-      setManagerName(team.manager_name || "");
-      setPlayers(team.players || []);
-    } else {
-      navigate("/admin/teams");
-    }
+      .then((res) => {
+        setPlayers(res.data.data);
+      })
+      .catch(err => console.error(err));
   }, [teamId, navigate]);
 
   const handleUpdateTeam = (e) => {

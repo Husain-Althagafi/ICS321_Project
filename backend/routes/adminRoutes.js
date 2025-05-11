@@ -41,5 +41,16 @@ router.patch('/tournaments/:tournament_id/teams/:team_id/remove', adminControlle
 //update match info
 router.patch('/matches/:match_id', adminController.updateMatch)
 
+// Goal events
+router.post('/goal-events', adminController.addGoalEvent);
+router.get('/goal-events', adminController.getGoalEvents);
+router.delete('/goal-events', adminController.deleteGoalEvent);
+
+// Match goals (aggregated per player)
+router.post('/match-goals', adminController.addMatchGoals);
+router.get('/match-goals', adminController.getMatchGoals);
+router.patch('/match-goals', adminController.updateMatchGoals);
+router.delete('/match-goals/player/:player_id', adminController.deletePlayerMatchGoals);
+
 module.exports = router;
 

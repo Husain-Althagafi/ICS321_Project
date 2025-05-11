@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import AdminSidebar from "../../components/AdminSidebar";
 import "../../stylesheets/DetailedMatchStats.css";
 import goalIcon from "../../assets/icons/goal.png";
-import noGoalIcon from "../../assets/icons/no-goal.svg";
 import redCardIcon from "../../assets/icons/red_card.png";
 import yellowCardIcon from "../../assets/icons/yellow_card.svg";
 import goldenBootIcon from "../../assets/icons/golden-boot.png";

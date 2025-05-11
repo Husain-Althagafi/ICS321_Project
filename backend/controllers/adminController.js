@@ -272,3 +272,126 @@ exports.updateMatch = asyncHandler(async (req, res) => {
         });
     }
 });
+
+exports.addGoalEvent = asyncHandler(async (req, res) => {
+  const { match_id, player_id, goal_time } = req.body;
+  if (!match_id || !player_id || goal_time == null) {
+    return res.status(400).json({ success: false, error: "match_id, player_id, and goal_time are required" });
+  }
+  try {
+    const result = await db.query(
+      `INSERT INTO goal_events (match_id, player_id, goal_time)
+       VALUES ($1, $2, $3)
+       RETURNING *`,
+      [match_id, player_id, goal_time]
+    );
+    res.status(200).json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+exports.addMatchGoals = asyncHandler(async (req, res) => {
+    const { match_id, player_id, goal_count } = req.body;
+    if (!match_id || !player_id || goal_count == null) {
+        return res.status(400).json({ success: false, error: "match_id, player_id, and goal_count are required" });
+    }
+    try {
+        const result = await db.query(
+        `INSERT INTO match_goals (match_id, player_id, goal_count)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (match_id, player_id) DO UPDATE
+         SET goal_count = EXCLUDED.goal_count
+        RETURNING *`,
+        [match_id, player_id, goal_count]
+        );
+        res.status(200).json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+exports.getGoalEvents = asyncHandler(async (req, res) => {
+  try {
+    const result = await db.query(`SELECT * FROM goal_events`);
+    res.status(200).json({ success: true, data: result.rows });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+exports.getMatchGoals = asyncHandler(async (req, res) => {
+  try {
+    const result = await db.query(`SELECT * FROM match_goals`);
+    res.status(200).json({ success: true, data: result.rows });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+exports.updateMatchGoals = asyncHandler(async (req, res) => {
+    const { match_id, player_id, goal_count } = req.body;
+    if (!match_id || !player_id || goal_count == null) {
+      return res.status(400).json({
+        success: false,
+        error: "match_id, player_id, and goal_count are required"
+      });
+    }
+    try {
+      const result = await db.query(
+        `UPDATE match_goals
+         SET goal_count = $3
+         WHERE match_id = $1 AND player_id = $2
+         RETURNING *`,
+        [match_id, player_id, goal_count]
+      );
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: "No match_goals entry found for given match_id and player_id"
+        });
+      }
+      res.status(200).json({ success: true, data: result.rows[0] });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+exports.deleteGoalEvent = asyncHandler(async (req, res) => {
+  const { match_id, player_id, goal_time } = req.body;
+  if (!match_id || !player_id || goal_time == null) {
+    return res.status(400).json({ success: false, error: "match_id, player_id, and goal_time are required" });
+  }
+  try {
+    const result = await db.query(
+      `DELETE FROM goal_events
+       WHERE match_id = $1 AND player_id = $2 AND goal_time = $3
+       RETURNING *`,
+      [match_id, player_id, goal_time]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: "No goal_event found for given keys" });
+    }
+    res.status(200).json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+exports.deletePlayerMatchGoals = asyncHandler(async (req, res) => {
+  const { player_id } = req.params;
+  if (!player_id) {
+    return res.status(400).json({ success: false, error: "player_id is required" });
+  }
+  try {
+    const result = await db.query(
+      `DELETE FROM match_goals
+       WHERE player_id = $1
+       RETURNING *`,
+      [player_id]
+    );
+    res.status(200).json({ success: true, data: result.rows });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
