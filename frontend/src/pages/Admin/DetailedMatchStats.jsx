@@ -67,7 +67,7 @@ const DetailedMatchStats = () => {
         setTeam2Players(team2PlayersRes.data.data);
   
         // Set captains data
-        setCaptains(captainsRes.data.data.captains);
+        setCaptains(captainsRes.data.data.captains[0]);
   
       } catch (err) {
         console.error("Error fetching match data:", err);
@@ -161,9 +161,14 @@ const endMinutes = match?.end_time
     setMatches(initialized);
     const currentMatch =
       initialized.find((m) => String(m.match_id) === matchId) || {};
-    setGoalCounts(currentMatch.goals || {});
+
+    axios.get(`http://localhost:5000/admin/match-goals`)
+    .then((res) => {
+      setGoalCounts(res.data.data || {});
+    })
+    .catch(err => console.error(err))
     // Load persisted MOTM if any
-    const savedMotm = currentMatch.motmPlayerId;
+    const savedMotm = match.motm_player_id;
     if (savedMotm != null) {
       setMotmPlayerId(savedMotm);
     }
@@ -216,18 +221,16 @@ const endMinutes = match?.end_time
   }, [motmPlayerId, match.match_id, tournamentId]);
 
   // Compute scores based on goalCounts
-  const teamAPlayersList =
-    availableTeams.find((t) => String(t.team_id) === String(match.teama_id))
-      ?.players || [];
-  const teamBPlayersList =
-    availableTeams.find((t) => String(t.team_id) === String(match.teamb_id))
-      ?.players || [];
+  const teamAPlayersList = team1Players
+    
+  const teamBPlayersList = team2Players
+    
   const scoreA = teamAPlayersList.reduce(
-    (sum, p) => sum + (goalCounts[p.id] || 0),
+    (sum, p) => sum + (goalCounts[p.player_id] || 0),
     0,
   );
   const scoreB = teamBPlayersList.reduce(
-    (sum, p) => sum + (goalCounts[p.id] || 0),
+    (sum, p) => sum + (goalCounts[p.player_id] || 0),
     0,
   );
 
@@ -495,7 +498,7 @@ const endMinutes = match?.end_time
                             Sub
                           </span>
                         )}
-                        {captains.captaina_id === p.player_id && (
+                        {captains.captainb_id === p.player_id && (
                           <span
                             className="captain-status"
                             style={{ marginLeft: "0.5rem" }}
@@ -1406,12 +1409,6 @@ const endMinutes = match?.end_time
                               goal_time: minutesValue
                             })
                             .then((res) => {
-                              
-
-
-
-
-
                               setGoalCounts((prev) => ({
                                 ...prev,
                                 [goalPlayer.player_id]: (prev[goalPlayer.player_id] || 0) + 1,

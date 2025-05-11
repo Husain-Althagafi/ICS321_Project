@@ -285,7 +285,8 @@ exports.addGoalEvent = asyncHandler(async (req, res) => {
        RETURNING *`,
       [match_id, player_id, goal_time]
     );
-    res.status(200).json({ success: true, data: result.rows[0] });
+
+
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
