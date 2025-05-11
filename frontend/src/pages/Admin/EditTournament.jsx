@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdminSidebar from "../../components/AdminSidebar";
 import DeleteTournamentButton from "../../components/DeleteTournamentButton";
+// import sealImage from '../../assets/icons/KFUPM Seal White.png';
+import bgImage from "../../assets/images/Illustration 1@4x.png";
 import "../../stylesheets/EditTournament.css";
 import axios from 'axios'
 // Generate round-robin schedule: assign only IDs, teams, and dates; leave captains & venue/time blank
@@ -45,7 +47,7 @@ const EditTournament = () => {
     return `${d}-${m}-${y}`;
   };
 
-  // Helper to convert DD-MM-YYYY to YYYY-MM-DD
+  // Helper to convert dd-mm-yyyy to yyyy-mm-dd
   const reverseFormatDate = (dateString) => {
     if (!dateString) return "";
     const [d, m, y] = dateString.split("-");
@@ -70,7 +72,17 @@ const EditTournament = () => {
   const [allMatches, setAllMatches] = useState([]);
   const [venues, setVenues] = useState([])
 
+
   const [newPlayer, setNewPlayer] = useState("");
+  const [showPlayerModal, setShowPlayerModal] = useState(false);
+  const [playerDetails, setPlayerDetails] = useState({
+    id: "",
+    name: "",
+    jerseyNumber: "",
+    position: "",
+    isSubstitute: false,
+  });
+  const [playerError, setPlayerError] = useState("");
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [viewMatchModal, setViewMatchModal] = useState(false);
@@ -125,7 +137,7 @@ const EditTournament = () => {
     .catch(err => console.error(err));
 
 
-    //get all matches in a tournament
+  //get all matches in a tournament
     axios.get(`http://localhost:5000/tournaments/${tournamentId}/matches`)
     .then(res => {
       setMatches(res.data.data.map(match => ({
@@ -160,16 +172,8 @@ const EditTournament = () => {
         start_date: tournamentData.start_date.split('T')[0], // "2025-11-10"
         end_date: tournamentData.end_date.split('T')[0]     // "2025-11-20"
       });
-      // Populate form fields once tournament data loads
-      setTournamentName(tournamentData.name);
-      setStartDate(tournamentData.start_date.split('T')[0]);
-      setEndDate(tournamentData.end_date.split('T')[0]);
-      setNumTeams(tournamentData.num_teams || "");
     })
-    .catch(err => {
-      console.error(err);
-      navigate("/admin/tournaments");
-    });
+    .catch(err => console.error(err));
 
     // // get tournaments
     // axios.get(`http://localhost:5000/tournaments`)
@@ -184,6 +188,17 @@ const EditTournament = () => {
       setPlayers(res.data.data)
     })
     .catch(err => console.error(err)) 
+  
+    if (tournament) {
+      setTournamentName(tournament.name);
+      setStartDate(tournament.start_date);
+      setEndDate(tournament.end_date);
+      setNumTeams(tournament.num_teams || "");
+      
+      
+    } else {
+      navigate("/admin/tournaments");
+    }
   }, [tournamentId, navigate]);
 
   useEffect(() => {
@@ -191,13 +206,10 @@ const EditTournament = () => {
   }, [matches]); // Only runs when matches change
 
   useEffect(() => {
-    const n = parseInt(numTeams, 10);
-    if (startDate && !Number.isNaN(n)) {
+    if (startDate && numTeams) {
       const sd = new Date(startDate);
-      sd.setDate(sd.getDate() + n - 2);
-      if (!Number.isNaN(sd.getTime())) {
-        setEndDate(sd.toISOString().split("T")[0]);
-      }
+      sd.setDate(sd.getDate() + parseInt(numTeams, 10) - 2);
+      setEndDate(sd.toISOString().split("T")[0]);
     }
   }, [startDate, numTeams]);
 
@@ -230,24 +242,14 @@ const EditTournament = () => {
         ? {
             ...t,
             name: tournamentName,
-            start_date: startDate,
-            end_date: endDate,
-            num_teams: parseInt(numTeams, 10),
+            startDate,
+            endDate,
+            numTeams: parseInt(numTeams, 10),
             players,
           }
         : t,
     );
-    // If you send an axios.patch here, ensure the payload keys are correct:
-    axios.patch(`http://localhost:5000/admin/tournaments/${tournamentId}`, {
-      name: tournamentName,
-      start_date: startDate,
-      end_date: endDate,
-      num_teams: parseInt(numTeams, 10)
-    })
-    .then(
-      navigate("/admin/tournaments")
-    )
-    .catch(err => console.error(err))
+    navigate("/admin/tournaments");
   };
 
   const handleAddPlayer = () => {
@@ -298,80 +300,54 @@ const EditTournament = () => {
     return hours * 60 + minutes;
   };
 
-  // Returns only the venues that are free for the new match's date & time using backend API
+  // returns only the venues that are free for the new match's date & time
   const getAvailableVenues = (newDateStr, newStart, newEnd, editingId) => {
-    if (!newDateStr || !newStart || !newEnd) return [];
 
-    // Convert DD-MM-YYYY to YYYY-MM-DD for comparison
-    const newDateFormatted = reverseFormatDate(newDateStr);
-    const newStartMins = timeToMinutes(newStart);
-    const newEndMins = timeToMinutes(newEnd);
+    // If date, start time, or end time is not selected yet, don't perform filtering
+    if (!newDateStr || !newStart || !newEnd) {
+      return []
+    }
 
-    // We'll use a synchronous fallback to the previously loaded venues and matches
-    // but we also trigger a backend fetch for fresh data and update state.
-    // This function now returns available venues based on the latest loaded data,
-    // but always refreshes from backend in the background.
+    // Convert new match details to comparable formats
+    // const newDateFormatted = reverseFormatDate(newDateStr); // Convert dd-mm-yyyy to yyyy-mm-dd
+    // const newStartMins = timeToMinutes(newStart);
+    // const newEndMins = timeToMinutes(newEnd);
 
-    // 1. Fetch all venues from the backend
-    axios.get('http://localhost:5000/venues')
-      .then((venueRes) => {
-        const allVenuesFetched = venueRes.data.data;
-        // 2. Fetch all matches from the backend for conflict checking
-        axios.get('http://localhost:5000/matches')
-          .then((matchRes) => {
-            const allMatchesFetched = matchRes.data.data;
-            // 3. Find matches that conflict on the same date/time, excluding the one being edited
-            const conflictingMatches = allMatchesFetched.filter(match => {
-              if (String(match.match_id) === String(editingId)) return false; // Don't conflict with self
-              // Ensure match_date is in YYYY-MM-DD format for comparison
-              const matchDateFormatted = match.match_date.split("T")[0];
-              if (matchDateFormatted !== newDateFormatted) return false;
-              if (!match.start_time || !match.end_time) return false; // Must have valid times
-              const matchStart = timeToMinutes(match.start_time);
-              const matchEnd = timeToMinutes(match.end_time);
-              // Check for time overlap
-              return newStartMins < matchEnd && newEndMins > matchStart;
-            });
-            // 4. Get IDs of venues booked by these conflicting matches
-            const bookedVenueIdsByOtherMatches = conflictingMatches
-              .map(match => match.venue_id)
-              .filter(id => id != null);
-            // 5. Filter available venues from the fetched list
-            const availableVenues = allVenuesFetched.filter(
-              (venue) => !bookedVenueIdsByOtherMatches.includes(venue.venue_id)
-            );
-            // 6. Update allVenues state for future calls (optional)
-            setAllVenues(allVenuesFetched);
-            // Optionally, you could set a state for available venues, but for now we just update allVenues
-          })
-          .catch((err) => {
-            console.error('Error fetching matches:', err);
-          });
-      })
-      .catch((err) => {
-        console.error('Error fetching venues:', err);
-      });
+    // Filter venues to exclude those with time conflicts
 
-    // Synchronous fallback: filter using already loaded allVenues and allMatches state
+
     const conflictingMatches = allMatches.filter(match => {
-      if (String(match.match_id) === String(editingId)) return false;
-      // Only consider matches on this date
-      // Handles ISO string and direct YYYY-MM-DD
-      const matchDateFormatted = (match.match_date || '').split("T")[0];
-      if (matchDateFormatted !== newDateFormatted) return false;
-      // Must have valid times
-      if (!match.start_time || !match.end_time) return false;
+      // Skip the current match we're checking
+      if (match.match_id === editingId) return false;
+      
+      // If dates don't match, no conflict
+      if (match.match_date !== newDateStr) return false;
+      
+      // If either match is missing time info, assume no conflict
+      if (!match.start_time || !match.end_time || !newStart || !newEnd) return false;
+      
+      // Convert times to minutes for comparison
       const matchStart = timeToMinutes(match.start_time);
       const matchEnd = timeToMinutes(match.end_time);
-      // Overlap if newStart < matchEnd && newEnd > matchStart
-      return newStartMins < matchEnd && newEndMins > matchStart;
+      const newStart = timeToMinutes(newStart);
+      const newEnd = timeToMinutes(newEnd);
+      
+      // Check for time overlap
+      return (newStart < matchEnd && newEnd > matchStart);
     });
+
     const bookedVenueIds = conflictingMatches
-      .map(match => match.venue_id)
-      .filter(id => id != null);
-    // Return venues without conflicts
-    return allVenues.filter(venue => !bookedVenueIds.includes(venue.venue_id));
-  };
+    .map(match => match.venue_id)
+    .filter(venueId => venueId !== null);
+
+  // 3. Return venues that aren't booked
+  return allVenues.filter(venue => 
+    !bookedVenueIds.includes(venue.venue_id)
+  );
+}
+
+
+
 
     //////////
   //   return allVenues.filter((venue) => {
@@ -448,7 +424,7 @@ const EditTournament = () => {
                   Tournament Name:
                   <input
                     type="text"
-                    value={tournamentName}
+                    value={tournament.name}
                     onChange={(e) => setTournamentName(e.target.value)}
                     required
                   />
@@ -457,14 +433,24 @@ const EditTournament = () => {
                   Start Date:
                   <input
                     type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    required
+                    value={tournament.start_date}
+                    disabled
+                    readOnly
+                    style={{
+                      backgroundColor: "#f0f0f0",
+                      color: "#666",
+                      cursor: "not-allowed",
+                    }}
                   />
                 </label>
                 <label>
                   End Date:
-                  <input type="date" value={endDate} disabled readOnly />
+                  <input type="date" value={endDate} disabled readOnly 
+                  style={{
+                    backgroundColor: "#f0f0f0",
+                    color: "#666",
+                    cursor: "not-allowed",
+                  }}/>
                 </label>
                 <label>
                   Number of Teams:
@@ -821,24 +807,6 @@ const EditTournament = () => {
                   .catch(err => {
                     console.error(err)
                   });
-
-
-                  
-                  // Persist to localStorage
-                  // const selectedTeamIds = teams;
-                  // const updated = tournaments.map((t) =>
-                  //   String(t.match_id) === tournamentId
-                  //     ? {
-                  //         ...t,
-                  //         teamIds: selectedTeamIds,
-                  //         matches: generated,
-                  //         lastMatchNumber: generated.length,
-                  //       }
-                  //     : t,
-                  // );
-                  // setTournaments(updated);
-                  // localStorage.setItem("tournaments", JSON.stringify(updated));
-                  // Open match modal only if manual editing is desired, else skip
                   setShowMatchModal(false);
                 }}
                 style={{
@@ -1101,9 +1069,6 @@ const EditTournament = () => {
               <label>Start Time:</label>
               <input
                 type="time"
-                inputMode="numeric"
-                pattern="[0-9]{2}:[0-9]{2}"
-                step="60"
                 style={{ flex: 1, marginBottom: "0rem", marginTop: "0rem" }}
                 value={matchDetails.start_time || ""}
                 onChange={(e) => {
@@ -1127,9 +1092,6 @@ const EditTournament = () => {
               <label>End Time:</label>
               <input
                 type="time"
-                inputMode="numeric"
-                pattern="[0-9]{2}:[0-9]{2}"
-                step="60"
                 style={{ flex: 1 }}
                 value={matchDetails.end_time || ""}
                 onChange={(e) => {
