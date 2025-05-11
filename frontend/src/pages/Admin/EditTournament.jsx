@@ -257,7 +257,7 @@ const EditTournament = () => {
       start_date: startDate,
       end_date: endDate,
       num_teams: parseInt(numTeams, 10),
-    };
+    });
 
     // Send the updated tournament data to the backend using the PATCH request
     axios.patch(`http://localhost:5000/admin/tournaments/${tournamentId}`, updateTournament)
