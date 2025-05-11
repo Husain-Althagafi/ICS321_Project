@@ -409,25 +409,18 @@ const endMinutes = match?.end_time
                             const hasCard = redCards[p.player_id] != null;
                             if (hasCard) {
                               if (window.confirm("Remove red card record?")) {
+                                
                                 // Remove red card
-
                                 axios.delete(`http://localhost:5000/admin/red-cards`, {
                                   player_id: p.player_id,
                                   match_id: matchId
                                 })
-                                delete redCards[p.player_id]
-                                setMatches(updatedMatches);
-                                const updatedTours = JSON.parse(
-                                  localStorage.getItem("tournaments") || "[]",
-                                ).map((t) =>
-                                  String(t.id) === tournamentId
-                                    ? { ...t, matches: updatedMatches }
-                                    : t,
-                                );
-                                localStorage.setItem(
-                                  "tournaments",
-                                  JSON.stringify(updatedTours),
-                                );
+                                .then((res) => {
+                                  delete redCards[p.player_id]
+                                  setMatch(match)
+                                })
+                                .catch(err => console.error(err))
+
                               }
                             } else {
                               handleCardClick(p);
@@ -638,7 +631,7 @@ const endMinutes = match?.end_time
                               <h2>Record Red Card Time</h2>
                               <p>
                                 Enter red card time (minutes or HH:MM) between{" "}
-                                {match.startTime} (0) and {match.endTime} (
+                                {match.start_time} (0) and {match.end_time} (
                                 {durationMinutes})
                               </p>
                               <input
