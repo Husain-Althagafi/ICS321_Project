@@ -199,18 +199,20 @@ const endMinutes = match?.end_time
     if (!match.match_id) return;
     // rest of persistence code...
     // Find the current match in matches and update its motmPlayerId
+    
     if (motmPlayerId !== undefined) {
-      const updatedMatches = matches.map((m) =>
-        m.id === match.match_id ? { ...m, motmPlayerId } : m,
-      );
-      setMatches(updatedMatches);
-      // Persist back to tournaments in localStorage
-      const updatedTours = JSON.parse(
-        localStorage.getItem("tournaments") || "[]",
-      ).map((t) =>
-        String(t.id) === tournamentId ? { ...t, matches: updatedMatches } : t,
-      );
-      localStorage.setItem("tournaments", JSON.stringify(updatedTours));
+      match.motm_player_id = motmPlayerId
+      // const updatedMatches = matches.map((m) =>
+      //   m.id === match.match_id ? { ...m, motmPlayerId } : m,
+      // );
+      // setMatches(updatedMatches);
+      // // Persist back to tournaments in localStorage
+      // const updatedTours = JSON.parse(
+      //   localStorage.getItem("tournaments") || "[]",
+      // ).map((t) =>
+      //   String(t.id) === tournamentId ? { ...t, matches: updatedMatches } : t,
+      // );
+      // localStorage.setItem("tournaments", JSON.stringify(updatedTours));
     }
   }, [motmPlayerId, match.match_id, tournamentId]);
 
@@ -319,7 +321,7 @@ const endMinutes = match?.end_time
                             Sub
                           </span>
                         )}
-                        {captains.player1_id === p.player_id && (
+                        {captains.captaina_id === p.player_id && (
                           <span
                             className="captain-status"
                             style={{ marginLeft: "0.5rem" }}
@@ -479,8 +481,8 @@ const endMinutes = match?.end_time
                       }}
                     >
                       <span>
-                        {goalCounts[p.id] != null && (
-                          <strong>[{goalCounts[p.id]}] </strong>
+                        {goalCounts[p.player_id] != null && (
+                          <strong>[{goalCounts[p.player_id]}] </strong>
                         )}
                         {p.player_name.split(" ").slice(-1)[0]} ({p.position})
                         {p.is_substitute && (
@@ -494,7 +496,7 @@ const endMinutes = match?.end_time
                             Sub
                           </span>
                         )}
-                        {captains.player2_id === p.player_id && (
+                        {captains.captaina_id === p.player_id && (
                           <span
                             className="captain-status"
                             style={{ marginLeft: "0.5rem" }}
@@ -508,24 +510,24 @@ const endMinutes = match?.end_time
                           type="button"
                           className="btn-motm"
                           disabled={
-                            motmPlayerId !== null && motmPlayerId !== p.id
+                            motmPlayerId !== null && motmPlayerId !== p.player_id
                           }
                           onClick={() => {
-                            if (motmPlayerId === p.id) {
+                            if (motmPlayerId === p.player_id) {
                               setMotmPlayerId(null);
                             } else {
-                              setMotmPlayerId(p.id);
+                              setMotmPlayerId(p.player_id);
                             }
                           }}
                           style={{
                             backgroundImage:
-                              motmPlayerId === p.id
+                              motmPlayerId === p.player_id
                                 ? "linear-gradient(135deg, #00713d, #00934f)"
                                 : motmPlayerId !== null
                                   ? "#ccc"
                                   : undefined,
                             opacity:
-                              motmPlayerId !== null && motmPlayerId !== p.id
+                              motmPlayerId !== null && motmPlayerId !== p.player_id
                                 ? 0.6
                                 : 1,
                           }}
@@ -562,19 +564,19 @@ const endMinutes = match?.end_time
                           type="button"
                           className="btn-red-card"
                           onClick={() => {
-                            const hasCard = match.redCards?.[p.id] != null;
+                            const hasCard = match.redCards?.[p.player_id] != null;
                             if (hasCard) {
                               if (window.confirm("Remove red card record?")) {
                                 // Remove red card
                                 const updatedMatches = matches.map((m) =>
-                                  m.id === match.match_id
+                                  m.match_id === match.match_id
                                     ? {
                                         ...m,
                                         redCards: Object.fromEntries(
                                           Object.entries(
                                             m.redCards || {},
                                           ).filter(
-                                            ([pid]) => pid !== String(p.id),
+                                            ([pid]) => pid !== String(p.player_id),
                                           ),
                                         ),
                                       }
