@@ -70,17 +70,7 @@ const EditTournament = () => {
   const [allMatches, setAllMatches] = useState([]);
   const [venues, setVenues] = useState([])
 
-
   const [newPlayer, setNewPlayer] = useState("");
-  const [showPlayerModal, setShowPlayerModal] = useState(false);
-  const [playerDetails, setPlayerDetails] = useState({
-    id: "",
-    name: "",
-    jerseyNumber: "",
-    position: "",
-    isSubstitute: false,
-  });
-  const [playerError, setPlayerError] = useState("");
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [viewMatchModal, setViewMatchModal] = useState(false);
@@ -308,22 +298,67 @@ const EditTournament = () => {
     return hours * 60 + minutes;
   };
 
-  // returns only the venues that are free for the new match's date & time
+  // Returns only the venues that are free for the new match's date & time using backend API
   const getAvailableVenues = (newDateStr, newStart, newEnd, editingId) => {
     if (!newDateStr || !newStart || !newEnd) return [];
 
-    // Convert dd-mm-yyyy to yyyy-mm-dd for comparison
+    // Convert DD-MM-YYYY to YYYY-MM-DD for comparison
     const newDateFormatted = reverseFormatDate(newDateStr);
-
-    // Convert start/end times to minutes
     const newStartMins = timeToMinutes(newStart);
     const newEndMins = timeToMinutes(newEnd);
 
-    // Find matches that conflict on same date/time, excluding the one being edited
+    // We'll use a synchronous fallback to the previously loaded venues and matches
+    // but we also trigger a backend fetch for fresh data and update state.
+    // This function now returns available venues based on the latest loaded data,
+    // but always refreshes from backend in the background.
+
+    // 1. Fetch all venues from the backend
+    axios.get('http://localhost:5000/venues')
+      .then((venueRes) => {
+        const allVenuesFetched = venueRes.data.data;
+        // 2. Fetch all matches from the backend for conflict checking
+        axios.get('http://localhost:5000/matches')
+          .then((matchRes) => {
+            const allMatchesFetched = matchRes.data.data;
+            // 3. Find matches that conflict on the same date/time, excluding the one being edited
+            const conflictingMatches = allMatchesFetched.filter(match => {
+              if (String(match.match_id) === String(editingId)) return false; // Don't conflict with self
+              // Ensure match_date is in YYYY-MM-DD format for comparison
+              const matchDateFormatted = match.match_date.split("T")[0];
+              if (matchDateFormatted !== newDateFormatted) return false;
+              if (!match.start_time || !match.end_time) return false; // Must have valid times
+              const matchStart = timeToMinutes(match.start_time);
+              const matchEnd = timeToMinutes(match.end_time);
+              // Check for time overlap
+              return newStartMins < matchEnd && newEndMins > matchStart;
+            });
+            // 4. Get IDs of venues booked by these conflicting matches
+            const bookedVenueIdsByOtherMatches = conflictingMatches
+              .map(match => match.venue_id)
+              .filter(id => id != null);
+            // 5. Filter available venues from the fetched list
+            const availableVenues = allVenuesFetched.filter(
+              (venue) => !bookedVenueIdsByOtherMatches.includes(venue.venue_id)
+            );
+            // 6. Update allVenues state for future calls (optional)
+            setAllVenues(allVenuesFetched);
+            // Optionally, you could set a state for available venues, but for now we just update allVenues
+          })
+          .catch((err) => {
+            console.error('Error fetching matches:', err);
+          });
+      })
+      .catch((err) => {
+        console.error('Error fetching venues:', err);
+      });
+
+    // Synchronous fallback: filter using already loaded allVenues and allMatches state
     const conflictingMatches = allMatches.filter(match => {
       if (String(match.match_id) === String(editingId)) return false;
       // Only consider matches on this date
-      if (match.match_date !== newDateFormatted) return false;
+      // Handles ISO string and direct YYYY-MM-DD
+      const matchDateFormatted = (match.match_date || '').split("T")[0];
+      if (matchDateFormatted !== newDateFormatted) return false;
       // Must have valid times
       if (!match.start_time || !match.end_time) return false;
       const matchStart = timeToMinutes(match.start_time);
@@ -331,11 +366,9 @@ const EditTournament = () => {
       // Overlap if newStart < matchEnd && newEnd > matchStart
       return newStartMins < matchEnd && newEndMins > matchStart;
     });
-
     const bookedVenueIds = conflictingMatches
       .map(match => match.venue_id)
       .filter(id => id != null);
-
     // Return venues without conflicts
     return allVenues.filter(venue => !bookedVenueIds.includes(venue.venue_id));
   };

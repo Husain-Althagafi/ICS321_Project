@@ -6,23 +6,23 @@ import hidePasswordIcon from "../../assets/icons/see_4230235.png";
 import sealImage from "../../assets/icons/KFUPM Seal White.png";
 
 function GuestLogin() {
-  const [username, setUsername] = useState("");
+  const [id, setid] = useState("");
   const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false); // State to toggle password visibility
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   // Predefined guest credentials for demo purposes
-  const guestUsername = "s20123456";
+  const guestid = "s20123456";
   const guestPassword = "password123!";
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (username === guestUsername && password === guestPassword) {
+    if (id === guestid && password === guestPassword) {
       // On successful login, redirect to guest page
       navigate("/guest/home");
     } else {
-      const errorMsg = "Invalid username or password!";
+      const errorMsg = "Invalid id or password!";
       setError(errorMsg);
       setTimeout(() => alert(errorMsg), 0);
     }
@@ -39,11 +39,11 @@ function GuestLogin() {
         <h2>KFUPM Guest Login</h2>
         <form onSubmit={handleLogin}>
           <div className="form-group">
-            <label>Username</label>
+            <label>ID</label>
             <input
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={id}
+              onChange={(e) => setid(e.target.value)}
             />
           </div>
           <div className="password-container form-group">

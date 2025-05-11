@@ -31,11 +31,11 @@ function AdminSignUp() {
       return;
     }
 
-    // Username validation for firstname.lastname format (all lowercase or all uppercase)
-    const usernamePattern = /^([a-z]+\.[a-z]+|[A-Z]+\.[A-Z]+)$/;
+    // Username validation for firstname.lastname.id format (id must be 9 digits long)
+    const usernamePattern = /^[a-zA-Z]+\.[a-zA-Z]+\.\d{9}$/;
     if (!usernamePattern.test(username.trim())) {
       const errorMsg =
-        "Username must be in the format firstname.lastname (all lowercase or all uppercase)";
+        "Username must be in the format firstname.lastname.id (where id is 9 digits long)";
       setError(errorMsg);
       setTimeout(() => alert(errorMsg), 0);
       return;
@@ -88,7 +88,7 @@ function AdminSignUp() {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Username format: firstname.lastname"
+              placeholder="Username format: firstname.lastname.id"
             />
           </div>
           <div className="password-container form-group">
