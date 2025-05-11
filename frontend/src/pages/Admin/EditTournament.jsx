@@ -239,26 +239,29 @@ const EditTournament = () => {
       setTimeout(() => alert(msg), 0);
       return;
     }
-
-    // Prepare updated tournament data to be sent to the backend
-    const updateTournament = {
-      tournament_id: tournamentId,
+    // const updatedTournaments = tournaments.map((t) =>
+    //   String(t.tournament_id) === tournamentId
+    //     ? {
+    //         ...t,
+    //         name: tournamentName,
+    //         start_date: startDate,
+    //         end_date: endDate,
+    //         num_teams: parseInt(numTeams, 10),
+    //         players,
+    //       }
+    //     : t,
+    // );
+    // If you send an axios.patch here, ensure the payload keys are correct:
+    axios.patch(`http://localhost:5000/admin/tournaments/${tournamentId}`, {
       name: tournamentName,
       start_date: startDate,
       end_date: endDate,
-      num_teams: parseInt(numTeams, 10),
-    };
-
-    // Send the updated tournament data to the backend using the PATCH request
-    axios.patch(`http://localhost:5000/tournaments/${tournamentId}`, updateTournament)
-      .then((res) => {
-        alert("Tournament updated successfully!");
-        navigate("/admin/tournaments"); // Redirect to tournaments list page
-      })
-      .catch((err) => {
-        console.error("Error updating tournament:", err);
-        alert("Failed to update tournament.");
-      });
+      num_teams: parseInt(numTeams, 10)
+    })
+    .then(
+      navigate("/admin/tournaments")
+    )
+    .catch(err => console.error(err))
   };
 
   const handleAddPlayer = () => {
@@ -442,7 +445,7 @@ const EditTournament = () => {
                   Start Date:
                   <input
                     type="date"
-                    value={tournament.start_date}
+                    value={startDate}
                     disabled
                     readOnly
                     style={{
@@ -454,6 +457,12 @@ const EditTournament = () => {
                 </label>
                 <label>
                   End Date:
+                  <input type="date" value={endDate} disabled readOnly 
+                  style={{
+                    backgroundColor: "#f0f0f0",
+                    color: "#666",
+                    cursor: "not-allowed",
+                  }}/>
                   <input type="date" value={endDate} disabled readOnly 
                   style={{
                     backgroundColor: "#f0f0f0",
