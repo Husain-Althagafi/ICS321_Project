@@ -656,3 +656,40 @@ exports.getAllCards = asyncHandler(async (req, res) => {
         res.status(500).json({ error: 'Failed to delete red card'+ error });
     }
 });
+
+
+exports.getYellowCardsForMatch = asyncHandler(async(req, res) => {
+    const match_id = req.params.match_id
+
+    if (!match_id) {
+        return res.status(400).json({error: 'Missing match id'})
+    }
+
+    const result = await db.query(`
+            SELECT *
+            FROM yellow_card_events
+            WHERE match_id = $1
+        `, [match_id])
+
+    res.status(200).json({success: true, data: result.rows})
+})
+
+
+
+exports.addYellowCard = asyncHandler(async(req, res) => {
+    const {match_id, player_id, event_time} = req.body
+
+    if (!match_id || !player_id || !event_time) {
+        return res.status(400).json({error: 'Missing values for yellow card'})
+    }
+
+    const result = await db.query(`
+            INSERT INTO yellow_card_events 
+            (match_id, player_id, event_time)
+            VALUES ($1, $2, $3)
+            RETURNING *
+        `, [match_id, player_id, event_time])
+
+    
+    return res.status(200).json({success: true, data: result.rows})
+  })

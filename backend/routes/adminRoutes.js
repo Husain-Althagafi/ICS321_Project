@@ -65,8 +65,12 @@ router.delete('/match-goals/player/:player_id', adminController.deletePlayerMatc
 // Cards
 
 router.get('/red-cards/:match_id', adminController.getRedCardsForMatch)
+router.get('/yellow-cards/:match_id', adminController.getYellowCardsForMatch)
+
 
 router.post('/red-cards', adminController.addRedCard)
+router.post('/yellow-cards', adminController.addYellowCard)
+
 
 router.delete('/red-cards', adminController.deleteRedCard)
 
