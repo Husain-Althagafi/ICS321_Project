@@ -201,10 +201,13 @@ const EditTournament = () => {
   }, [matches]); // Only runs when matches change
 
   useEffect(() => {
-    if (startDate && numTeams) {
+    const n = parseInt(numTeams, 10);
+    if (startDate && !Number.isNaN(n)) {
       const sd = new Date(startDate);
-      sd.setDate(sd.getDate() + parseInt(numTeams, 10) - 2);
-      setEndDate(sd.toISOString().split("T")[0]);
+      sd.setDate(sd.getDate() + n - 2);
+      if (!Number.isNaN(sd.getTime())) {
+        setEndDate(sd.toISOString().split("T")[0]);
+      }
     }
   }, [startDate, numTeams]);
 
