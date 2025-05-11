@@ -45,7 +45,7 @@ const EditTournament = () => {
     return `${d}-${m}-${y}`;
   };
 
-  // Helper to convert dd-mm-yyyy to yyyy-mm-dd
+  // Helper to convert DD-MM-YYYY to YYYY-MM-DD
   const reverseFormatDate = (dateString) => {
     if (!dateString) return "";
     const [d, m, y] = dateString.split("-");
@@ -285,7 +285,7 @@ const EditTournament = () => {
       const day = String(current.getDate()).padStart(2, "0");
       const month = String(current.getMonth() + 1).padStart(2, "0");
       const year = current.getFullYear();
-      dates.push(`${month}-${day}-${year}`);
+      dates.push(`${day}-${month}-${year}`);
       current.setDate(current.getDate() + 1);
     }
     console.log(dates)
@@ -305,52 +305,35 @@ const EditTournament = () => {
 
   // returns only the venues that are free for the new match's date & time
   const getAvailableVenues = (newDateStr, newStart, newEnd, editingId) => {
+    if (!newDateStr || !newStart || !newEnd) return [];
 
-    // If date, start time, or end time is not selected yet, don't perform filtering
-    if (!newDateStr || !newStart || !newEnd) {
-      return []
-    }
+    // Convert dd-mm-yyyy to yyyy-mm-dd for comparison
+    const newDateFormatted = reverseFormatDate(newDateStr);
 
-    // Convert new match details to comparable formats
-    // const newDateFormatted = reverseFormatDate(newDateStr); // Convert dd-mm-yyyy to yyyy-mm-dd
-    // const newStartMins = timeToMinutes(newStart);
-    // const newEndMins = timeToMinutes(newEnd);
+    // Convert start/end times to minutes
+    const newStartMins = timeToMinutes(newStart);
+    const newEndMins = timeToMinutes(newEnd);
 
-    // Filter venues to exclude those with time conflicts
-
-
+    // Find matches that conflict on same date/time, excluding the one being edited
     const conflictingMatches = allMatches.filter(match => {
-      // Skip the current match we're checking
-      if (match.match_id === editingId) return false;
-      
-      // If dates don't match, no conflict
-      if (match.match_date !== newDateStr) return false;
-      
-      // If either match is missing time info, assume no conflict
-      if (!match.start_time || !match.end_time || !newStart || !newEnd) return false;
-      
-      // Convert times to minutes for comparison
+      if (String(match.match_id) === String(editingId)) return false;
+      // Only consider matches on this date
+      if (match.match_date !== newDateFormatted) return false;
+      // Must have valid times
+      if (!match.start_time || !match.end_time) return false;
       const matchStart = timeToMinutes(match.start_time);
       const matchEnd = timeToMinutes(match.end_time);
-      const newStart = timeToMinutes(newStart);
-      const newEnd = timeToMinutes(newEnd);
-      
-      // Check for time overlap
-      return (newStart < matchEnd && newEnd > matchStart);
+      // Overlap if newStart < matchEnd && newEnd > matchStart
+      return newStartMins < matchEnd && newEndMins > matchStart;
     });
 
     const bookedVenueIds = conflictingMatches
-    .map(match => match.venue_id)
-    .filter(venueId => venueId !== null);
+      .map(match => match.venue_id)
+      .filter(id => id != null);
 
-  // 3. Return venues that aren't booked
-  return allVenues.filter(venue => 
-    !bookedVenueIds.includes(venue.venue_id)
-  );
-}
-
-
-
+    // Return venues without conflicts
+    return allVenues.filter(venue => !bookedVenueIds.includes(venue.venue_id));
+  };
 
     //////////
   //   return allVenues.filter((venue) => {
@@ -427,7 +410,7 @@ const EditTournament = () => {
                   Tournament Name:
                   <input
                     type="text"
-                    value={tournament.name}
+                    value={tournamentName}
                     onChange={(e) => setTournamentName(e.target.value)}
                     required
                   />
@@ -436,7 +419,7 @@ const EditTournament = () => {
                   Start Date:
                   <input
                     type="date"
-                    value={tournament.start_date}
+                    value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                     required
                   />
@@ -1080,6 +1063,9 @@ const EditTournament = () => {
               <label>Start Time:</label>
               <input
                 type="time"
+                inputMode="numeric"
+                pattern="[0-9]{2}:[0-9]{2}"
+                step="60"
                 style={{ flex: 1, marginBottom: "0rem", marginTop: "0rem" }}
                 value={matchDetails.start_time || ""}
                 onChange={(e) => {
@@ -1103,6 +1089,9 @@ const EditTournament = () => {
               <label>End Time:</label>
               <input
                 type="time"
+                inputMode="numeric"
+                pattern="[0-9]{2}:[0-9]{2}"
+                step="60"
                 style={{ flex: 1 }}
                 value={matchDetails.end_time || ""}
                 onChange={(e) => {
