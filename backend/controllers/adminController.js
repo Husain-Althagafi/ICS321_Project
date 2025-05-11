@@ -693,3 +693,24 @@ exports.addYellowCard = asyncHandler(async(req, res) => {
     
     return res.status(200).json({success: true, data: result.rows})
   })
+
+
+
+  exports.updateMatchDetails = asyncHandler(async(req, res) => {
+    const match_id = req.params.match_id
+    const {match_completed, winner_team_id} = req.body
+
+    if (!match_id || !winner_team_id || typeof match_completed === 'undefined') {
+        return res.status(400).json({error: 'Missing values'})
+    }
+
+    const result = await db.query(`
+            UPDATE matches 
+             SET match_completed = $1,
+                 winner_team_id = $2
+             WHERE match_id = $3
+             RETURNING *
+        `, [match_completed, winner_team_id, match_id])
+
+    return res.status(200).json({success: true, data : result.rows})
+  })

@@ -1634,7 +1634,8 @@ const endMinutes = match?.end_time
                       scoreA,
                       scoreB,
                       winner_team_id: winner,
-                      match_completed: true
+                      match_completed: true,
+                      motm_player_id: motmPlayerId
                     };
                     
                     //update match details
