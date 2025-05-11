@@ -828,14 +828,15 @@ const endMinutes = match?.end_time
                                       }
                                     </p>
                                     <p>
-                                      <strong>Timings:</strong>{" "}
-                                      {yellowCards[yellowCardPlayer.player_id]?.count || 'N/A'
-                                        // .slice()
-                                        // .sort((a, b) => a - b)
-                                        // .map((t) => `${t}'`)
-                                        // .join(", ")
-                                        }
-                                    </p>
+                                    <strong>Timings:</strong>{" "}
+                                    {Array.isArray(yellowCards[yellowCardPlayer?.player_id]?.event_time)
+                                      ? yellowCards[yellowCardPlayer.player_id].event_time
+                                          .slice() // Create a copy to avoid mutating original array
+                                          .sort((a, b) => a - b) // Numeric sort ascending
+                                          .map(t => `${t}'`) // Add minute marker
+                                          .join(", ") // Combine with commas
+                                      : "N/A"}
+                                  </p>
                                   </div>
                                 )}
                               <input
@@ -965,14 +966,15 @@ const endMinutes = match?.end_time
                                       }
                                     </p>
                                     <p>
-                                      <strong>Timings:</strong>{" "}
-                                      {yellowCards[yellowCardPlayer.player_id]?.count || 'N/A'
-                                        // .slice()
-                                        // .sort((a, b) => a - b)
-                                        // .map((t) => `${t}'`)
-                                        // .join(", ")
-                                        }
-                                    </p>
+                                    <strong>Timings:</strong>{" "}
+                                    {Array.isArray(yellowCards[yellowCardPlayer?.player_id]?.event_time)
+                                      ? yellowCards[yellowCardPlayer.player_id].event_time
+                                          .slice() // Create a copy to avoid mutating original array
+                                          .sort((a, b) => a - b) // Numeric sort ascending
+                                          .map(t => `${t}'`) // Add minute marker
+                                          .join(", ") // Combine with commas
+                                      : "N/A"}
+                                  </p>
                                   </div>
                                 )}
                               <div className="yellow-modal-buttons">
