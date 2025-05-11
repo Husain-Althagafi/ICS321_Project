@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminSidebar from "../../components/AdminSidebar";
-// import sealImage from '../../assets/icons/KFUPM Seal White.png';
-import bgImage from "../../assets/images/Illustration 1@4x.png";
 import DeleteVenueButton from "../../components/DeleteVenueButton";
 import deleteIcon from "../../assets/icons/delete-svgrepo-com.svg";
 import "../../stylesheets/Venues.css";
@@ -37,7 +35,8 @@ const Venues = () => {
           setVenues(res.data.data.map(v => ({
             id: v.venue_id,
             name: v.venue_name,
-            capacity: v.venue_capacity
+            capacity: v.venue_capacity,
+            status: "Available",
           })));
         })
         .catch(err => console.error(err))
@@ -62,15 +61,15 @@ const Venues = () => {
     const reservedVenueIds = allMatches
       .map(match => match.venue_id)
       .filter(venueId => venueId !== null);
-    
+  
     // Get unique venue IDs to avoid duplicates
     const uniqueReservedVenueIds = [...new Set(reservedVenueIds)];
-    
+  
     // Get full venue info for reserved venues
-    const reservedVenues = venues.filter(venue => 
-      uniqueReservedVenueIds.includes(venue.venue_id)
+    const reservedVenues = venues.filter(venue =>
+      uniqueReservedVenueIds.includes(venue.id)
     );
-    
+  
     // Add match info to each reserved venue
     return reservedVenues.map(venue => ({
       ...venue,
@@ -83,13 +82,13 @@ const Venues = () => {
     setReservedVenues(getReservedVenues())
 
     const updatedVenues = venues.map((v) => {
-      const matched = allMatches.filter(
-        (m) => String(m.venue_id) === String(v.id),
+      const isReserved = allMatches.some(
+        (m) => String(m.venue_id) === String(v.id)
       );
-      if (v.status === "Reserved" && matched.length === 0) {
-        return { ...v, status: "Available" };
-      }
-      return v;
+      return {
+        ...v,
+        status: isReserved ? "Reserved" : "Available"
+      };
     });
     if (JSON.stringify(updatedVenues) !== JSON.stringify(venues)) {
       setVenues(updatedVenues);
@@ -183,7 +182,7 @@ const Venues = () => {
                       onMouseLeave={() => setHoveredVenueId(null)}
                       style={{ position: "relative" }}
                     >
-                      <strong>Venue Status:</strong> {venue.status || 'Free'}
+                      <strong>Venue Status:</strong> {venue.status}
                       {hoveredVenueId === venue.id &&
                         reservedVenues.some(reservedVenue => reservedVenue.id === venue.id) &&
                         reservedMatchesForVenue.length > 0 && (
@@ -388,11 +387,12 @@ const Venues = () => {
                         // Update the specific venue in state
                         setVenues(prevVenues => 
                           prevVenues.map(venue => 
-                            venue.id === res.data.data[0].id
+                            venue.id === res.data.data[0].venue_id
                               ? {
                                   id: res.data.data[0].venue_id,
-                                  name: res.data.data.venue_name,
-                                  capacity: res.data.data.venue_capacity
+                                  name: res.data.data[0].venue_name,
+                                  capacity: res.data.data[0].venue_capacity,
+                                  status: "Available", // or preserve existing status
                                 }
                               : venue
                           )

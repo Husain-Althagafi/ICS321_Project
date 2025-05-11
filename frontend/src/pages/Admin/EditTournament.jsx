@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AdminSidebar from "../../components/AdminSidebar";
 import DeleteTournamentButton from "../../components/DeleteTournamentButton";
-// import sealImage from '../../assets/icons/KFUPM Seal White.png';
-import bgImage from "../../assets/images/Illustration 1@4x.png";
 import "../../stylesheets/EditTournament.css";
 import axios from 'axios'
 // Generate round-robin schedule: assign only IDs, teams, and dates; leave captains & venue/time blank
@@ -137,7 +135,7 @@ const EditTournament = () => {
     .catch(err => console.error(err));
 
 
-  //get all matches in a tournament
+    //get all matches in a tournament
     axios.get(`http://localhost:5000/tournaments/${tournamentId}/matches`)
     .then(res => {
       setMatches(res.data.data.map(match => ({
@@ -172,8 +170,16 @@ const EditTournament = () => {
         start_date: tournamentData.start_date.split('T')[0], // "2025-11-10"
         end_date: tournamentData.end_date.split('T')[0]     // "2025-11-20"
       });
+      // Populate form fields once tournament data loads
+      setTournamentName(tournamentData.name);
+      setStartDate(tournamentData.start_date.split('T')[0]);
+      setEndDate(tournamentData.end_date.split('T')[0]);
+      setNumTeams(tournamentData.num_teams || "");
     })
-    .catch(err => console.error(err));
+    .catch(err => {
+      console.error(err);
+      navigate("/admin/tournaments");
+    });
 
     // // get tournaments
     // axios.get(`http://localhost:5000/tournaments`)
@@ -188,17 +194,6 @@ const EditTournament = () => {
       setPlayers(res.data.data)
     })
     .catch(err => console.error(err)) 
-  
-    if (tournament) {
-      setTournamentName(tournament.name);
-      setStartDate(tournament.start_date);
-      setEndDate(tournament.end_date);
-      setNumTeams(tournament.num_teams || "");
-      
-      
-    } else {
-      navigate("/admin/tournaments");
-    }
   }, [tournamentId, navigate]);
 
   useEffect(() => {
@@ -242,13 +237,21 @@ const EditTournament = () => {
         ? {
             ...t,
             name: tournamentName,
-            startDate,
-            endDate,
-            numTeams: parseInt(numTeams, 10),
+            start_date: startDate,
+            end_date: endDate,
+            num_teams: parseInt(numTeams, 10),
             players,
           }
         : t,
     );
+    // If you send an axios.patch here, ensure the payload keys are correct:
+    // axios.patch(`http://localhost:5000/admin/tournaments/${tournamentId}`, {
+    //   name: tournamentName,
+    //   start_date: startDate,
+    //   end_date: endDate,
+    //   num_teams: parseInt(numTeams, 10)
+    // })
+    // .then(...)
     navigate("/admin/tournaments");
   };
 
