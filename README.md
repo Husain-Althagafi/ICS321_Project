@@ -1,4 +1,4 @@
-# ICS321 Project: SOCCER@KFUPM
+# **SOCCER@KFUPM**
 
 ## Table of Contents
 - [Project Overview](#project-overview)
