@@ -4,28 +4,65 @@ import "../../stylesheets/GuestLogin.css";
 import showPasswordIcon from "../../assets/icons/find_15067049.png";
 import hidePasswordIcon from "../../assets/icons/see_4230235.png";
 import sealImage from "../../assets/icons/KFUPM Seal White.png";
+import axios from "axios";
 
 function GuestLogin() {
-  const [username, setUsername] = useState("");
+  const [id, setid] = useState("");
   const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false); // State to toggle password visibility
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   // Predefined guest credentials for demo purposes
-  const guestUsername = "s20123456";
-  const guestPassword = "password123!";
+  // const guestid = "s20123456";
+  // const guestPassword = "password123!";
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (username === guestUsername && password === guestPassword) {
-      // On successful login, redirect to guest page
-      navigate("/guest/home");
-    } else {
-      const errorMsg = "Invalid username or password!";
+
+    // Check if the ID matches the expected format
+    const idPattern = /^s20\d{7}$/;
+    if (!idPattern.test(id)) {
+      const errorMsg = "Invalid ID format. It should be in the form s20xxxxxxx.";
       setError(errorMsg);
       setTimeout(() => alert(errorMsg), 0);
+      return;
     }
+
+    
+      axios.post(`http://localhost:5000/auth/login/guest`, {guest_id: id, guest_password: password})
+      .then((res) => {
+        if (res.data.data.guest_password === password) {
+          navigate("/guest/home");
+        }
+        else {
+          alert('invalid')
+
+        }
+      })
+      .catch(err => console.error(err))
+    //   const response = await axios.get(`http://localhost:5000/auth/login/guest/${id}`);
+
+    //   if (response.data.success) {
+    //     // Compare the fetched password with the entered password here
+    //     if (response.data.guest_password === password) {
+    //       // On successful password match, redirect to guest page
+    //       navigate("/guest/home");
+    //     } else {
+    //       const errorMsg = "Invalid password!";
+    //       setError(errorMsg);
+    //       setTimeout(() => alert(errorMsg), 0);
+    //     }
+    //   } else {
+    //     const errorMsg = response.data.message || "Invalid id!";
+    //     setError(errorMsg);
+    //     setTimeout(() => alert(errorMsg), 0);
+    //   }
+    // } catch (err) {
+    //   const errorMsg = "An error occurred during login." + err;
+    //   setError(errorMsg);
+    //   setTimeout(() => alert(errorMsg), 0);
+    
   };
 
   const togglePasswordVisibility = () => {
@@ -39,11 +76,11 @@ function GuestLogin() {
         <h2>KFUPM Guest Login</h2>
         <form onSubmit={handleLogin}>
           <div className="form-group">
-            <label>Username</label>
+            <label>ID</label>
             <input
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={id}
+              onChange={(e) => setid(e.target.value)}
             />
           </div>
           <div className="password-container form-group">

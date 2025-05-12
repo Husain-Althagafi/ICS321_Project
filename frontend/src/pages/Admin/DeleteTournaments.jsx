@@ -6,7 +6,7 @@ import bgImage from "../../assets/images/Illustration 1@4x.png";
 import DeleteTournamentButton from "../../components/DeleteTournamentButton";
 import deleteIcon from "../../assets/icons/delete-svgrepo-com.svg";
 import "../../stylesheets/DeleteTournaments.css";
-
+import axios from 'axios'
 const DeleteTournaments = () => {
   const navigate = useNavigate();
   const username = "john.doe"; // Replace with actual dynamic source later
@@ -18,10 +18,16 @@ const DeleteTournaments = () => {
 
   useEffect(() => {
     const loadTournaments = () => {
-      const stored = localStorage.getItem("tournaments");
-      if (stored) {
-        setTournaments(JSON.parse(stored));
-      }
+
+      //load all tournaments
+      axios.get('http://localhost:5000/tournaments')
+      .then((res) => {
+        if (res.data.data.length !== 0) {
+          setTournaments(res.data.data)
+        }
+        throw new Error('There are no tournaments')
+      })
+      .catch(err => console.error(err))
     };
 
     loadTournaments();
@@ -30,12 +36,18 @@ const DeleteTournaments = () => {
     return () => window.removeEventListener("focus", loadTournaments);
   }, []);
 
+  //delete a tournament
   const handleDeleteTournament = (tournamentId) => {
-    const updated = tournaments.filter(
-      (t) => String(t.id) !== String(tournamentId),
-    );
-    localStorage.setItem("tournaments", JSON.stringify(updated));
-    setTournaments(updated);
+
+    //send request to delete tournament
+
+    axios.delete(`http://localhost:5000/admin/tournaments/${tournamentId}`)
+    .then((res) => {
+      setTournaments(tournaments.filter(t => t.tournament_id !== tournamentId));
+    })
+    .catch(err => console.error(err))
+
+    
   };
 
   return (
@@ -52,7 +64,7 @@ const DeleteTournaments = () => {
           <div className="tournament-grid scrollable">
             {tournaments.length > 0 ? (
               tournaments.map((tournament) => (
-                <div key={tournament.id} className="tournament-card">
+                <div key={tournament.tournament_id} className="tournament-card">
                   <div
                     className="tournament-card-header"
                     style={{
@@ -69,25 +81,25 @@ const DeleteTournaments = () => {
                     </h3>
                   </div>
                   <p>
-                    <strong>Tournament ID:</strong> {tournament.id}
+                    <strong>Tournament ID:</strong> {tournament.tournament_id}
                   </p>
                   <p>
                     <strong>Start Date:</strong>{" "}
-                    {new Date(tournament.startDate).toLocaleDateString("en-GB")}
+                    {new Date(tournament.start_date).toLocaleDateString("en-GB")}
                   </p>
                   <p>
                     <strong>End Date:</strong>{" "}
-                    {new Date(tournament.endDate).toLocaleDateString("en-GB")}
+                    {new Date(tournament.end_date).toLocaleDateString("en-GB")}
                   </p>
                   <div className="delete-button-wrapper">
                     <DeleteTournamentButton
                       className="delete-tournament-button"
-                      tournamentId={tournament.id}
+                      tournamentId={tournament.tournament_id}
                       onClick={() => {
                         const confirmed = window.confirm(
                           "Are you sure you want to delete this tournament?",
                         );
-                        if (confirmed) handleDeleteTournament(tournament.id);
+                        if (confirmed) handleDeleteTournament(tournament.tournament_id);
                       }}
                     >
                       <img

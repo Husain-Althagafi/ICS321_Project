@@ -4,68 +4,72 @@ import "../../stylesheets/AdminSignUp.css";
 import showPasswordIcon from "../../assets/icons/find_15067049.png";
 import hidePasswordIcon from "../../assets/icons/see_4230235.png";
 import sealImage from "../../assets/icons/KFUPM Seal White.png";
-// import axios from 'axios'
+import axios from "axios";
 
 function AdminSignUp() {
-  const [username, setUsername] = useState("");
+  const [admin_username, setAdminUsername] = useState("");
   const [password, setPassword] = useState("");
-
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Predefined Admin credentials for demo purposes
-  const adminUsername = "admin";
-  const adminPassword = "password123";
-
   const handleSignUp = (e) => {
     e.preventDefault();
-    // Simulate basic sign-up validation
-    if (!username || !password) {
+    // Validate username format: firstname.lastname.id (9-digit ID)
+    const usernamePattern = /^[a-zA-Z]+\.[a-zA-Z]+\.\d{9}$/;
+    if (!usernamePattern.test(admin_username)) {
+      const errorMsg =
+        "Username must be in the format firstname.lastname.id (where ID is exactly 9 digits)";
+      setError(errorMsg);
+      setTimeout(() => alert(errorMsg), 0);
+      return;
+    }
+    if (!admin_username || !password) {
       const errorMsg = "Please enter a username and password!";
       setError(errorMsg);
       setTimeout(() => alert(errorMsg), 0);
       return;
     }
 
-    // Username validation for firstname.lastname format (all lowercase or all uppercase)
-    const usernamePattern = /^([a-z]+\.[a-z]+|[A-Z]+\.[A-Z]+)$/;
-    if (!usernamePattern.test(username.trim())) {
+    // Extract admin_id from the admin_username (assumed format: firstname.lastname.id)
+    const usernameParts = admin_username.split(".");
+    if (
+      usernameParts.length !== 3 ||
+      isNaN(usernameParts[2]) ||
+      usernameParts[2].length !== 9
+    ) {
       const errorMsg =
-        "Username must be in the format firstname.lastname (all lowercase or all uppercase)";
+        "Username must be in the format firstname.lastname.id (where id is a 9 digits long)";
       setError(errorMsg);
       setTimeout(() => alert(errorMsg), 0);
       return;
     }
+    const admin_id = parseInt(usernameParts[2], 10); // Convert to integer
+
     if (password !== confirmPassword) {
       const errorMsg = "Passwords do not match!";
       setError(errorMsg);
       setTimeout(() => alert(errorMsg), 0);
       return;
     }
-    // Simulate a sign-up process (for demo, just log and redirect)
-
-    // axios.post('http://localhost:5000/auth/register/admin', {
-    //   username: username,
-    //   password: password
-    // })
-    // .then((res) => {
-    //   localStorage.setItem('token', res.data.token)
-    //   alert("Sign-up successful! Redirecting to Admin login page...");
-    //   setError('');
-    //   navigate('/admin/login');
-    // })
-    // .catch((err) => {
-    //   setError(err)
-    //   setTimeout(() => alert(errorMsg), 0);
-    // })
-    // Original hardcoded sign-up behavior
-    setError("");
-    alert("Sign-up successful! Redirecting to Admin login page...");
-    navigate("/admin/login");
+    // Backend API call to register the admin
+    axios
+      .post("http://localhost:5000/auth/register/admin", {
+        admin_username: admin_username,
+        admin_id: admin_id,
+        password: password,
+      })
+      .then((res) => {
+        alert("Sign-up successful! Redirecting to Admin login page...");
+        setError("");
+        navigate("/admin/login");
+      })
+      .catch((err) => {
+        setError(err.response?.data?.message || "Error registering admin");
+        setTimeout(() => alert(err.response?.data?.message || "Error"), 0);
+      });
   };
 
   const togglePasswordVisibility = () => {
@@ -86,9 +90,9 @@ function AdminSignUp() {
             <label>Username</label>
             <input
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Username format: firstname.lastname"
+              value={admin_username}
+              onChange={(e) => setAdminUsername(e.target.value)}
+              placeholder="Username format: firstname.lastname.id"
             />
           </div>
           <div className="password-container form-group">

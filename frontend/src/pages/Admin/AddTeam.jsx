@@ -5,6 +5,9 @@ import AdminSidebar from "../../components/AdminSidebar";
 import bgImage from "../../assets/images/Illustration 1@4x.png";
 import "../../stylesheets/AddTournament.css";
 
+import axios from 'axios'
+
+
 const AddTeam = () => {
   const navigate = useNavigate();
   const username = "john.doe"; // Replace with actual dynamic source later
@@ -12,30 +15,12 @@ const AddTeam = () => {
   const initials = `${first[0]}${last[0]}`.toUpperCase();
   const formattedName = `${first.charAt(0).toUpperCase() + first.slice(1)} ${last.charAt(0).toUpperCase() + last.slice(1)}`;
 
-  const [tournaments, setTournaments] = useState(() => {
-    const stored = localStorage.getItem("tournaments");
-    return stored ? JSON.parse(stored) : [];
-  });
-  const [teams, setTeams] = useState(() => {
-    const stored = localStorage.getItem("teams");
-    return stored ? JSON.parse(stored) : [];
-  });
-  // Persistent team counter
-  const [lastTeamNumber, setLastTeamNumber] = useState(() => {
-    const storedNum = parseInt(localStorage.getItem("lastTeamNumber"), 10);
-    if (!isNaN(storedNum)) return storedNum;
-    const maxId = teams.length
-      ? Math.max(...teams.map((t) => t.team_id || 0))
-      : 0;
-    localStorage.setItem("lastTeamNumber", maxId);
-    return maxId;
-  });
+  
   const [teamName, setTeamName] = useState("");
   const [coachName, setCoachName] = useState("");
   const [managerName, setManagerName] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  const nextTeamId = lastTeamNumber + 1;
 
   const handleAddTeam = (e) => {
     e.preventDefault();
@@ -45,24 +30,27 @@ const AddTeam = () => {
       setTimeout(() => alert(msg), 0);
       return;
     }
-    // Update persistent team counter
-    localStorage.setItem("lastTeamNumber", nextTeamId);
-    setLastTeamNumber(nextTeamId);
 
     const newTeam = {
-      team_id: nextTeamId,
       team_name: teamName,
       coach_name: coachName,
       manager_name: managerName,
     };
-    const updated = [...teams, newTeam];
-    setTeams(updated);
-    localStorage.setItem("teams", JSON.stringify(updated));
-    setTeamName("");
-    setCoachName("");
-    setManagerName("");
-    setErrorMsg("");
-    alert("Team added!");
+
+    //Send request to add team 
+    axios.post(`http://localhost:5000/admin/teams`, newTeam)
+    .then((res)=> {
+
+    // Update persistent team counter
+
+      setTeamName("");
+      setCoachName("");
+      setManagerName("");
+      setErrorMsg("");
+      alert("Team added!");
+    })
+    .catch(err => console.error(err))
+     
   };
 
   return (
@@ -79,7 +67,7 @@ const AddTeam = () => {
           <div className="form-container">
             <h2>Team Details</h2>
             <form onSubmit={handleAddTeam} className="form-grid">
-              <label>
+              {/* <label>
                 Team ID:
                 <input
                   type="text"
@@ -87,7 +75,7 @@ const AddTeam = () => {
                   disabled
                   style={{ backgroundColor: "#f0f0f0", cursor: "not-allowed" }}
                 />
-              </label>
+              </label> */}
               <label>
                 Team Name:
                 <input

@@ -1,114 +1,215 @@
 const asyncHandler = require('../middleware/asyncHandler')
 const db = require('../config/db')
 
-// Get all matches of a tournament sorted by date
-exports.getAllMatchesForTournament = asyncHandler(async (req, res) => {
-    const tr_id = req.params.tournament
+// @desc    Get all teams for guests
+// @route   GET /api/guest/teams
+// @access  Public
+exports.getTeams = asyncHandler(async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM teams');
+    res.status(200).json({
+      success: true,
+      data: result.rows
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
 
-    if (!tr_id) {
-        return res.status(400).json({ error: 'Tournament ID is required' })
-    }
+// @desc    Get all tournaments for guests
+// @route   GET /api/guest/tournaments
+// @access  Public
+exports.getTournaments = asyncHandler(async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM tournaments');
+    res.status(200).json({
+      success: true,
+      data: result.rows
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
 
-    const query = `
-        SELECT mp.match_no, mp.play_date, t1.team_name AS team1, t2.team_name AS team2,
-               mp.results, mp.goal_score, v.venue_name
-        FROM match_played mp
-        JOIN team t1 ON mp.team_id1 = t1.team_id
-        JOIN team t2 ON mp.team_id2 = t2.team_id
-        JOIN venue v ON mp.venue_id = v.venue_id
-        WHERE mp.team_id1 IN (
-            SELECT team_id FROM tournament_team WHERE tr_id = $1
-        )
-        ORDER BY mp.play_date;
-    `
+// @desc    Get all players for guests
+// @route   GET /api/guest/players
+// @access  Public
+exports.getPlayers = asyncHandler(async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM players');
+    res.status(200).json({
+      success: true,
+      data: result.rows
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
 
-    try {
-        const result = await db.query(query, [tr_id])
-        return res.status(200).json({ data: result.rows })
-    } catch (err) {
-        return res.status(500).json({ error: 'Error fetching match results: ' + err })
-    }
-})
+// @desc    Get all yellow card events for guests
+// @route   GET /api/guest/cards/yellow
+// @access  Public
+exports.getYellowCards = asyncHandler(async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM yellow_card_events');
+    res.status(200).json({
+      success: true,
+      data: result.rows
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
 
-// Get the player with the highest goal score across all tournaments
-exports.getMostGoals = asyncHandler(async (req, res) => {
-    const query = `
-        SELECT p.name, gd.player_id, COUNT(*) AS total_goals
-        FROM goal_details gd
-        JOIN player pl ON gd.player_id = pl.player_id
-        JOIN person p ON pl.player_id = p.kfupm_id
-        GROUP BY gd.player_id, p.name
-        ORDER BY total_goals DESC
-        LIMIT 1;
-    `
+// @desc    Get all red card events for guests
+// @route   GET /api/guest/cards/red
+// @access  Public
+exports.getRedCards = asyncHandler(async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM red_card_events');
+    res.status(200).json({
+      success: true,
+      data: result.rows
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
 
-    try {
-        const result = await db.query(query)
-        return res.status(200).json({ data: result.rows[0] })
-    } catch (err) {
-        return res.status(500).json({ error: 'Error fetching top scorer: ' + err })
-    }
-})
 
-// Get players who received red cards for each team
-exports.getAllRedCards = asyncHandler(async (req, res) => {
-    const query = `
-        SELECT t.team_name, p.name AS player_name, pb.match_no
-        FROM player_booked pb
-        JOIN player pl ON pb.player_id = pl.player_id
-        JOIN person p ON pl.player_id = p.kfupm_id
-        JOIN team t ON pb.team_id = t.team_id
-        WHERE pb.sent_off = 'Y';
-    `
+// @desc    Get all match results for guests
+// @route   GET /api/guest/matches
+// @access  Public
+exports.getMatches = asyncHandler(async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT 
+        m.match_id,
+        m.tournament_id,
+        m.teama_id,
+        t1.team_name AS teamA_name,
+        m.teamb_id,
+        t2.team_name AS teamB_name,
+        m.match_date,
+        m.start_time,
+        m.end_time,
+        m.scorea,
+        m.scoreb,
+        m.winner_team_id,
+        m.match_completed,
+        m.venue_id,
+        m.motm_player_id
 
-    try {
-        const result = await db.query(query)
-        return res.status(200).json({ data: result.rows })
-    } catch (err) {
-        return res.status(500).json({ error: 'Error fetching red card players: ' + err })
-    }
-})
+      FROM matches m
+      LEFT JOIN teams t1 ON m.teama_id = t1.team_id
+      LEFT JOIN teams t2 ON m.teamb_id = t2.team_id
+    `);
+    res.status(200).json({
+      success: true,
+      data: result.rows
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
 
-// Get all members of a selected team (players, coach, manager, captain)
-exports.getTeamMembers = asyncHandler(async (req, res) => {
-    const team_id = req.query.team
-    const tr_id = req.query.tournament
-    const match_id = req.query.match
+// @desc    Get all venues for guests
+// @route   GET /api/guest/venues
+// @access  Public
+exports.getVenues = asyncHandler(async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM venues');
+    res.status(200).json({
+      success: true,
+      data: result.rows
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
 
-    if (!team_id || !tr_id || !match_id) {
-        return res.status(400).json({ error: 'Team, tournament, or match ID missing' })
-    }
+// @desc    Get all individual goal events for guests
+// @route   GET /api/guest/goal-events
+// @access  Public
+exports.getGoalEvents = asyncHandler(async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM goal_events');
+    res.status(200).json({
+      success: true,
+      data: result.rows
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
 
-    try {
-        const players = await db.query(`
-            SELECT 'Player' AS role, pe.name, pl.player_id
-            FROM team_player tp
-            JOIN player pl ON tp.player_id = pl.player_id
-            JOIN person pe ON pl.player_id = pe.kfupm_id
-            WHERE tp.team_id = $1 AND tp.tr_id = $2
-        `, [team_id, tr_id])
+// @desc    Get aggregated match goals for guests
+// @route   GET /api/guest/match-goals
+// @access  Public
+exports.getMatchGoals = asyncHandler(async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM match_goals');
+    res.status(200).json({
+      success: true,
+      data: result.rows
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
 
-        const support = await db.query(`
-            SELECT s.support_desc AS role, pe.name
-            FROM team_support ts
-            JOIN person pe ON ts.support_id = pe.kfupm_id
-            JOIN support s ON ts.support_type = s.support_type
-            WHERE ts.team_id = $1 AND ts.tr_id = $2
-        `, [team_id, tr_id])
 
-        const captain = await db.query(`
-            SELECT 'Captain' AS role, pe.name
-            FROM match_captain mc
-            JOIN person pe ON mc.player_captain = pe.kfupm_id
-            WHERE mc.team_id = $1 AND mc.match_no = $2
-        `, [team_id, match_id])
-
-        return res.status(200).json({
-            players: players.rows,
-            support: support.rows,
-            captain: captain.rows[0] || {}
-        })
-    } catch (err) {
-        return res.status(500).json({ error: 'Error fetching team members: ' + err })
-    }
-})
+// @desc    Get all tournament–team associations for guests
+// @route   GET /api/guest/tournament-teams
+// @access  Public
+exports.getTournamentTeams = asyncHandler(async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT
+        tt.tournament_id,
+        tr.name AS tournament_name,
+        tt.team_id,
+        t.team_name
+      FROM tournament_teams tt
+      JOIN tournaments tr ON tt.tournament_id = tr.tournament_id
+      JOIN teams t ON tt.team_id = t.team_id
+    `);
+    res.status(200).json({
+      success: true,
+      data: result.rows
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+}
+);

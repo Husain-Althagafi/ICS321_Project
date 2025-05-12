@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminSidebar from "../../components/AdminSidebar";
 import "../../stylesheets/Matches_DetailedMatchStats.css";
-
+import axios from 'axios'
 const Matches_DetailedMatchStats = () => {
   // Helper to format yyyy-mm-dd to dd-mm-yyyy
   const formatDate = (dateString) => {
@@ -22,10 +22,24 @@ const Matches_DetailedMatchStats = () => {
   const [availableTeams, setAvailableTeams] = useState([]);
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("tournaments")) || [];
-    setAvailableTeams(JSON.parse(localStorage.getItem("teams")) || []);
-    const tour = stored.find((t) => String(t.id) === tournamentId);
-    setMatches(tour?.matches || []);
+
+    // get all matches for this tournament
+    axios.get(`http://localhost:5000/tournaments/${tournamentId}/matches`)
+    .then((res) => {
+      setMatches(res.data.data)
+    })
+    .catch(err=>console.error(err))
+
+
+    //get all teams in the tournament
+    //availableTeams is all the teams in the tournament
+    axios.get(`http://localhost:5000/tournaments/${tournamentId}/teams`)
+    .then((res) => {
+      setAvailableTeams(res.data.data.teams)
+    })
+    .catch(err => console.error(err))
+
+    setMatches(matches || []);
   }, [tournamentId]);
 
   return (
@@ -47,15 +61,15 @@ const Matches_DetailedMatchStats = () => {
                   m.winner ||
                   (m.scoreA > m.scoreB
                     ? availableTeams.find(
-                        (t) => String(t.team_id) === String(m.teamA),
-                      )?.team_name || m.teamA
+                        (t) => String(t.team_id) === String(m.teama_id),
+                      )?.team_name || m.teama_id
                     : m.scoreB > m.scoreA
                       ? availableTeams.find(
-                          (t) => String(t.team_id) === String(m.teamB),
-                        )?.team_name || m.teamB
+                          (t) => String(t.team_id) === String(m.teamb_id),
+                        )?.team_name || m.teamb_id
                       : "Draw");
                 return (
-                  <div key={m.id} className="match-card">
+                  <div key={m.match_id} className="match-card">
                     <div
                       className="match-card-header"
                       style={{
@@ -65,25 +79,28 @@ const Matches_DetailedMatchStats = () => {
                       }}
                     >
                       <h3 style={{ margin: 0 }}>
-                        Match No:{" "}
-                        <span className="match-name-gradient">{m.id}</span>
+                        Match Id:{ ' '}
+                        <span className="match-name-gradient">{m.match_id}</span>
                       </h3>
                     </div>
                     <p>
                       <strong>Teams:</strong>{" "}
                       {availableTeams.find(
-                        (t) => String(t.team_id) === String(m.teamA),
-                      )?.team_name || m.teamA}{" "}
+                        (t) => String(t.team_id) === String(m.teama_id),
+                      )?.team_name || m.team1}{" "}
                       vs{" "}
                       {availableTeams.find(
-                        (t) => String(t.team_id) === String(m.teamB),
-                      )?.team_name || m.teamB}
+                        (t) => String(t.team_id) === String(m.teamb_id),
+                      )?.team_name || m.team2}
                     </p>
                     <p>
-                      <strong>Date:</strong> {formatDate(m.date)}
+                      <strong>Date:</strong> {formatDate(m.match_date.split("T")[0])}
                     </p>
                     <p>
-                      <strong>Time:</strong> {m.startTime} - {m.endTime}
+                      <strong>Time:</strong> {m.start_time || 'no time set'} - {m.end_time || 'no time set'}
+                    </p>
+                    <p>
+                      <strong>Status:</strong> {m.match_completed? 'Completed': 'Not complete'}
                     </p>
                     {localStorage.getItem(`match-completed-${m.id}`) ===
                       "true" && (
@@ -105,7 +122,7 @@ const Matches_DetailedMatchStats = () => {
                       className="edit-button"
                       onClick={() =>
                         navigate(
-                          `/admin/detailed-match-stats/${tournamentId}/${m.id}/match-stats`,
+                          `/admin/detailed-match-stats/${tournamentId}/${m.match_id}/match-stats`,
                         )
                       }
                     >

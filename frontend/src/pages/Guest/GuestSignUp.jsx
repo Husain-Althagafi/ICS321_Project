@@ -4,7 +4,7 @@ import "../../stylesheets/GuestSignUp.css";
 import showPasswordIcon from "../../assets/icons/find_15067049.png";
 import hidePasswordIcon from "../../assets/icons/see_4230235.png";
 import sealImage from "../../assets/icons/KFUPM Seal White.png";
-
+import axios from 'axios'
 function GuestSignUp() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -21,7 +21,7 @@ function GuestSignUp() {
   // const adminUsername = 'admin';
   // const adminPassword = 'password123';
 
-  const handleSignUp = (e) => {
+  const handleSignUp = async (e) => {
     e.preventDefault();
     const usernamePattern = /^s20\d{7}$/i;
     if (!usernamePattern.test(username.trim())) {
@@ -36,9 +36,12 @@ function GuestSignUp() {
       setTimeout(() => alert(errorMsg), 0);
       return;
     }
-    // Simulate successful sign-up
-    alert("Sign-up successful! Redirecting to Guest login page...");
-    navigate("/guest/login");
+    // Add the guest data to the backend
+    axios.post(`http://localhost:5000/auth/register/guest`, { guest_id: username, guest_firstname: firstName, guest_lastname: lastName, guest_password: password})
+    .then((res) => {
+      navigate("/guest/login");
+    })
+    .catch(err => console.error(err))
   };
 
   const togglePasswordVisibility = () => {
@@ -74,7 +77,7 @@ function GuestSignUp() {
             />
           </div>
           <div className="form-group">
-            <label>Username</label>
+            <label>ID</label>
             <input
               type="text"
               value={username}
