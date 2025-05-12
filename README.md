@@ -1,4 +1,4 @@
-# _SOCCER@KFUPM_
+#**SOCCER@KFUPM**
 
 ## Table of Contents
 - [Project Overview](#project-overview)
